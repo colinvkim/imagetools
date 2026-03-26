@@ -4,6 +4,8 @@ import * as React from "react"
 import { Download, RefreshCcw } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
+import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -23,26 +25,28 @@ import {
   downloadBlob,
   replaceFileExtension,
 } from "@/lib/image/export"
+import { formatFileSize } from "@/lib/image/format"
 import { loadImageElement } from "@/lib/image/load-image"
-
-function formatFileSize(fileSize: number) {
-  if (fileSize < 1024 * 1024) {
-    return `${(fileSize / 1024).toFixed(1)} KB`
-  }
-
-  return `${(fileSize / (1024 * 1024)).toFixed(2)} MB`
-}
 
 export function WebpToPngTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
     mimeTypes: ["image/webp"],
     extensions: [".webp"],
+    enablePaste: true,
   })
 
   const [isConverting, setIsConverting] = React.useState(false)
   const [conversionError, setConversionError] = React.useState<string | null>(
     null
   )
+  const [conversionSuccess, setConversionSuccess] = React.useState<
+    string | null
+  >(null)
+
+  React.useEffect(() => {
+    setConversionError(null)
+    setConversionSuccess(null)
+  }, [image])
 
   const handleConvert = async () => {
     if (!image) {
@@ -51,6 +55,7 @@ export function WebpToPngTool() {
 
     setIsConverting(true)
     setConversionError(null)
+    setConversionSuccess(null)
 
     try {
       const sourceImage = await loadImageElement(image.objectUrl)
@@ -68,6 +73,7 @@ export function WebpToPngTool() {
 
       const blob = await canvasToBlob(canvas, "image/png")
       downloadBlob(blob, replaceFileExtension(image.fileName, ".png"))
+      setConversionSuccess("PNG download started successfully.")
     } catch (caughtError) {
       const message =
         caughtError instanceof Error
@@ -86,9 +92,10 @@ export function WebpToPngTool() {
         title="Convert WebP files into PNGs"
         description="This first tool stays intentionally simple: choose a .webp image, preview it instantly, and export a PNG without uploading anything anywhere."
         accept=".webp,image/webp"
-        helperText="No server round-trip. Your image never leaves the browser."
+        helperText="No server round-trip. If your clipboard contains a WebP image, paste works too."
         isLoading={isLoading}
         error={error}
+        supportsPaste
         onFileSelect={selectFile}
       />
     )
@@ -117,16 +124,17 @@ export function WebpToPngTool() {
 
       <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.9fr)]">
         <div className="space-y-4">
-          <Card className="rounded-[1.5rem] border-border/70 bg-[linear-gradient(45deg,transparent_25%,rgba(148,163,184,0.08)_25%,rgba(148,163,184,0.08)_50%,transparent_50%,transparent_75%,rgba(148,163,184,0.08)_75%)] bg-[length:24px_24px] py-4">
-            <CardContent className="flex min-h-[18rem] items-center justify-center rounded-[1.1rem] bg-background/80 p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs are previewed with a native img element */}
-              <img
-                src={image.objectUrl}
-                alt={`Preview of ${image.fileName}`}
-                className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
-              />
-            </CardContent>
-          </Card>
+          <CheckerboardSurface
+            className="py-4"
+            contentClassName="flex min-h-[18rem] items-center justify-center p-4"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs are previewed with a native img element */}
+            <img
+              src={image.objectUrl}
+              alt={`Preview of ${image.fileName}`}
+              className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
+            />
+          </CheckerboardSurface>
           <Alert>
             <Download />
             <AlertTitle>Output behavior</AlertTitle>
@@ -184,12 +192,20 @@ export function WebpToPngTool() {
               </AlertDescription>
             </Alert>
 
+            {conversionSuccess ? (
+              <StatusAlert
+                status="success"
+                title="Download ready"
+                message={conversionSuccess}
+              />
+            ) : null}
+
             {conversionError ? (
-              <Alert variant="destructive">
-                <RefreshCcw />
-                <AlertTitle>Conversion failed</AlertTitle>
-                <AlertDescription>{conversionError}</AlertDescription>
-              </Alert>
+              <StatusAlert
+                status="error"
+                title="Conversion failed"
+                message={conversionError}
+              />
             ) : null}
           </CardContent>
 

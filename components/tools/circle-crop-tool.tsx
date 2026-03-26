@@ -4,7 +4,9 @@ import * as React from "react"
 import { CircleDashed, Crop, Download, RefreshCcw } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
+import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { SquareCropEditor } from "@/components/tools/shared/square-crop-editor"
+import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -33,14 +35,7 @@ import {
   exportCircleCrop,
   type SquareCrop,
 } from "@/lib/image/crop"
-
-function formatFileSize(fileSize: number) {
-  if (fileSize < 1024 * 1024) {
-    return `${(fileSize / 1024).toFixed(1)} KB`
-  }
-
-  return `${(fileSize / (1024 * 1024)).toFixed(2)} MB`
-}
+import { formatFileSize } from "@/lib/image/format"
 
 function CirclePreview({
   imageUrl,
@@ -57,33 +52,34 @@ function CirclePreview({
   const scale = previewSize / crop.size
 
   return (
-    <div className="rounded-[1.5rem] border border-border/70 bg-[linear-gradient(45deg,transparent_25%,rgba(148,163,184,0.08)_25%,rgba(148,163,184,0.08)_50%,transparent_50%,transparent_75%,rgba(148,163,184,0.08)_75%)] bg-[length:24px_24px] p-4">
-      <div className="flex flex-col items-center gap-4 rounded-[1.1rem] bg-background/80 p-6">
-        <div
-          className="relative overflow-hidden rounded-full border border-border/70 shadow-sm"
+    <CheckerboardSurface
+      className="p-4"
+      contentClassName="flex flex-col items-center gap-4 p-6"
+    >
+      <div
+        className="relative overflow-hidden rounded-full border border-border/70 shadow-sm"
+        style={{
+          width: previewSize,
+          height: previewSize,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs are previewed directly in the browser */}
+        <img
+          src={imageUrl}
+          alt="Circle crop preview"
+          className="absolute top-0 left-0 max-w-none"
           style={{
-            width: previewSize,
-            height: previewSize,
+            width: imageWidth * scale,
+            height: imageHeight * scale,
+            transform: `translate(${-crop.x * scale}px, ${-crop.y * scale}px)`,
           }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs are previewed directly in the browser */}
-          <img
-            src={imageUrl}
-            alt="Circle crop preview"
-            className="absolute top-0 left-0 max-w-none"
-            style={{
-              width: imageWidth * scale,
-              height: imageHeight * scale,
-              transform: `translate(${-crop.x * scale}px, ${-crop.y * scale}px)`,
-            }}
-          />
-        </div>
-        <p className="text-center text-sm leading-6 text-muted-foreground">
-          PNG export uses this square selection and clips it to a circle with
-          transparent corners.
-        </p>
+        />
       </div>
-    </div>
+      <p className="text-center text-sm leading-6 text-muted-foreground">
+        PNG export uses this square selection and clips it to a circle with
+        transparent corners.
+      </p>
+    </CheckerboardSurface>
   )
 }
 
@@ -97,19 +93,28 @@ export function CircleCropTool() {
   const [isEditorOpen, setIsEditorOpen] = React.useState(false)
   const [isExporting, setIsExporting] = React.useState(false)
   const [exportError, setExportError] = React.useState<string | null>(null)
+  const [exportSuccess, setExportSuccess] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (!image) {
       setCrop(null)
       setIsEditorOpen(false)
       setExportError(null)
+      setExportSuccess(null)
       return
     }
 
     setCrop(createCenteredSquareCrop(image.width, image.height))
     setIsEditorOpen(true)
     setExportError(null)
+    setExportSuccess(null)
   }, [image])
+
+  const handleCropChange = React.useCallback((nextCrop: SquareCrop) => {
+    setCrop(nextCrop)
+    setExportError(null)
+    setExportSuccess(null)
+  }, [])
 
   const handleExport = async () => {
     if (!image || !crop) {
@@ -118,6 +123,7 @@ export function CircleCropTool() {
 
     setIsExporting(true)
     setExportError(null)
+    setExportSuccess(null)
 
     try {
       await exportCircleCrop({
@@ -125,6 +131,7 @@ export function CircleCropTool() {
         crop,
         fileName: image.fileName,
       })
+      setExportSuccess("Circle PNG download started successfully.")
     } catch (caughtError) {
       const message =
         caughtError instanceof Error
@@ -143,9 +150,10 @@ export function CircleCropTool() {
         title="Crop an image into a perfect circle"
         description="Upload or paste an image, adjust a square crop in a dialog, and export a transparent PNG with a circular cutout."
         accept="image/*,.jpg,.jpeg,.png,.webp"
-        helperText="Clipboard paste is supported here too."
+        helperText="Paste, drag and drop, or browse from your device."
         isLoading={isLoading}
         error={error}
+        supportsPaste
         onFileSelect={selectFile}
       />
     )
@@ -243,12 +251,20 @@ export function CircleCropTool() {
                 </AlertDescription>
               </Alert>
 
+              {exportSuccess ? (
+                <StatusAlert
+                  status="success"
+                  title="Download ready"
+                  message={exportSuccess}
+                />
+              ) : null}
+
               {exportError ? (
-                <Alert variant="destructive">
-                  <RefreshCcw />
-                  <AlertTitle>Export failed</AlertTitle>
-                  <AlertDescription>{exportError}</AlertDescription>
-                </Alert>
+                <StatusAlert
+                  status="error"
+                  title="Export failed"
+                  message={exportError}
+                />
               ) : null}
             </CardContent>
 
@@ -291,7 +307,7 @@ export function CircleCropTool() {
               imageWidth={image.width}
               imageHeight={image.height}
               crop={crop}
-              onCropChange={setCrop}
+              onCropChange={handleCropChange}
               className="min-w-0"
             />
 

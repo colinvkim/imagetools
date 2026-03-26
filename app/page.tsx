@@ -1,125 +1,167 @@
 import Link from "next/link"
-import { ArrowRight, CircleDashed, FileImage, ScanFace } from "lucide-react"
+import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react"
 
+import { PageShell } from "@/components/site/page-shell"
+import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
+  CardAction,
+  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 
 export default function Page() {
   return (
-    <main className="min-h-svh bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.1),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.98),rgba(248,250,252,0.96))] px-4 py-10 sm:px-6 dark:bg-[radial-gradient(circle_at_top_left,rgba(14,116,144,0.28),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.18),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.98),rgba(15,23,42,0.96))]">
-      <div className="mx-auto flex max-w-6xl flex-col gap-10">
+    <main>
+      <PageShell className="gap-10 py-10 sm:py-12">
         <section className="space-y-4">
-          <Badge variant="outline">imagetools</Badge>
-          <div className="space-y-3">
-            <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-              A growing set of image tools that run entirely on your device
-            </h1>
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              We&apos;re building the tools first. The homepage can get more
-              polished later, but the conversion workflow is already live.
-            </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant="outline">4 tools live</Badge>
+            <Badge variant="outline">100% client-side</Badge>
           </div>
-          <Link
-            href="/webp-to-png"
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition hover:opacity-90"
-          >
-            Open WebP to PNG
-            <ArrowRight className="size-4" />
-          </Link>
+
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.8fr)] lg:items-end">
+            <div className="flex flex-col gap-5">
+              <div className="space-y-4">
+                <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+                  Fast image tools that work right in your browser.
+                </h1>
+                <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+                  Convert files, crop images, and shape assets without sending
+                  them to a server. Open a tool, drop in a file, and export what
+                  you need.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Link href="/circle-crop">
+                  <Button size="lg">
+                    <Sparkles data-icon="inline-start" />
+                    Try Circle Crop
+                  </Button>
+                </Link>
+                <Link href="/svg-to-png">
+                  <Button variant="outline" size="lg">
+                    <ArrowRight data-icon="inline-start" />
+                    Open SVG to PNG
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <Card className="rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)]">
+              <CardHeader>
+                <Badge variant="outline" className="self-start">
+                  Privacy
+                </Badge>
+                <CardTitle className="text-2xl">
+                  Files stay on your device
+                </CardTitle>
+                <CardDescription className="leading-6">
+                  The current tool flows run entirely client-side, so common
+                  conversions and crops do not require uploading your images.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Alert>
+                  <ShieldCheck />
+                  <AlertTitle>Built for quick, local work</AlertTitle>
+                  <AlertDescription>
+                    Open a tool, process a file, and export it directly from the
+                    browser with minimal friction.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         <Separator />
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Link href="/webp-to-png" className="group block">
-            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                    <FileImage className="size-5 text-primary" />
-                  </div>
-                  <Badge>Live</Badge>
-                </div>
-                <CardTitle className="text-xl">WebP to PNG</CardTitle>
-                <CardDescription className="leading-6">
-                  Upload a WebP, inspect it, and export a PNG without touching a
-                  server.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="text-sm text-muted-foreground">
-                Open tool
-              </CardFooter>
-            </Card>
-          </Link>
+        <section className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <Badge variant="outline" className="self-start">
+              Live tools
+            </Badge>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Four focused utilities, one consistent workflow
+            </h2>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              Every tool follows the same idea: drop in a file, preview the
+              result, adjust only what matters, and export immediately.
+            </p>
+          </div>
 
-          <Link href="/circle-crop" className="group block">
-            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                    <CircleDashed className="size-5 text-primary" />
-                  </div>
-                  <Badge>Live</Badge>
-                </div>
-                <CardTitle className="text-xl">Circle Crop</CardTitle>
-                <CardDescription className="leading-6">
-                  Square crop first, then render a transparent PNG circle with a
-                  reusable editor flow.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="text-sm text-muted-foreground">
-                Open tool
-              </CardFooter>
-            </Card>
-          </Link>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {TOOL_DEFINITIONS.map((tool) => {
+              const Icon = tool.icon
 
-          <Link href="/rounded-corners" className="group block">
-            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                    <ScanFace className="size-5 text-primary" />
-                  </div>
-                  <Badge>Live</Badge>
-                </div>
-                <CardTitle className="text-xl">Rounded Corners</CardTitle>
-                <CardDescription className="leading-6">
-                  Apply preset or custom border radii with the same reusable
-                  crop editor flow.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="text-sm text-muted-foreground">
-                Open tool
-              </CardFooter>
-            </Card>
-          </Link>
-
-          <Link href="/svg-to-png" className="group block">
-            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
-              <CardHeader>
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                  <FileImage className="size-5 text-primary" />
-                </div>
-                <CardTitle className="text-xl">SVG to PNG</CardTitle>
-                <CardDescription className="leading-6">
-                  Rasterize SVGs client-side and choose the output size before
-                  export.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Badge>Live</Badge>
-              </CardFooter>
-            </Card>
-          </Link>
+              return (
+                <Link key={tool.href} href={tool.href} className="group block">
+                  <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                          <Icon className="size-5 text-primary" />
+                        </div>
+                        <CardAction>
+                          <Badge>Live</Badge>
+                        </CardAction>
+                      </div>
+                      <CardTitle className="text-xl">{tool.title}</CardTitle>
+                      <CardDescription className="leading-6">
+                        {tool.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardFooter className="text-sm text-muted-foreground">
+                      Open tool
+                    </CardFooter>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
         </section>
-      </div>
+
+        <section className="grid gap-4 lg:grid-cols-3">
+          <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
+            <CardHeader>
+              <CardTitle>Shared shell</CardTitle>
+              <CardDescription className="leading-6">
+                Every tool page now sits inside the same navigation, spacing,
+                and footer structure.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
+            <CardHeader>
+              <CardTitle>Clear messaging</CardTitle>
+              <CardDescription className="leading-6">
+                The homepage explains what the product does, why it is useful,
+                and why client-side processing matters.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
+            <CardHeader>
+              <CardTitle>Lightweight about/help</CardTitle>
+              <CardDescription className="leading-6">
+                The footer now gives quick context around privacy, current
+                scope, and where to jump next.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </section>
+      </PageShell>
     </main>
   )
 }

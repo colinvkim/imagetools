@@ -23,6 +23,7 @@ type FileDropzoneProps = {
   isLoading?: boolean
   error?: string | null
   helperText?: string
+  supportsPaste?: boolean
   className?: string
 }
 
@@ -34,6 +35,7 @@ export function FileDropzone({
   isLoading = false,
   error,
   helperText,
+  supportsPaste = false,
   className,
 }: FileDropzoneProps) {
   const inputId = useId()
@@ -55,6 +57,7 @@ export function FileDropzone({
     <Card
       onDragEnter={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
+      aria-busy={isLoading}
       className={cn(
         "relative rounded-[2rem] border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur",
         className
@@ -132,6 +135,13 @@ export function FileDropzone({
             </p>
             {helperText ? (
               <p className="text-sm text-muted-foreground">{helperText}</p>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Badge variant="secondary">Drag and drop</Badge>
+            <Badge variant="secondary">Browse</Badge>
+            {supportsPaste ? (
+              <Badge variant="secondary">Paste from clipboard</Badge>
             ) : null}
           </div>
           <Button type="button" size="lg" className="mt-2">

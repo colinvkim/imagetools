@@ -4,6 +4,8 @@ import * as React from "react"
 import { Download, RefreshCcw, ScanSearch } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
+import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,6 +30,7 @@ import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useSvgUpload } from "@/hooks/use-svg-upload"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
+import { formatFileSize } from "@/lib/image/format"
 import { rasterizeSvgToPng } from "@/lib/image/svg"
 
 const SCALE_OPTIONS = [
@@ -36,14 +39,6 @@ const SCALE_OPTIONS = [
   { label: "4x", value: "4" },
   { label: "8x", value: "8" },
 ] as const
-
-function formatFileSize(fileSize: number) {
-  if (fileSize < 1024 * 1024) {
-    return `${(fileSize / 1024).toFixed(1)} KB`
-  }
-
-  return `${(fileSize / (1024 * 1024)).toFixed(2)} MB`
-}
 
 function getOutputWidth(value: string, originalWidth: number) {
   const parsedValue = Number.parseInt(value, 10)
@@ -56,11 +51,16 @@ function getOutputWidth(value: string, originalWidth: number) {
 }
 
 export function SvgToPngTool() {
-  const { svg, error, isLoading, clear, selectFile } = useSvgUpload()
+  const { svg, error, isLoading, clear, selectFile } = useSvgUpload({
+    enablePaste: true,
+  })
   const [isConverting, setIsConverting] = React.useState(false)
   const [conversionError, setConversionError] = React.useState<string | null>(
     null
   )
+  const [conversionSuccess, setConversionSuccess] = React.useState<
+    string | null
+  >(null)
   const [selectedScale, setSelectedScale] = React.useState("1")
   const [outputWidthInput, setOutputWidthInput] = React.useState("")
 
@@ -69,12 +69,14 @@ export function SvgToPngTool() {
       setSelectedScale("1")
       setOutputWidthInput("")
       setConversionError(null)
+      setConversionSuccess(null)
       return
     }
 
     setSelectedScale("1")
     setOutputWidthInput(String(Math.round(svg.width)))
     setConversionError(null)
+    setConversionSuccess(null)
   }, [svg])
 
   const outputWidth = svg ? getOutputWidth(outputWidthInput, svg.width) : 0
@@ -87,11 +89,15 @@ export function SvgToPngTool() {
       return
     }
 
+    setConversionError(null)
+    setConversionSuccess(null)
     setSelectedScale(value)
     setOutputWidthInput(String(Math.round(svg.width * Number(value))))
   }
 
   const handleWidthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setConversionError(null)
+    setConversionSuccess(null)
     setSelectedScale("")
     setOutputWidthInput(event.target.value)
   }
@@ -103,6 +109,7 @@ export function SvgToPngTool() {
 
     setIsConverting(true)
     setConversionError(null)
+    setConversionSuccess(null)
 
     try {
       const blob = await rasterizeSvgToPng(
@@ -116,6 +123,7 @@ export function SvgToPngTool() {
           : replaceFileExtension(svg.fileName, `-${outputWidth}w.png`)
 
       downloadBlob(blob, fileName)
+      setConversionSuccess("PNG download started successfully.")
     } catch (caughtError) {
       const message =
         caughtError instanceof Error
@@ -134,9 +142,10 @@ export function SvgToPngTool() {
         title="Turn SVG artwork into PNG files"
         description="Upload an SVG, inspect the natural size, choose a larger or custom width, and export a PNG entirely in the browser."
         accept=".svg,image/svg+xml"
-        helperText="Great for icons, logos, UI assets, and screenshots that need a raster version."
+        helperText="Paste works for copied SVG files and raw SVG markup too."
         isLoading={isLoading}
         error={error}
+        supportsPaste
         onFileSelect={selectFile}
       />
     )
@@ -165,16 +174,17 @@ export function SvgToPngTool() {
 
       <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.95fr)]">
         <div className="flex flex-col gap-4">
-          <Card className="rounded-[1.5rem] border-border/70 bg-[linear-gradient(45deg,transparent_25%,rgba(148,163,184,0.08)_25%,rgba(148,163,184,0.08)_50%,transparent_50%,transparent_75%,rgba(148,163,184,0.08)_75%)] bg-[length:24px_24px] py-4">
-            <CardContent className="flex min-h-[18rem] items-center justify-center rounded-[1.1rem] bg-background/80 p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local SVG object URLs are previewed directly in the browser */}
-              <img
-                src={svg.objectUrl}
-                alt={`Preview of ${svg.fileName}`}
-                className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
-              />
-            </CardContent>
-          </Card>
+          <CheckerboardSurface
+            className="py-4"
+            contentClassName="flex min-h-[18rem] items-center justify-center p-4"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- local SVG object URLs are previewed directly in the browser */}
+            <img
+              src={svg.objectUrl}
+              alt={`Preview of ${svg.fileName}`}
+              className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
+            />
+          </CheckerboardSurface>
 
           <Alert>
             <ScanSearch />
@@ -286,12 +296,20 @@ export function SvgToPngTool() {
               </AlertDescription>
             </Alert>
 
+            {conversionSuccess ? (
+              <StatusAlert
+                status="success"
+                title="Download ready"
+                message={conversionSuccess}
+              />
+            ) : null}
+
             {conversionError ? (
-              <Alert variant="destructive">
-                <RefreshCcw />
-                <AlertTitle>Conversion failed</AlertTitle>
-                <AlertDescription>{conversionError}</AlertDescription>
-              </Alert>
+              <StatusAlert
+                status="error"
+                title="Conversion failed"
+                message={conversionError}
+              />
             ) : null}
           </CardContent>
 
