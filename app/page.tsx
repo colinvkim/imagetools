@@ -89,21 +89,23 @@ export default function Page() {
             </CardFooter>
           </Card>
 
-          <Card className="rounded-[1.75rem] border-border/70 bg-card/70">
-            <CardHeader>
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                <FileImage className="size-5 text-muted-foreground" />
-              </div>
-              <CardTitle className="text-xl">SVG to PNG</CardTitle>
-              <CardDescription className="leading-6">
-                Rasterize SVGs client-side and let the user control the output
-                size.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Badge variant="secondary">Planned</Badge>
-            </CardFooter>
-          </Card>
+          <Link href="/svg-to-png" className="group block">
+            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
+              <CardHeader>
+                <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                  <FileImage className="size-5 text-primary" />
+                </div>
+                <CardTitle className="text-xl">SVG to PNG</CardTitle>
+                <CardDescription className="leading-6">
+                  Rasterize SVGs client-side and choose the output size before
+                  export.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Badge>Live</Badge>
+              </CardFooter>
+            </Card>
+          </Link>
         </section>
       </div>
     </main>
