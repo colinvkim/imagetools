@@ -20,7 +20,7 @@ import { Separator } from "@/components/ui/separator"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Fast, client-side image tools",
+  title: "imagetools | free, client-side utilities",
   description:
     "Convert files, circle-crop images, add rounded corners, and rasterize assets directly in your browser.",
 })
