@@ -37,6 +37,9 @@ import {
 } from "@/lib/image/crop"
 import { formatFileSize } from "@/lib/image/format"
 
+const IMAGE_UPLOAD_MIME_TYPES = ["image/*"]
+const IMAGE_UPLOAD_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"]
+
 function CirclePreview({
   imageUrl,
   crop,
@@ -85,8 +88,8 @@ function CirclePreview({
 
 export function CircleCropTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
-    mimeTypes: ["image/*"],
-    extensions: [".jpg", ".jpeg", ".png", ".webp"],
+    mimeTypes: IMAGE_UPLOAD_MIME_TYPES,
+    extensions: IMAGE_UPLOAD_EXTENSIONS,
     enablePaste: true,
   })
   const [crop, setCrop] = React.useState<SquareCrop | null>(null)

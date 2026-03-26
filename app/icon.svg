@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="imagetools icon">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8" />
+      <stop offset="0.55" stop-color="#14b8a6" />
+      <stop offset="1" stop-color="#0f766e" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#bg)" />
+  <circle cx="28" cy="28" r="14" fill="#f8fafc" />
+  <path
+    d="M36 18h8a4 4 0 0 1 4 4v20a4 4 0 0 1-4 4H24"
+    fill="none"
+    stroke="#f8fafc"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="5"
+  />
+  <path
+    d="M25 41h10c2.761 0 5 2.239 5 5v0"
+    fill="none"
+    stroke="#f8fafc"
+    stroke-linecap="round"
+    stroke-width="5"
+  />
+</svg>

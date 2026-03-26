@@ -1,16 +1,52 @@
 import "./globals.css"
+import type { Metadata, Viewport } from "next"
+
 import { SiteFooter } from "@/components/site/site-footer"
 import { SiteHeader } from "@/components/site/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
+import {
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  getSiteUrl,
+} from "@/lib/site-metadata"
 import { Analytics } from "@vercel/analytics/next"
 
-export const metadata = {
+export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "imagetools",
-    template: "%s | imagetools",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Fast, client-side image tools for conversion, cropping, and rounded corners.",
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [...SITE_KEYWORDS],
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
+  openGraph: {
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    siteName: SITE_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#020617" },
+  ],
 }
 
 export default function RootLayout({

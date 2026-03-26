@@ -28,10 +28,13 @@ import {
 import { formatFileSize } from "@/lib/image/format"
 import { loadImageElement } from "@/lib/image/load-image"
 
+const WEBP_MIME_TYPES = ["image/webp"]
+const WEBP_EXTENSIONS = [".webp"]
+
 export function WebpToPngTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
-    mimeTypes: ["image/webp"],
-    extensions: [".webp"],
+    mimeTypes: WEBP_MIME_TYPES,
+    extensions: WEBP_EXTENSIONS,
     enablePaste: true,
   })
 

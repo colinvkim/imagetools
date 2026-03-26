@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react"
 
@@ -16,6 +17,13 @@ import {
 } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
+import { createPageMetadata } from "@/lib/site-metadata"
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Fast, client-side image tools",
+  description:
+    "Convert files, circle-crop images, add rounded corners, and rasterize assets directly in your browser.",
+})
 
 export default function Page() {
   return (
@@ -41,18 +49,18 @@ export default function Page() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <Link href="/circle-crop">
-                  <Button size="lg">
-                    <Sparkles data-icon="inline-start" />
-                    Try Circle Crop
-                  </Button>
-                </Link>
-                <Link href="/svg-to-png">
-                  <Button variant="outline" size="lg">
-                    <ArrowRight data-icon="inline-start" />
-                    Open SVG to PNG
-                  </Button>
-                </Link>
+                <Button size="lg" render={<Link href="/circle-crop" />}>
+                  <Sparkles data-icon="inline-start" />
+                  Try Circle Crop
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  render={<Link href="/svg-to-png" />}
+                >
+                  <ArrowRight data-icon="inline-start" />
+                  Open SVG to PNG
+                </Button>
               </div>
             </div>
 
