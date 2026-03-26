@@ -4,7 +4,19 @@ import * as React from "react"
 import { Download, RefreshCcw } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
   canvasToBlob,
@@ -83,102 +95,117 @@ export function WebpToPngTool() {
   }
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
-      <div className="border-b border-border/70 bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent px-6 py-5 sm:px-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-sky-700 dark:text-sky-300">
-              WebP to PNG
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight">
-              Preview, inspect, and export in one step
-            </h2>
-          </div>
+    <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
+      <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
+        <Badge variant="outline" className="self-start">
+          WebP to PNG
+        </Badge>
+        <CardTitle className="text-2xl tracking-tight">
+          Preview, inspect, and export in one step
+        </CardTitle>
+        <CardDescription>
+          Local conversion keeps the original pixel dimensions and never uploads
+          the file to a server.
+        </CardDescription>
+        <CardAction>
           <Button variant="outline" onClick={clear}>
-            <RefreshCcw className="size-4" />
+            <RefreshCcw data-icon="inline-start" />
             Choose another file
           </Button>
-        </div>
-      </div>
+        </CardAction>
+      </CardHeader>
 
-      <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.9fr)]">
+      <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.9fr)]">
         <div className="space-y-4">
-          <div className="rounded-[1.5rem] border border-border/70 bg-[linear-gradient(45deg,transparent_25%,rgba(148,163,184,0.08)_25%,rgba(148,163,184,0.08)_50%,transparent_50%,transparent_75%,rgba(148,163,184,0.08)_75%)] bg-[length:24px_24px] p-4">
-            <div className="flex min-h-[18rem] items-center justify-center rounded-[1.1rem] bg-background/80 p-4">
+          <Card className="rounded-[1.5rem] border-border/70 bg-[linear-gradient(45deg,transparent_25%,rgba(148,163,184,0.08)_25%,rgba(148,163,184,0.08)_50%,transparent_50%,transparent_75%,rgba(148,163,184,0.08)_75%)] bg-[length:24px_24px] py-4">
+            <CardContent className="flex min-h-[18rem] items-center justify-center rounded-[1.1rem] bg-background/80 p-4">
               {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs are previewed with a native img element */}
               <img
                 src={image.objectUrl}
                 alt={`Preview of ${image.fileName}`}
                 className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
               />
-            </div>
-          </div>
-          <p className="text-sm leading-6 text-muted-foreground">
-            The PNG export keeps the same pixel dimensions as the original WebP.
-          </p>
+            </CardContent>
+          </Card>
+          <Alert>
+            <Download />
+            <AlertTitle>Output behavior</AlertTitle>
+            <AlertDescription>
+              The PNG export keeps the same pixel dimensions as the original
+              WebP.
+            </AlertDescription>
+          </Alert>
         </div>
 
-        <aside className="space-y-5 rounded-[1.5rem] border border-border/70 bg-background/65 p-5">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">File</p>
-            <p className="text-base font-medium break-all">{image.fileName}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-border/70 bg-card px-4 py-3">
-              <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
-                Width
-              </p>
-              <p className="mt-2 text-lg font-semibold">{image.width}px</p>
+        <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
+          <CardHeader>
+            <CardTitle>File details</CardTitle>
+            <CardDescription className="break-all">
+              {image.fileName}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Width</CardDescription>
+                  <CardTitle className="text-lg">{image.width}px</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Height</CardDescription>
+                  <CardTitle className="text-lg">{image.height}px</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Input</CardDescription>
+                  <CardTitle className="text-lg">WebP</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Size</CardDescription>
+                  <CardTitle className="text-lg">
+                    {formatFileSize(image.fileSize)}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-card px-4 py-3">
-              <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
-                Height
-              </p>
-              <p className="mt-2 text-lg font-semibold">{image.height}px</p>
-            </div>
-            <div className="rounded-2xl border border-border/70 bg-card px-4 py-3">
-              <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
-                Input
-              </p>
-              <p className="mt-2 text-lg font-semibold">WebP</p>
-            </div>
-            <div className="rounded-2xl border border-border/70 bg-card px-4 py-3">
-              <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
-                Size
-              </p>
-              <p className="mt-2 text-lg font-semibold">
-                {formatFileSize(image.fileSize)}
-              </p>
-            </div>
-          </div>
 
-          <div className="rounded-2xl border border-border/70 bg-card px-4 py-4">
-            <p className="text-sm font-medium">Output</p>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Exports as{" "}
-              <span className="font-medium text-foreground">PNG</span> with the
-              same resolution as the uploaded file.
-            </p>
-          </div>
+            <Separator />
 
-          {conversionError ? (
-            <p className="rounded-2xl border border-destructive/20 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-              {conversionError}
-            </p>
-          ) : null}
+            <Alert>
+              <Download />
+              <AlertTitle>Output</AlertTitle>
+              <AlertDescription>
+                Exports as PNG with the same resolution as the uploaded file.
+              </AlertDescription>
+            </Alert>
 
-          <Button
-            size="lg"
-            className="w-full"
-            disabled={isConverting}
-            onClick={handleConvert}
-          >
-            <Download className="size-4" />
-            {isConverting ? "Exporting PNG..." : "Download PNG"}
-          </Button>
-        </aside>
-      </div>
-    </div>
+            {conversionError ? (
+              <Alert variant="destructive">
+                <RefreshCcw />
+                <AlertTitle>Conversion failed</AlertTitle>
+                <AlertDescription>{conversionError}</AlertDescription>
+              </Alert>
+            ) : null}
+          </CardContent>
+
+          <CardFooter>
+            <Button
+              size="lg"
+              className="w-full"
+              disabled={isConverting}
+              onClick={handleConvert}
+            >
+              <Download data-icon="inline-start" />
+              {isConverting ? "Exporting PNG..." : "Download PNG"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </CardContent>
+    </Card>
   )
 }

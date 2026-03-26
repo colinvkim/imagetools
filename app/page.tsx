@@ -1,14 +1,22 @@
 import Link from "next/link"
 import { ArrowRight, CircleDashed, FileImage, ScanFace } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+
 export default function Page() {
   return (
     <main className="min-h-svh bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.1),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.98),rgba(248,250,252,0.96))] px-4 py-10 sm:px-6 dark:bg-[radial-gradient(circle_at_top_left,rgba(14,116,144,0.28),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.18),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.98),rgba(15,23,42,0.96))]">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <section className="space-y-4">
-          <p className="text-sm font-medium tracking-[0.22em] text-sky-700 uppercase dark:text-sky-300">
-            imagetools
-          </p>
+          <Badge variant="outline">imagetools</Badge>
           <div className="space-y-3">
             <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
               A growing set of image tools that run entirely on your device
@@ -27,65 +35,75 @@ export default function Page() {
           </Link>
         </section>
 
+        <Separator />
+
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Link
-            href="/webp-to-png"
-            className="group rounded-[1.75rem] border border-border/70 bg-card/85 p-6 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition hover:-translate-y-0.5 hover:border-sky-400/60"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                <FileImage className="size-5 text-sky-600 dark:text-sky-300" />
-              </div>
-              <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                Live
-              </span>
-            </div>
-            <h2 className="mt-5 text-xl font-semibold">WebP to PNG</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Upload a WebP, inspect it, and export a PNG without touching a
-              server.
-            </p>
+          <Link href="/webp-to-png" className="group block">
+            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                    <FileImage className="size-5 text-primary" />
+                  </div>
+                  <Badge>Live</Badge>
+                </div>
+                <CardTitle className="text-xl">WebP to PNG</CardTitle>
+                <CardDescription className="leading-6">
+                  Upload a WebP, inspect it, and export a PNG without touching a
+                  server.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter className="text-sm text-muted-foreground">
+                Open tool
+              </CardFooter>
+            </Card>
           </Link>
 
-          <div className="rounded-[1.75rem] border border-border/70 bg-card/70 p-6">
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-              <CircleDashed className="size-5 text-muted-foreground" />
-            </div>
-            <h2 className="mt-5 text-xl font-semibold">Circle Crop</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Square crop first, then render as a transparent PNG circle.
-            </p>
-            <p className="mt-4 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
-              Next up
-            </p>
-          </div>
+          <Card className="rounded-[1.75rem] border-border/70 bg-card/70">
+            <CardHeader>
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                <CircleDashed className="size-5 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-xl">Circle Crop</CardTitle>
+              <CardDescription className="leading-6">
+                Square crop first, then render as a transparent PNG circle.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Badge variant="secondary">Next up</Badge>
+            </CardFooter>
+          </Card>
 
-          <div className="rounded-[1.75rem] border border-border/70 bg-card/70 p-6">
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-              <ScanFace className="size-5 text-muted-foreground" />
-            </div>
-            <h2 className="mt-5 text-xl font-semibold">Rounded Corners</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Apply preset or custom border radii with a reusable editor flow.
-            </p>
-            <p className="mt-4 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
-              Planned
-            </p>
-          </div>
+          <Card className="rounded-[1.75rem] border-border/70 bg-card/70">
+            <CardHeader>
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                <ScanFace className="size-5 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-xl">Rounded Corners</CardTitle>
+              <CardDescription className="leading-6">
+                Apply preset or custom border radii with a reusable editor flow.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Badge variant="secondary">Planned</Badge>
+            </CardFooter>
+          </Card>
 
-          <div className="rounded-[1.75rem] border border-border/70 bg-card/70 p-6">
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-              <FileImage className="size-5 text-muted-foreground" />
-            </div>
-            <h2 className="mt-5 text-xl font-semibold">SVG to PNG</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Rasterize SVGs client-side and let the user control the output
-              size.
-            </p>
-            <p className="mt-4 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
-              Planned
-            </p>
-          </div>
+          <Card className="rounded-[1.75rem] border-border/70 bg-card/70">
+            <CardHeader>
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                <FileImage className="size-5 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-xl">SVG to PNG</CardTitle>
+              <CardDescription className="leading-6">
+                Rasterize SVGs client-side and let the user control the output
+                size.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Badge variant="secondary">Planned</Badge>
+            </CardFooter>
+          </Card>
         </section>
       </div>
     </main>

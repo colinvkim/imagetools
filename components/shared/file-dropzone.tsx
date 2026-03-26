@@ -3,7 +3,16 @@
 import { type ChangeEvent, useId, useRef, useState } from "react"
 import { ImageUp, LoaderCircle, Sparkles } from "lucide-react"
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
 type FileDropzoneProps = {
@@ -43,34 +52,36 @@ export function FileDropzone({
   }
 
   return (
-    <div
+    <Card
       onDragEnter={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
       className={cn(
-        "relative overflow-hidden rounded-[2rem] border border-border/70 bg-card/80 p-8 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur",
+        "relative rounded-[2rem] border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur",
         className
       )}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-br from-sky-500/12 via-teal-400/8 to-transparent" />
-      <div className="relative flex flex-col gap-6">
+      <CardHeader className="relative">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
-              <Sparkles className="size-3.5" />
+          <div className="flex flex-col gap-3">
+            <Badge variant="outline" className="gap-2 self-start">
+              <Sparkles />
               Client-side only
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
-              <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+            </Badge>
+            <div className="flex flex-col gap-2">
+              <CardTitle className="text-2xl tracking-tight">{title}</CardTitle>
+              <CardDescription className="max-w-xl leading-6">
                 {description}
-              </p>
+              </CardDescription>
             </div>
           </div>
           <div className="hidden rounded-3xl border border-border/70 bg-background/80 p-4 md:block">
-            <ImageUp className="size-6 text-sky-600 dark:text-sky-300" />
+            <ImageUp className="size-6 text-primary" />
           </div>
         </div>
+      </CardHeader>
 
+      <CardContent className="relative flex flex-col gap-6 pb-6">
         <label
           htmlFor={inputId}
           className={cn(
@@ -106,12 +117,12 @@ export function FileDropzone({
         >
           <div className="rounded-3xl border border-border/80 bg-card p-4 shadow-sm transition group-hover:scale-[1.02]">
             {isLoading ? (
-              <LoaderCircle className="size-7 animate-spin text-sky-600 dark:text-sky-300" />
+              <LoaderCircle className="size-7 animate-spin text-primary" />
             ) : (
-              <ImageUp className="size-7 text-sky-600 dark:text-sky-300" />
+              <ImageUp className="size-7 text-primary" />
             )}
           </div>
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <p className="text-base font-medium">
               Drop a file here or choose one from your device
             </p>
@@ -124,6 +135,7 @@ export function FileDropzone({
             ) : null}
           </div>
           <Button type="button" size="lg" className="mt-2">
+            <ImageUp data-icon="inline-start" />
             Choose File
           </Button>
         </label>
@@ -138,11 +150,13 @@ export function FileDropzone({
         />
 
         {error ? (
-          <p className="rounded-2xl border border-destructive/20 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-            {error}
-          </p>
+          <Alert variant="destructive">
+            <Sparkles />
+            <AlertTitle>Upload problem</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         ) : null}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
