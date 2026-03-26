@@ -28,10 +28,24 @@ import {
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { useSvgUpload } from "@/hooks/use-svg-upload"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
-import { rasterizeSvgToPng } from "@/lib/image/svg"
+import {
+  createSvgObjectUrl,
+  parseSvgMetadata,
+  rasterizeSvgToPng,
+} from "@/lib/image/svg"
+
+type UploadedSvg = {
+  fileName: string
+  mimeType: string
+  content: string
+  objectUrl: string
+  width: number
+  height: number
+  aspectRatio: number
+  fileSize: number
+}
 
 const SCALE_OPTIONS = [
   { label: "1x", value: "1" },
@@ -39,6 +53,38 @@ const SCALE_OPTIONS = [
   { label: "4x", value: "4" },
   { label: "8x", value: "8" },
 ] as const
+
+function isAcceptedSvg(file: File) {
+  return (
+    file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg")
+  )
+}
+
+function isSvgMarkup(value: string) {
+  return /<svg[\s>]/i.test(value)
+}
+
+function getSvgMarkupFromClipboard(event: ClipboardEvent) {
+  const items = event.clipboardData?.items
+
+  if (!items) {
+    return null
+  }
+
+  for (const item of Array.from(items)) {
+    if (item.type !== "text/plain" && item.type !== "text/html") {
+      continue
+    }
+
+    const text = event.clipboardData?.getData(item.type)?.trim()
+
+    if (text && isSvgMarkup(text)) {
+      return text
+    }
+  }
+
+  return null
+}
 
 function getOutputWidth(value: string, originalWidth: number) {
   const parsedValue = Number.parseInt(value, 10)
@@ -50,10 +96,42 @@ function getOutputWidth(value: string, originalWidth: number) {
   return parsedValue
 }
 
+async function parseSvgContent(
+  content: string,
+  fileName: string,
+  mimeType: string,
+  fileSize: number
+): Promise<UploadedSvg> {
+  const metadata = parseSvgMetadata(content)
+  const objectUrl = createSvgObjectUrl(content)
+
+  return {
+    fileName,
+    mimeType,
+    content,
+    objectUrl,
+    width: metadata.width,
+    height: metadata.height,
+    aspectRatio: metadata.aspectRatio,
+    fileSize,
+  }
+}
+
+async function parseSvgFile(file: File) {
+  const content = await file.text()
+
+  return parseSvgContent(
+    content,
+    file.name,
+    file.type || "image/svg+xml",
+    file.size
+  )
+}
+
 export function SvgToPngTool() {
-  const { svg, error, isLoading, clear, selectFile } = useSvgUpload({
-    enablePaste: true,
-  })
+  const [svgs, setSvgs] = React.useState<UploadedSvg[]>([])
+  const [error, setError] = React.useState<string | null>(null)
+  const [isLoading, setIsLoading] = React.useState(false)
   const [isConverting, setIsConverting] = React.useState(false)
   const [conversionError, setConversionError] = React.useState<string | null>(
     null
@@ -65,34 +143,193 @@ export function SvgToPngTool() {
   const [outputWidthInput, setOutputWidthInput] = React.useState("")
 
   React.useEffect(() => {
-    if (!svg) {
-      setSelectedScale("1")
-      setOutputWidthInput("")
-      setConversionError(null)
-      setConversionSuccess(null)
+    return () => {
+      for (const svg of svgs) {
+        URL.revokeObjectURL(svg.objectUrl)
+      }
+    }
+  }, [svgs])
+
+  const clear = React.useCallback(() => {
+    setSvgs((currentSvgs) => {
+      for (const svg of currentSvgs) {
+        URL.revokeObjectURL(svg.objectUrl)
+      }
+
+      return []
+    })
+    setError(null)
+    setIsLoading(false)
+    setIsConverting(false)
+    setConversionError(null)
+    setConversionSuccess(null)
+    setSelectedScale("1")
+    setOutputWidthInput("")
+  }, [])
+
+  const handleFilesSelect = React.useCallback(async (files: File[]) => {
+    setIsLoading(true)
+    setError(null)
+    setConversionError(null)
+    setConversionSuccess(null)
+
+    const validFiles = files.filter(isAcceptedSvg)
+    const invalidCount = files.length - validFiles.length
+
+    if (validFiles.length === 0) {
+      setSvgs((currentSvgs) => {
+        for (const svg of currentSvgs) {
+          URL.revokeObjectURL(svg.objectUrl)
+        }
+
+        return []
+      })
+      setError("No valid SVG files were selected.")
+      setIsLoading(false)
       return
     }
 
-    setSelectedScale("1")
-    setOutputWidthInput(String(Math.round(svg.width)))
+    try {
+      const parsedSvgs = await Promise.all(validFiles.map(parseSvgFile))
+
+      setSvgs((currentSvgs) => {
+        for (const svg of currentSvgs) {
+          URL.revokeObjectURL(svg.objectUrl)
+        }
+
+        return parsedSvgs
+      })
+
+      const firstSvg = parsedSvgs[0]
+
+      if (firstSvg) {
+        setSelectedScale("1")
+        setOutputWidthInput(String(Math.round(firstSvg.width)))
+      }
+
+      if (invalidCount > 0) {
+        setError(
+          `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only SVG files are supported here.`
+        )
+      }
+    } catch {
+      setSvgs((currentSvgs) => {
+        for (const svg of currentSvgs) {
+          URL.revokeObjectURL(svg.objectUrl)
+        }
+
+        return []
+      })
+      setError("We couldn't read those SVG files. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const handleMarkupPaste = React.useCallback(async (content: string) => {
+    setIsLoading(true)
+    setError(null)
     setConversionError(null)
     setConversionSuccess(null)
-  }, [svg])
 
-  const outputWidth = svg ? getOutputWidth(outputWidthInput, svg.width) : 0
-  const outputHeight = svg
-    ? Math.max(1, Math.round(outputWidth / svg.aspectRatio))
-    : 0
+    try {
+      const pastedSvg = await parseSvgContent(
+        content,
+        "pasted-artwork.svg",
+        "image/svg+xml",
+        new Blob([content]).size
+      )
+
+      setSvgs((currentSvgs) => {
+        for (const svg of currentSvgs) {
+          URL.revokeObjectURL(svg.objectUrl)
+        }
+
+        return [pastedSvg]
+      })
+      setSelectedScale("1")
+      setOutputWidthInput(String(Math.round(pastedSvg.width)))
+    } catch {
+      setError("We couldn't read that SVG. Please try another file.")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    const onPaste = (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items
+
+      if (!items) {
+        return
+      }
+
+      for (const item of Array.from(items)) {
+        if (item.type !== "image/svg+xml") {
+          continue
+        }
+
+        const file = item.getAsFile()
+
+        if (!file) {
+          continue
+        }
+
+        event.preventDefault()
+        void handleFilesSelect([file])
+        return
+      }
+
+      const markup = getSvgMarkupFromClipboard(event)
+
+      if (!markup) {
+        return
+      }
+
+      event.preventDefault()
+      void handleMarkupPaste(markup)
+    }
+
+    document.addEventListener("paste", onPaste)
+
+    return () => {
+      document.removeEventListener("paste", onPaste)
+    }
+  }, [handleFilesSelect, handleMarkupPaste])
+
+  if (svgs.length === 0) {
+    return (
+      <FileDropzone
+        title="Turn SVG artwork into PNG files"
+        description="Choose one SVG or a whole batch, keep a shared export width, and download PNGs entirely in the browser."
+        accept=".svg,image/svg+xml"
+        helperText="Bulk upload is supported here. Paste works for a copied SVG file or raw SVG markup."
+        isLoading={isLoading}
+        error={error}
+        supportsPaste
+        multiple
+        onFilesSelect={handleFilesSelect}
+      />
+    )
+  }
+
+  const firstSvg = svgs[0]!
+  const outputWidth = getOutputWidth(outputWidthInput, firstSvg.width)
+  const outputHeight = Math.max(
+    1,
+    Math.round(outputWidth / firstSvg.aspectRatio)
+  )
+  const totalFileSize = svgs.reduce((sum, svg) => sum + svg.fileSize, 0)
 
   const handleScaleChange = (value: string) => {
-    if (!svg || !value) {
+    if (!firstSvg || !value) {
       return
     }
 
     setConversionError(null)
     setConversionSuccess(null)
     setSelectedScale(value)
-    setOutputWidthInput(String(Math.round(svg.width * Number(value))))
+    setOutputWidthInput(String(Math.round(firstSvg.width * Number(value))))
   }
 
   const handleWidthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,53 +339,39 @@ export function SvgToPngTool() {
     setOutputWidthInput(event.target.value)
   }
 
-  const handleConvert = async () => {
-    if (!svg) {
-      return
-    }
-
+  const handleConvertAll = async () => {
     setIsConverting(true)
     setConversionError(null)
     setConversionSuccess(null)
 
     try {
-      const blob = await rasterizeSvgToPng(
-        svg.content,
-        outputWidth,
-        outputHeight
-      )
-      const fileName =
-        Math.round(svg.width) === outputWidth
-          ? replaceFileExtension(svg.fileName, ".png")
-          : replaceFileExtension(svg.fileName, `-${outputWidth}w.png`)
+      for (const svg of svgs) {
+        const svgWidth = selectedScale
+          ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
+          : outputWidth
+        const svgHeight = Math.max(1, Math.round(svgWidth / svg.aspectRatio))
+        const blob = await rasterizeSvgToPng(svg.content, svgWidth, svgHeight)
+        const fileName =
+          Math.round(svg.width) === svgWidth
+            ? replaceFileExtension(svg.fileName, ".png")
+            : replaceFileExtension(svg.fileName, `-${svgWidth}w.png`)
 
-      downloadBlob(blob, fileName)
-      setConversionSuccess("PNG download started successfully.")
+        downloadBlob(blob, fileName)
+      }
+
+      setConversionSuccess(
+        `${svgs.length} PNG download${svgs.length === 1 ? "" : "s"} started successfully.`
+      )
     } catch (caughtError) {
       const message =
         caughtError instanceof Error
           ? caughtError.message
-          : "Conversion failed. Please try another SVG."
+          : "Conversion failed. Please try another SVG batch."
 
       setConversionError(message)
     } finally {
       setIsConverting(false)
     }
-  }
-
-  if (!svg) {
-    return (
-      <FileDropzone
-        title="Turn SVG artwork into PNG files"
-        description="Upload an SVG, inspect the natural size, choose a larger or custom width, and export a PNG entirely in the browser."
-        accept=".svg,image/svg+xml"
-        helperText="Paste works for copied SVG files and raw SVG markup too."
-        isLoading={isLoading}
-        error={error}
-        supportsPaste
-        onFileSelect={selectFile}
-      />
-    )
   }
 
   return (
@@ -158,16 +381,16 @@ export function SvgToPngTool() {
           SVG to PNG
         </Badge>
         <CardTitle className="text-2xl tracking-tight">
-          Scale your SVG and export a crisp PNG
+          Rasterize a whole SVG batch at once
         </CardTitle>
         <CardDescription>
-          We preserve the SVG aspect ratio and rasterize it locally at the
-          output size you choose.
+          Use a shared export width or a scale preset, then download PNGs for
+          every selected SVG directly from the browser.
         </CardDescription>
         <CardAction>
           <Button variant="outline" onClick={clear}>
             <RefreshCcw data-icon="inline-start" />
-            Choose another file
+            Choose another batch
           </Button>
         </CardAction>
       </CardHeader>
@@ -180,19 +403,18 @@ export function SvgToPngTool() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- local SVG object URLs are previewed directly in the browser */}
             <img
-              src={svg.objectUrl}
-              alt={`Preview of ${svg.fileName}`}
+              src={firstSvg.objectUrl}
+              alt={`Preview of ${firstSvg.fileName}`}
               className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
             />
           </CheckerboardSurface>
 
           <Alert>
             <ScanSearch />
-            <AlertTitle>Preview</AlertTitle>
+            <AlertTitle>Batch preview</AlertTitle>
             <AlertDescription>
-              Some SVGs with external assets or unsupported filters may render
-              differently once rasterized, but standard icons and illustrations
-              should export cleanly.
+              Showing the first file in the batch. The current width controls
+              apply to every selected SVG.
             </AlertDescription>
           </Alert>
         </div>
@@ -200,8 +422,8 @@ export function SvgToPngTool() {
         <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
           <CardHeader>
             <CardTitle>Export settings</CardTitle>
-            <CardDescription className="break-all">
-              {svg.fileName}
+            <CardDescription>
+              {svgs.length} file{svgs.length === 1 ? "" : "s"} selected
             </CardDescription>
           </CardHeader>
 
@@ -209,29 +431,27 @@ export function SvgToPngTool() {
             <div className="grid grid-cols-2 gap-3">
               <Card size="sm">
                 <CardHeader>
-                  <CardDescription>Original width</CardDescription>
+                  <CardDescription>Files</CardDescription>
+                  <CardTitle className="text-lg">{svgs.length}</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Total size</CardDescription>
                   <CardTitle className="text-lg">
-                    {Math.round(svg.width)}px
+                    {formatFileSize(totalFileSize)}
                   </CardTitle>
                 </CardHeader>
               </Card>
               <Card size="sm">
                 <CardHeader>
-                  <CardDescription>Original height</CardDescription>
-                  <CardTitle className="text-lg">
-                    {Math.round(svg.height)}px
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Output width</CardDescription>
+                  <CardDescription>Preview width</CardDescription>
                   <CardTitle className="text-lg">{outputWidth}px</CardTitle>
                 </CardHeader>
               </Card>
               <Card size="sm">
                 <CardHeader>
-                  <CardDescription>Output height</CardDescription>
+                  <CardDescription>Preview height</CardDescription>
                   <CardTitle className="text-lg">{outputHeight}px</CardTitle>
                 </CardHeader>
               </Card>
@@ -263,13 +483,15 @@ export function SvgToPngTool() {
                     ))}
                   </ToggleGroup>
                   <FieldDescription>
-                    Quick scaling for common export sizes.
+                    Presets scale each SVG from its own natural width.
                   </FieldDescription>
                 </FieldContent>
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="svg-output-width">Custom width</FieldLabel>
+                <FieldLabel htmlFor="svg-output-width">
+                  Shared custom width
+                </FieldLabel>
                 <FieldContent>
                   <Input
                     id="svg-output-width"
@@ -281,25 +503,54 @@ export function SvgToPngTool() {
                     inputMode="numeric"
                   />
                   <FieldDescription>
-                    Height updates automatically to preserve the original aspect
-                    ratio. File size: {formatFileSize(svg.fileSize)}.
+                    When you type a width, every selected SVG exports at that
+                    width while preserving its own aspect ratio.
                   </FieldDescription>
                 </FieldContent>
               </Field>
             </FieldGroup>
 
+            <div className="flex max-h-72 flex-col gap-2 overflow-auto pr-1">
+              {svgs.map((svg) => {
+                const svgWidth = selectedScale
+                  ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
+                  : outputWidth
+                const svgHeight = Math.max(
+                  1,
+                  Math.round(svgWidth / svg.aspectRatio)
+                )
+
+                return (
+                  <Card key={svg.objectUrl} size="sm">
+                    <CardHeader>
+                      <CardTitle className="truncate text-base">
+                        {svg.fileName}
+                      </CardTitle>
+                      <CardDescription>
+                        {Math.round(svg.width)}px x {Math.round(svg.height)}px
+                        {" -> "}
+                        {svgWidth}px x {svgHeight}px,{" "}
+                        {formatFileSize(svg.fileSize)}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                )
+              })}
+            </div>
+
             <Alert>
               <Download />
               <AlertTitle>Output</AlertTitle>
               <AlertDescription>
-                Exports a PNG at {outputWidth}px by {outputHeight}px.
+                Every SVG downloads as a PNG with its own aspect ratio
+                preserved.
               </AlertDescription>
             </Alert>
 
             {conversionSuccess ? (
               <StatusAlert
                 status="success"
-                title="Download ready"
+                title="Downloads ready"
                 message={conversionSuccess}
               />
             ) : null}
@@ -318,10 +569,12 @@ export function SvgToPngTool() {
               size="lg"
               className="w-full"
               disabled={isConverting}
-              onClick={handleConvert}
+              onClick={handleConvertAll}
             >
               <Download data-icon="inline-start" />
-              {isConverting ? "Exporting PNG..." : "Download PNG"}
+              {isConverting
+                ? "Exporting PNGs..."
+                : `Download ${svgs.length} PNG${svgs.length === 1 ? "" : "s"}`}
             </Button>
           </CardFooter>
         </Card>

@@ -19,11 +19,13 @@ type FileDropzoneProps = {
   title: string
   description: string
   accept: string
-  onFileSelect: (file: File) => void | Promise<void>
+  onFileSelect?: (file: File) => void | Promise<void>
+  onFilesSelect?: (files: File[]) => void | Promise<void>
   isLoading?: boolean
   error?: string | null
   helperText?: string
   supportsPaste?: boolean
+  multiple?: boolean
   className?: string
 }
 
@@ -32,24 +34,41 @@ export function FileDropzone({
   description,
   accept,
   onFileSelect,
+  onFilesSelect,
   isLoading = false,
   error,
   helperText,
   supportsPaste = false,
+  multiple = false,
   className,
 }: FileDropzoneProps) {
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  const handleInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-
-    if (!file) {
+  const handleSelectedFiles = async (files: File[]) => {
+    if (files.length === 0) {
       return
     }
 
-    await onFileSelect(file)
+    if (multiple && onFilesSelect) {
+      await onFilesSelect(files)
+      return
+    }
+
+    if (onFileSelect) {
+      await onFileSelect(files[0]!)
+    }
+  }
+
+  const handleInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+
+    if (files.length === 0) {
+      return
+    }
+
+    await handleSelectedFiles(files)
     event.target.value = ""
   }
 
@@ -111,11 +130,13 @@ export function FileDropzone({
           onDrop={(event) => {
             event.preventDefault()
             setIsDragging(false)
-            const file = event.dataTransfer.files?.[0]
-            if (!file) {
+            const files = Array.from(event.dataTransfer.files ?? [])
+
+            if (files.length === 0) {
               return
             }
-            void onFileSelect(file)
+
+            void handleSelectedFiles(files)
           }}
         >
           <div className="rounded-3xl border border-border/80 bg-card p-4 shadow-sm transition group-hover:scale-[1.02]">
@@ -127,7 +148,9 @@ export function FileDropzone({
           </div>
           <div className="flex flex-col gap-2">
             <p className="text-base font-medium">
-              Drop a file here or choose one from your device
+              {multiple
+                ? "Drop files here or choose them from your device"
+                : "Drop a file here or choose one from your device"}
             </p>
             <p className="text-sm text-muted-foreground">
               Accepted:{" "}
@@ -154,7 +177,7 @@ export function FileDropzone({
             }}
           >
             <ImageUp data-icon="inline-start" />
-            Choose File
+            {multiple ? "Choose Files" : "Choose File"}
           </Button>
         </label>
 
@@ -163,6 +186,7 @@ export function FileDropzone({
           id={inputId}
           type="file"
           accept={accept}
+          multiple={multiple}
           className="sr-only"
           onChange={handleInputChange}
         />
