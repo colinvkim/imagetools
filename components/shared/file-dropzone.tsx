@@ -144,7 +144,15 @@ export function FileDropzone({
               <Badge variant="secondary">Paste from clipboard</Badge>
             ) : null}
           </div>
-          <Button type="button" size="lg" className="mt-2">
+          <Button
+            type="button"
+            size="lg"
+            className="mt-2"
+            onClick={(event) => {
+              event.preventDefault()
+              inputRef.current?.click()
+            }}
+          >
             <ImageUp data-icon="inline-start" />
             Choose File
           </Button>
