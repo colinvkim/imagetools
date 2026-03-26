@@ -59,35 +59,47 @@ export default function Page() {
             </Card>
           </Link>
 
-          <Card className="rounded-[1.75rem] border-border/70 bg-card/70">
-            <CardHeader>
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                <CircleDashed className="size-5 text-muted-foreground" />
-              </div>
-              <CardTitle className="text-xl">Circle Crop</CardTitle>
-              <CardDescription className="leading-6">
-                Square crop first, then render as a transparent PNG circle.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Badge variant="secondary">Next up</Badge>
-            </CardFooter>
-          </Card>
+          <Link href="/circle-crop" className="group block">
+            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                    <CircleDashed className="size-5 text-primary" />
+                  </div>
+                  <Badge>Live</Badge>
+                </div>
+                <CardTitle className="text-xl">Circle Crop</CardTitle>
+                <CardDescription className="leading-6">
+                  Square crop first, then render a transparent PNG circle with a
+                  reusable editor flow.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter className="text-sm text-muted-foreground">
+                Open tool
+              </CardFooter>
+            </Card>
+          </Link>
 
-          <Card className="rounded-[1.75rem] border-border/70 bg-card/70">
-            <CardHeader>
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                <ScanFace className="size-5 text-muted-foreground" />
-              </div>
-              <CardTitle className="text-xl">Rounded Corners</CardTitle>
-              <CardDescription className="leading-6">
-                Apply preset or custom border radii with a reusable editor flow.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Badge variant="secondary">Planned</Badge>
-            </CardFooter>
-          </Card>
+          <Link href="/rounded-corners" className="group block">
+            <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                    <ScanFace className="size-5 text-primary" />
+                  </div>
+                  <Badge>Live</Badge>
+                </div>
+                <CardTitle className="text-xl">Rounded Corners</CardTitle>
+                <CardDescription className="leading-6">
+                  Apply preset or custom border radii with the same reusable
+                  crop editor flow.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter className="text-sm text-muted-foreground">
+                Open tool
+              </CardFooter>
+            </Card>
+          </Link>
 
           <Link href="/svg-to-png" className="group block">
             <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
