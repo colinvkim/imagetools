@@ -10,6 +10,7 @@ export const SITE_KEYWORDS = [
   "svg to png",
   "circle crop",
   "rounded corners",
+  "resize image",
   "browser image editor",
 ] as const
 

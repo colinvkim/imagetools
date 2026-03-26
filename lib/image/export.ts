@@ -33,6 +33,16 @@ export function replaceFileExtension(fileName: string, extension: string) {
   return `${fileName.slice(0, lastDotIndex)}${normalizedExtension}`
 }
 
+export function getFileNameWithoutExtension(fileName: string) {
+  const lastDotIndex = fileName.lastIndexOf(".")
+
+  if (lastDotIndex === -1) {
+    return fileName
+  }
+
+  return fileName.slice(0, lastDotIndex)
+}
+
 export function downloadBlob(blob: Blob, fileName: string) {
   const objectUrl = URL.createObjectURL(blob)
   const link = document.createElement("a")

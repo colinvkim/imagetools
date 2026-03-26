@@ -1,5 +1,6 @@
 import {
   CircleDashed,
+  Expand,
   FileImage,
   type LucideIcon,
   ScanFace,
@@ -15,6 +16,14 @@ export type ToolDefinition = {
 }
 
 export const TOOL_DEFINITIONS: ToolDefinition[] = [
+  {
+    href: "/resize-image",
+    title: "Resize Image",
+    description:
+      "Resize PNG, JPG, and WebP images with exact dimensions and quick scale presets.",
+    shortDescription: "Resize raster images with precise dimensions.",
+    icon: Expand,
+  },
   {
     href: "/webp-to-png",
     title: "WebP to PNG",

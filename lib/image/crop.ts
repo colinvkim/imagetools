@@ -1,4 +1,8 @@
-import { canvasToBlob, downloadBlob } from "@/lib/image/export"
+import {
+  canvasToBlob,
+  downloadBlob,
+  getFileNameWithoutExtension,
+} from "@/lib/image/export"
 import { loadImageElement } from "@/lib/image/load-image"
 
 export type SquareCrop = {
@@ -105,7 +109,7 @@ export async function exportCircleCrop(params: {
   )
 
   const blob = await canvasToBlob(canvas, "image/png")
-  const baseFileName = params.fileName.replace(/\.[^.]+$/, "")
+  const baseFileName = getFileNameWithoutExtension(params.fileName)
   downloadBlob(blob, `${baseFileName || params.fileName}-circle.png`)
 }
 
@@ -165,6 +169,6 @@ export async function exportRoundedCrop(params: {
   )
 
   const blob = await canvasToBlob(canvas, "image/png")
-  const baseFileName = params.fileName.replace(/\.[^.]+$/, "")
+  const baseFileName = getFileNameWithoutExtension(params.fileName)
   downloadBlob(blob, `${baseFileName || params.fileName}-rounded.png`)
 }

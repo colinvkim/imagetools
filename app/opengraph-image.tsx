@@ -119,6 +119,7 @@ export default function OpenGraphImage() {
             }}
           >
             {[
+              "Resize Image",
               "WebP to PNG",
               "SVG to PNG",
               "Circle Crop",

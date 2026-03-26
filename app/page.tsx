@@ -22,16 +22,18 @@ import { createPageMetadata } from "@/lib/site-metadata"
 export const metadata: Metadata = createPageMetadata({
   title: "imagetools | free, client-side utilities",
   description:
-    "Convert files, circle-crop images, add rounded corners, and rasterize assets directly in your browser.",
+    "Resize images, convert files, circle-crop images, add rounded corners, and rasterize assets directly in your browser.",
 })
 
 export default function Page() {
+  const toolCountLabel = `${TOOL_DEFINITIONS.length} tools live`
+
   return (
     <main>
       <PageShell className="gap-10 py-10 sm:py-12">
         <section className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <Badge variant="outline">4 tools live</Badge>
+            <Badge variant="outline">{toolCountLabel}</Badge>
             <Badge variant="outline">100% client-side</Badge>
           </div>
 
@@ -99,7 +101,8 @@ export default function Page() {
               Live tools
             </Badge>
             <h2 className="text-2xl font-semibold tracking-tight">
-              Four focused utilities, one consistent workflow
+              {TOOL_DEFINITIONS.length} focused utilities, one consistent
+              workflow
             </h2>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
               Every tool follows the same idea: drop in a file, preview the
