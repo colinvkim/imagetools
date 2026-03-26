@@ -4,6 +4,7 @@ import * as React from "react"
 import { Download, RefreshCcw, ScanSearch } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
+import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -28,6 +29,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
@@ -129,132 +131,97 @@ async function parseSvgFile(file: File) {
 }
 
 export function SvgToPngTool() {
-  const [svgs, setSvgs] = React.useState<UploadedSvg[]>([])
-  const [error, setError] = React.useState<string | null>(null)
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [isConverting, setIsConverting] = React.useState(false)
-  const [conversionError, setConversionError] = React.useState<string | null>(
-    null
-  )
-  const [conversionSuccess, setConversionSuccess] = React.useState<
-    string | null
-  >(null)
+  const {
+    items: svgs,
+    error,
+    isLoading,
+    isRunningAction: isConverting,
+    actionError: conversionError,
+    actionSuccess: conversionSuccess,
+    setError,
+    setIsLoading,
+    replaceItems,
+    clear,
+    resetActionState,
+    runAction,
+  } = useObjectUrlBatch<UploadedSvg>()
   const [selectedScale, setSelectedScale] = React.useState("1")
   const [outputWidthInput, setOutputWidthInput] = React.useState("")
 
-  React.useEffect(() => {
-    return () => {
-      for (const svg of svgs) {
-        URL.revokeObjectURL(svg.objectUrl)
-      }
-    }
-  }, [svgs])
+  const handleFilesSelect = React.useCallback(
+    async (files: File[]) => {
+      setIsLoading(true)
+      setError(null)
+      resetActionState()
 
-  const clear = React.useCallback(() => {
-    setSvgs((currentSvgs) => {
-      for (const svg of currentSvgs) {
-        URL.revokeObjectURL(svg.objectUrl)
+      const validFiles = files.filter(isAcceptedSvg)
+      const invalidCount = files.length - validFiles.length
+
+      if (validFiles.length === 0) {
+        replaceItems([])
+        setError("No valid SVG files were selected.")
+        setIsLoading(false)
+        return
       }
 
-      return []
-    })
-    setError(null)
-    setIsLoading(false)
-    setIsConverting(false)
-    setConversionError(null)
-    setConversionSuccess(null)
+      try {
+        const parsedSvgs = await Promise.all(validFiles.map(parseSvgFile))
+
+        replaceItems(parsedSvgs)
+
+        const firstSvg = parsedSvgs[0]
+
+        if (firstSvg) {
+          setSelectedScale("1")
+          setOutputWidthInput(String(Math.round(firstSvg.width)))
+        }
+
+        if (invalidCount > 0) {
+          setError(
+            `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only SVG files are supported here.`
+          )
+        }
+      } catch {
+        replaceItems([])
+        setError("We couldn't read those SVG files. Please try again.")
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [replaceItems, resetActionState, setError, setIsLoading]
+  )
+
+  const handleMarkupPaste = React.useCallback(
+    async (content: string) => {
+      setIsLoading(true)
+      setError(null)
+      resetActionState()
+
+      try {
+        const pastedSvg = await parseSvgContent(
+          content,
+          "pasted-artwork.svg",
+          "image/svg+xml",
+          new Blob([content]).size
+        )
+
+        replaceItems([pastedSvg])
+        setSelectedScale("1")
+        setOutputWidthInput(String(Math.round(pastedSvg.width)))
+      } catch {
+        setError("We couldn't read that SVG. Please try another file.")
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [replaceItems, resetActionState, setError, setIsLoading]
+  )
+
+  const handleClear = React.useCallback(() => {
+    clear()
     setSelectedScale("1")
     setOutputWidthInput("")
-  }, [])
-
-  const handleFilesSelect = React.useCallback(async (files: File[]) => {
-    setIsLoading(true)
-    setError(null)
-    setConversionError(null)
-    setConversionSuccess(null)
-
-    const validFiles = files.filter(isAcceptedSvg)
-    const invalidCount = files.length - validFiles.length
-
-    if (validFiles.length === 0) {
-      setSvgs((currentSvgs) => {
-        for (const svg of currentSvgs) {
-          URL.revokeObjectURL(svg.objectUrl)
-        }
-
-        return []
-      })
-      setError("No valid SVG files were selected.")
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      const parsedSvgs = await Promise.all(validFiles.map(parseSvgFile))
-
-      setSvgs((currentSvgs) => {
-        for (const svg of currentSvgs) {
-          URL.revokeObjectURL(svg.objectUrl)
-        }
-
-        return parsedSvgs
-      })
-
-      const firstSvg = parsedSvgs[0]
-
-      if (firstSvg) {
-        setSelectedScale("1")
-        setOutputWidthInput(String(Math.round(firstSvg.width)))
-      }
-
-      if (invalidCount > 0) {
-        setError(
-          `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only SVG files are supported here.`
-        )
-      }
-    } catch {
-      setSvgs((currentSvgs) => {
-        for (const svg of currentSvgs) {
-          URL.revokeObjectURL(svg.objectUrl)
-        }
-
-        return []
-      })
-      setError("We couldn't read those SVG files. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  const handleMarkupPaste = React.useCallback(async (content: string) => {
-    setIsLoading(true)
-    setError(null)
-    setConversionError(null)
-    setConversionSuccess(null)
-
-    try {
-      const pastedSvg = await parseSvgContent(
-        content,
-        "pasted-artwork.svg",
-        "image/svg+xml",
-        new Blob([content]).size
-      )
-
-      setSvgs((currentSvgs) => {
-        for (const svg of currentSvgs) {
-          URL.revokeObjectURL(svg.objectUrl)
-        }
-
-        return [pastedSvg]
-      })
-      setSelectedScale("1")
-      setOutputWidthInput(String(Math.round(pastedSvg.width)))
-    } catch {
-      setError("We couldn't read that SVG. Please try another file.")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+  }, [clear])
 
   React.useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
@@ -326,52 +293,37 @@ export function SvgToPngTool() {
       return
     }
 
-    setConversionError(null)
-    setConversionSuccess(null)
+    resetActionState()
     setSelectedScale(value)
     setOutputWidthInput(String(Math.round(firstSvg.width * Number(value))))
   }
 
   const handleWidthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setConversionError(null)
-    setConversionSuccess(null)
+    resetActionState()
     setSelectedScale("")
     setOutputWidthInput(event.target.value)
   }
 
   const handleConvertAll = async () => {
-    setIsConverting(true)
-    setConversionError(null)
-    setConversionSuccess(null)
+    await runAction({
+      action: async () => {
+        for (const svg of svgs) {
+          const svgWidth = selectedScale
+            ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
+            : outputWidth
+          const svgHeight = Math.max(1, Math.round(svgWidth / svg.aspectRatio))
+          const blob = await rasterizeSvgToPng(svg.content, svgWidth, svgHeight)
+          const fileName =
+            Math.round(svg.width) === svgWidth
+              ? replaceFileExtension(svg.fileName, ".png")
+              : replaceFileExtension(svg.fileName, `-${svgWidth}w.png`)
 
-    try {
-      for (const svg of svgs) {
-        const svgWidth = selectedScale
-          ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
-          : outputWidth
-        const svgHeight = Math.max(1, Math.round(svgWidth / svg.aspectRatio))
-        const blob = await rasterizeSvgToPng(svg.content, svgWidth, svgHeight)
-        const fileName =
-          Math.round(svg.width) === svgWidth
-            ? replaceFileExtension(svg.fileName, ".png")
-            : replaceFileExtension(svg.fileName, `-${svgWidth}w.png`)
-
-        downloadBlob(blob, fileName)
-      }
-
-      setConversionSuccess(
-        `${svgs.length} PNG download${svgs.length === 1 ? "" : "s"} started successfully.`
-      )
-    } catch (caughtError) {
-      const message =
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Conversion failed. Please try another SVG batch."
-
-      setConversionError(message)
-    } finally {
-      setIsConverting(false)
-    }
+          downloadBlob(blob, fileName)
+        }
+      },
+      successMessage: `${svgs.length} PNG download${svgs.length === 1 ? "" : "s"} started successfully.`,
+      fallbackErrorMessage: "Conversion failed. Please try another SVG batch.",
+    })
   }
 
   return (
@@ -388,7 +340,7 @@ export function SvgToPngTool() {
           every selected SVG directly from the browser.
         </CardDescription>
         <CardAction>
-          <Button variant="outline" onClick={clear}>
+          <Button variant="outline" onClick={handleClear}>
             <RefreshCcw data-icon="inline-start" />
             Choose another batch
           </Button>
@@ -510,8 +462,11 @@ export function SvgToPngTool() {
               </Field>
             </FieldGroup>
 
-            <div className="flex max-h-72 flex-col gap-2 overflow-auto pr-1">
-              {svgs.map((svg) => {
+            <BatchFileList
+              items={svgs}
+              getKey={(svg) => svg.objectUrl}
+              getTitle={(svg) => svg.fileName}
+              getDescription={(svg) => {
                 const svgWidth = selectedScale
                   ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
                   : outputWidth
@@ -520,23 +475,9 @@ export function SvgToPngTool() {
                   Math.round(svgWidth / svg.aspectRatio)
                 )
 
-                return (
-                  <Card key={svg.objectUrl} size="sm">
-                    <CardHeader>
-                      <CardTitle className="truncate text-base">
-                        {svg.fileName}
-                      </CardTitle>
-                      <CardDescription>
-                        {Math.round(svg.width)}px x {Math.round(svg.height)}px
-                        {" -> "}
-                        {svgWidth}px x {svgHeight}px,{" "}
-                        {formatFileSize(svg.fileSize)}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                )
-              })}
-            </div>
+                return `${Math.round(svg.width)}px x ${Math.round(svg.height)}px -> ${svgWidth}px x ${svgHeight}px, ${formatFileSize(svg.fileSize)}`
+              }}
+            />
 
             <Alert>
               <Download />

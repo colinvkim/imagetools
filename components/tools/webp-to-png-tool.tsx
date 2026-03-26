@@ -4,6 +4,7 @@ import * as React from "react"
 import { Download, Files, RefreshCcw } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
+import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -19,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
 import {
   canvasToBlob,
   downloadBlob,
@@ -79,57 +81,31 @@ async function exportWebpFileAsPng(image: UploadedWebp) {
 }
 
 export function WebpToPngTool() {
-  const [images, setImages] = React.useState<UploadedWebp[]>([])
-  const [error, setError] = React.useState<string | null>(null)
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [isConverting, setIsConverting] = React.useState(false)
-  const [conversionError, setConversionError] = React.useState<string | null>(
-    null
-  )
-  const [conversionSuccess, setConversionSuccess] = React.useState<
-    string | null
-  >(null)
-
-  React.useEffect(() => {
-    return () => {
-      for (const image of images) {
-        URL.revokeObjectURL(image.objectUrl)
-      }
-    }
-  }, [images])
-
-  const clear = React.useCallback(() => {
-    setImages((currentImages) => {
-      for (const image of currentImages) {
-        URL.revokeObjectURL(image.objectUrl)
-      }
-
-      return []
-    })
-    setError(null)
-    setIsLoading(false)
-    setIsConverting(false)
-    setConversionError(null)
-    setConversionSuccess(null)
-  }, [])
+  const {
+    items: images,
+    error,
+    isLoading,
+    isRunningAction: isConverting,
+    actionError: conversionError,
+    actionSuccess: conversionSuccess,
+    setError,
+    setIsLoading,
+    replaceItems,
+    clear,
+    resetActionState,
+    runAction,
+  } = useObjectUrlBatch<UploadedWebp>()
 
   const handleFilesSelect = React.useCallback(async (files: File[]) => {
     setIsLoading(true)
     setError(null)
-    setConversionError(null)
-    setConversionSuccess(null)
+    resetActionState()
 
     const validFiles = files.filter(isAcceptedWebp)
     const invalidCount = files.length - validFiles.length
 
     if (validFiles.length === 0) {
-      setImages((currentImages) => {
-        for (const image of currentImages) {
-          URL.revokeObjectURL(image.objectUrl)
-        }
-
-        return []
-      })
+      replaceItems([])
       setError("No valid WebP files were selected.")
       setIsLoading(false)
       return
@@ -138,13 +114,7 @@ export function WebpToPngTool() {
     try {
       const parsedImages = await Promise.all(validFiles.map(parseWebpFile))
 
-      setImages((currentImages) => {
-        for (const image of currentImages) {
-          URL.revokeObjectURL(image.objectUrl)
-        }
-
-        return parsedImages
-      })
+      replaceItems(parsedImages)
 
       if (invalidCount > 0) {
         setError(
@@ -152,13 +122,7 @@ export function WebpToPngTool() {
         )
       }
     } catch (caughtError) {
-      setImages((currentImages) => {
-        for (const image of currentImages) {
-          URL.revokeObjectURL(image.objectUrl)
-        }
-
-        return []
-      })
+      replaceItems([])
       setError(
         caughtError instanceof Error
           ? caughtError.message
@@ -167,35 +131,22 @@ export function WebpToPngTool() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [replaceItems, resetActionState, setError, setIsLoading])
 
   const handleConvertAll = async () => {
     if (images.length === 0) {
       return
     }
 
-    setIsConverting(true)
-    setConversionError(null)
-    setConversionSuccess(null)
-
-    try {
-      for (const image of images) {
-        await exportWebpFileAsPng(image)
-      }
-
-      setConversionSuccess(
-        `${images.length} PNG download${images.length === 1 ? "" : "s"} started successfully.`
-      )
-    } catch (caughtError) {
-      const message =
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Conversion failed. Please try another batch."
-
-      setConversionError(message)
-    } finally {
-      setIsConverting(false)
-    }
+    await runAction({
+      action: async () => {
+        for (const image of images) {
+          await exportWebpFileAsPng(image)
+        }
+      },
+      successMessage: `${images.length} PNG download${images.length === 1 ? "" : "s"} started successfully.`,
+      fallbackErrorMessage: "Conversion failed. Please try another batch.",
+    })
   }
 
   if (images.length === 0) {
@@ -305,21 +256,14 @@ export function WebpToPngTool() {
 
             <Separator />
 
-            <div className="flex max-h-72 flex-col gap-2 overflow-auto pr-1">
-              {images.map((image) => (
-                <Card key={image.objectUrl} size="sm">
-                  <CardHeader>
-                    <CardTitle className="truncate text-base">
-                      {image.fileName}
-                    </CardTitle>
-                    <CardDescription>
-                      {image.width}px x {image.height}px,{" "}
-                      {formatFileSize(image.fileSize)}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
+            <BatchFileList
+              items={images}
+              getKey={(image) => image.objectUrl}
+              getTitle={(image) => image.fileName}
+              getDescription={(image) =>
+                `${image.width}px x ${image.height}px, ${formatFileSize(image.fileSize)}`
+              }
+            />
 
             <Alert>
               <Download />
