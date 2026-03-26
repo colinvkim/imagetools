@@ -2,6 +2,7 @@ import "./globals.css"
 import { SiteFooter } from "@/components/site/site-footer"
 import { SiteHeader } from "@/components/site/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata = {
   title: {
@@ -24,6 +25,7 @@ export default function RootLayout({
           <div className="min-h-svh bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_top_right,rgba(45,212,191,0.12),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.08),transparent_26%),linear-gradient(to_bottom,rgba(255,255,255,0.98),rgba(248,250,252,0.96))] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,116,144,0.28),transparent_24%),radial-gradient(circle_at_top_right,rgba(15,118,110,0.24),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.14),transparent_24%),linear-gradient(to_bottom,rgba(2,6,23,0.98),rgba(15,23,42,0.96))]">
             <SiteHeader />
             {children}
+            <Analytics />
             <SiteFooter />
           </div>
         </ThemeProvider>
