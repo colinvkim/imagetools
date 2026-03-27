@@ -6,18 +6,15 @@ import { Download, Lock, LockOpen, RefreshCcw, Scaling } from "lucide-react"
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+  ToolPrimaryFooter,
+  ToolSettingsCard,
+  ToolStatCard,
+  ToolStatGrid,
+  ToolWorkspace,
+} from "@/components/tools/shared/tool-workspace"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldContent,
@@ -134,7 +131,8 @@ export function ResizeImageTool() {
         title="Resize images without leaving the browser"
         description="Upload or paste a PNG, JPG, or WebP image, set the dimensions you want, and export a resized version locally."
         accept={RASTER_IMAGE_ACCEPT}
-        helperText="Aspect ratio stays locked by default, and paste support works here too."
+        acceptedFormatsLabel="PNG, JPG, or WebP"
+        helperText="Aspect ratio stays locked by default."
         isLoading={isLoading}
         error={error}
         supportsPaste
@@ -253,28 +251,14 @@ export function ResizeImageTool() {
   }
 
   return (
-    <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
-      <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
-        <Badge variant="outline" className="self-start">
-          Resize Image
-        </Badge>
-        <CardTitle className="text-2xl tracking-tight">
-          Resize an image with precise dimensions
-        </CardTitle>
-        <CardDescription>
-          Adjust width and height, keep the aspect ratio locked if you want, and
-          export a resized image directly in the browser.
-        </CardDescription>
-        <CardAction>
-          <Button variant="outline" onClick={clear}>
-            <RefreshCcw data-icon="inline-start" />
-            Choose another file
-          </Button>
-        </CardAction>
-      </CardHeader>
-
-      <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.95fr)]">
-        <div className="flex flex-col gap-4">
+    <ToolWorkspace
+      badge="Resize Image"
+      title="Resize an image with precise dimensions"
+      description="Adjust width and height, keep the aspect ratio locked if you want, and export a resized image directly in the browser."
+      onReset={clear}
+      resetIcon={<RefreshCcw data-icon="inline-start" />}
+      preview={
+        <>
           <ResizePreview
             imageUrl={image.objectUrl}
             width={outputWidth}
@@ -289,187 +273,165 @@ export function ResizeImageTool() {
               the original file format whenever the browser supports it.
             </AlertDescription>
           </Alert>
-        </div>
+        </>
+      }
+      settings={
+        <ToolSettingsCard
+          title="Resize settings"
+          fileName={image.fileName}
+          footer={
+            <ToolPrimaryFooter className="pt-0">
+              <Button
+                size="lg"
+                className="w-full"
+                disabled={isExporting}
+                onClick={handleExport}
+              >
+                <Download data-icon="inline-start" />
+                {isExporting
+                  ? "Exporting image..."
+                  : `Download ${exportConfig.label}`}
+              </Button>
+            </ToolPrimaryFooter>
+          }
+        >
+          <ToolStatGrid>
+            <ToolStatCard
+              label="Original size"
+              value={`${image.width} x ${image.height}`}
+            />
+            <ToolStatCard
+              label="Output size"
+              value={`${outputWidth} x ${outputHeight}`}
+            />
+            <ToolStatCard label="Format" value={exportConfig.label} />
+            <ToolStatCard
+              label="Input size"
+              value={formatFileSize(image.fileSize)}
+            />
+          </ToolStatGrid>
 
-        <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
-          <CardHeader>
-            <CardTitle>Resize settings</CardTitle>
-            <CardDescription className="break-all">
-              {image.fileName}
-            </CardDescription>
-          </CardHeader>
+          <Separator />
 
-          <CardContent className="flex flex-col gap-5">
-            <div className="grid grid-cols-2 gap-3">
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Original size</CardDescription>
-                  <CardTitle className="text-lg">
-                    {image.width} x {image.height}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Output size</CardDescription>
-                  <CardTitle className="text-lg">
-                    {outputWidth} x {outputHeight}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Format</CardDescription>
-                  <CardTitle className="text-lg">
-                    {exportConfig.label}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Input size</CardDescription>
-                  <CardTitle className="text-lg">
-                    {formatFileSize(image.fileSize)}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-            </div>
+          <FieldGroup>
+            <Field>
+              <FieldLabel>Scale presets</FieldLabel>
+              <FieldContent>
+                <ToggleGroup
+                  multiple={false}
+                  variant="outline"
+                  value={selectedScale ? [selectedScale] : []}
+                  onValueChange={(groupValue) =>
+                    handleScaleChange(groupValue[0] ?? "")
+                  }
+                  className="flex w-full flex-wrap gap-2"
+                >
+                  {SCALE_OPTIONS.map((option) => (
+                    <ToggleGroupItem
+                      key={option.value}
+                      value={option.value}
+                      className="min-w-16"
+                    >
+                      {option.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                <FieldDescription>
+                  Quick presets scale both dimensions from the original image.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
 
-            <Separator />
+            <Field>
+              <FieldLabel>Aspect ratio</FieldLabel>
+              <FieldContent>
+                <Toggle
+                  variant="outline"
+                  size="lg"
+                  pressed={isAspectLocked}
+                  onPressedChange={handleAspectLockChange}
+                  className="justify-start"
+                >
+                  {isAspectLocked ? (
+                    <Lock data-icon="inline-start" />
+                  ) : (
+                    <LockOpen data-icon="inline-start" />
+                  )}
+                  {isAspectLocked ? "Keep original ratio" : "Free resize"}
+                </Toggle>
+                <FieldDescription>
+                  When locked, changing one dimension updates the other
+                  automatically.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
 
-            <FieldGroup>
-              <Field>
-                <FieldLabel>Scale presets</FieldLabel>
-                <FieldContent>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={selectedScale ? [selectedScale] : []}
-                    onValueChange={(groupValue) =>
-                      handleScaleChange(groupValue[0] ?? "")
-                    }
-                    className="flex w-full flex-wrap gap-2"
-                  >
-                    {SCALE_OPTIONS.map((option) => (
-                      <ToggleGroupItem
-                        key={option.value}
-                        value={option.value}
-                        className="min-w-16"
-                      >
-                        {option.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                  <FieldDescription>
-                    Quick presets scale both dimensions from the original image.
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
+            <Field>
+              <FieldLabel htmlFor="resize-width">Width</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="resize-width"
+                  name="resize-width"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={widthInput}
+                  onChange={handleWidthChange}
+                  autoComplete="off"
+                  inputMode="numeric"
+                />
+              </FieldContent>
+            </Field>
 
-              <Field>
-                <FieldLabel>Aspect ratio</FieldLabel>
-                <FieldContent>
-                  <Toggle
-                    variant="outline"
-                    size="lg"
-                    pressed={isAspectLocked}
-                    onPressedChange={handleAspectLockChange}
-                    className="justify-start"
-                  >
-                    {isAspectLocked ? (
-                      <Lock data-icon="inline-start" />
-                    ) : (
-                      <LockOpen data-icon="inline-start" />
-                    )}
-                    {isAspectLocked ? "Keep original ratio" : "Free resize"}
-                  </Toggle>
-                  <FieldDescription>
-                    When locked, changing one dimension updates the other
-                    automatically.
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
+            <Field>
+              <FieldLabel htmlFor="resize-height">Height</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="resize-height"
+                  name="resize-height"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={heightInput}
+                  onChange={handleHeightChange}
+                  autoComplete="off"
+                  inputMode="numeric"
+                />
+                <FieldDescription>
+                  Exports as {exportConfig.label} at {outputWidth}px by{" "}
+                  {outputHeight}px.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
 
-              <Field>
-                <FieldLabel htmlFor="resize-width">Width</FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="resize-width"
-                    name="resize-width"
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={widthInput}
-                    onChange={handleWidthChange}
-                    autoComplete="off"
-                    inputMode="numeric"
-                  />
-                </FieldContent>
-              </Field>
+          <Alert>
+            <Download />
+            <AlertTitle>Output</AlertTitle>
+            <AlertDescription>
+              Downloads a resized {exportConfig.label} file with{" "}
+              {`-${outputWidth}x${outputHeight}`} appended to the name.
+            </AlertDescription>
+          </Alert>
 
-              <Field>
-                <FieldLabel htmlFor="resize-height">Height</FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="resize-height"
-                    name="resize-height"
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={heightInput}
-                    onChange={handleHeightChange}
-                    autoComplete="off"
-                    inputMode="numeric"
-                  />
-                  <FieldDescription>
-                    Exports as {exportConfig.label} at {outputWidth}px by{" "}
-                    {outputHeight}px.
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
-            </FieldGroup>
+          {exportSuccess ? (
+            <StatusAlert
+              status="success"
+              title="Download ready"
+              message={exportSuccess}
+            />
+          ) : null}
 
-            <Alert>
-              <Download />
-              <AlertTitle>Output</AlertTitle>
-              <AlertDescription>
-                Downloads a resized {exportConfig.label} file with{" "}
-                {`-${outputWidth}x${outputHeight}`} appended to the name.
-              </AlertDescription>
-            </Alert>
-
-            {exportSuccess ? (
-              <StatusAlert
-                status="success"
-                title="Download ready"
-                message={exportSuccess}
-              />
-            ) : null}
-
-            {exportError ? (
-              <StatusAlert
-                status="error"
-                title="Resize failed"
-                message={exportError}
-              />
-            ) : null}
-          </CardContent>
-
-          <CardFooter>
-            <Button
-              size="lg"
-              className="w-full"
-              disabled={isExporting}
-              onClick={handleExport}
-            >
-              <Download data-icon="inline-start" />
-              {isExporting
-                ? "Exporting image..."
-                : `Download ${exportConfig.label}`}
-            </Button>
-          </CardFooter>
-        </Card>
-      </CardContent>
-    </Card>
+          {exportError ? (
+            <StatusAlert
+              status="error"
+              title="Resize failed"
+              message={exportError}
+            />
+          ) : null}
+        </ToolSettingsCard>
+      }
+      gridClassName="lg:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.95fr)]"
+    />
   )
 }

@@ -4,6 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 type BatchFileListProps<T> = {
   items: T[]
@@ -19,17 +20,23 @@ export function BatchFileList<T>({
   getDescription,
 }: BatchFileListProps<T>) {
   return (
-    <div className="flex max-h-72 flex-col gap-2 overflow-auto pr-1">
-      {items.map((item) => (
-        <Card key={getKey(item)} size="sm">
-          <CardHeader>
-            <CardTitle className="truncate text-base">
-              {getTitle(item)}
-            </CardTitle>
-            <CardDescription>{getDescription(item)}</CardDescription>
-          </CardHeader>
-        </Card>
-      ))}
-    </div>
+    <ScrollArea className="max-h-72 rounded-xl border border-border/60 bg-background/35">
+      <div className="flex flex-col gap-2 p-2">
+        {items.map((item) => {
+          const title = getTitle(item)
+
+          return (
+            <Card key={getKey(item)} size="sm">
+              <CardHeader>
+                <CardTitle className="truncate text-base" title={title}>
+                  {title}
+                </CardTitle>
+                <CardDescription>{getDescription(item)}</CardDescription>
+              </CardHeader>
+            </Card>
+          )
+        })}
+      </div>
+    </ScrollArea>
   )
 }

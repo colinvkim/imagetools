@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react"
+import { ArrowRight, MonitorSmartphone, ShieldCheck, Sparkles, Zap } from "lucide-react"
 
 import { PageShell } from "@/components/site/page-shell"
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
@@ -31,14 +31,14 @@ export default function Page() {
   return (
     <main id="main-content">
       <PageShell className="gap-10 py-10 sm:py-12">
-        <section className="space-y-4">
+        <section className="space-y-5">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="outline">{toolCountLabel}</Badge>
             <Badge variant="outline">100% client-side</Badge>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.8fr)] lg:items-end">
-            <div className="flex flex-col gap-5">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.82fr)] lg:items-center">
+            <div className="flex min-w-0 flex-col gap-6">
               <div className="space-y-4">
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
                   Fast image tools that work right in your browser.
@@ -67,7 +67,7 @@ export default function Page() {
             </div>
 
             <Card className="rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)]">
-              <CardHeader>
+              <CardHeader className="gap-4">
                 <Badge variant="outline" className="self-start">
                   Privacy
                 </Badge>
@@ -110,13 +110,13 @@ export default function Page() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {TOOL_DEFINITIONS.map((tool) => {
               const Icon = tool.icon
 
               return (
                 <Link key={tool.href} href={tool.href} className="group block">
-                  <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40">
+                  <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition-[transform,box-shadow] group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0">
                     <CardHeader>
                       <div className="flex items-start justify-between gap-4">
                         <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
@@ -127,8 +127,8 @@ export default function Page() {
                         </CardAction>
                       </div>
                       <CardTitle className="text-xl">{tool.title}</CardTitle>
-                      <CardDescription className="leading-6">
-                        {tool.description}
+                      <CardDescription className="line-clamp-3 leading-6">
+                        {tool.shortDescription}
                       </CardDescription>
                     </CardHeader>
                     <CardFooter className="text-sm text-muted-foreground">
@@ -144,30 +144,39 @@ export default function Page() {
         <section className="grid gap-4 lg:grid-cols-3">
           <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
             <CardHeader>
-              <CardTitle>Shared shell</CardTitle>
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                <ShieldCheck className="size-5 text-primary" />
+              </div>
+              <CardTitle>Privacy-First</CardTitle>
               <CardDescription className="leading-6">
-                Every tool page now sits inside the same navigation, spacing,
-                and footer structure.
+                Core workflows stay client-side, so common conversions and
+                cleanup tasks do not require file uploads.
               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
             <CardHeader>
-              <CardTitle>Clear messaging</CardTitle>
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                <Zap className="size-5 text-primary" />
+              </div>
+              <CardTitle>Quick One-Off Tasks</CardTitle>
               <CardDescription className="leading-6">
-                The homepage explains what the product does, why it is useful,
-                and why client-side processing matters.
+                Open a tool, adjust the one thing that matters, and export the
+                result without a long editing workflow.
               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
             <CardHeader>
-              <CardTitle>Lightweight about/help</CardTitle>
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+                <MonitorSmartphone className="size-5 text-primary" />
+              </div>
+              <CardTitle>Desktop & Mobile</CardTitle>
               <CardDescription className="leading-6">
-                The footer now gives quick context around privacy, current
-                scope, and where to jump next.
+                The interface is designed to stay usable across desktop and
+                mobile browsers without changing the core flow.
               </CardDescription>
             </CardHeader>
           </Card>

@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator"
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/70">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 sm:py-12">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr]">
           <div className="flex flex-col gap-3">
             <Badge variant="outline" className="self-start">

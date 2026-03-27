@@ -7,27 +7,16 @@ import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { SquareCropEditor } from "@/components/tools/shared/square-crop-editor"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
+import { ToolEditorDialog } from "@/components/tools/shared/tool-editor-dialog"
+import {
+  ToolPrimaryFooter,
+  ToolSettingsCard,
+  ToolStatCard,
+  ToolStatGrid,
+  ToolWorkspace,
+} from "@/components/tools/shared/tool-workspace"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
@@ -110,7 +99,7 @@ export function CircleCropTool() {
     }
 
     setCrop(createCenteredSquareCrop(image.width, image.height))
-    setIsEditorOpen(true)
+    setIsEditorOpen(false)
     setExportError(null)
     setExportSuccess(null)
   }, [image])
@@ -155,6 +144,7 @@ export function CircleCropTool() {
         title="Crop an image into a perfect circle"
         description="Upload or paste an image, adjust a square crop in a dialog, and export a transparent PNG with a circular cutout."
         accept={GENERIC_IMAGE_EDIT_ACCEPT}
+        acceptedFormatsLabel="PNG, JPG, or WebP"
         helperText="Paste, drag and drop, or browse from your device."
         isLoading={isLoading}
         error={error}
@@ -166,28 +156,14 @@ export function CircleCropTool() {
 
   return (
     <>
-      <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
-        <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
-          <Badge variant="outline" className="self-start">
-            Circle Crop
-          </Badge>
-          <CardTitle className="text-2xl tracking-tight">
-            Crop a square, then export it as a circle
-          </CardTitle>
-          <CardDescription>
-            The editor keeps the crop square so the final PNG is perfectly
-            circular and ready for avatars, profile images, and logos.
-          </CardDescription>
-          <CardAction>
-            <Button variant="outline" onClick={clear}>
-              <RefreshCcw data-icon="inline-start" />
-              Choose another file
-            </Button>
-          </CardAction>
-        </CardHeader>
-
-        <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.95fr)]">
-          <div className="flex flex-col gap-4">
+      <ToolWorkspace
+        badge="Circle Crop"
+        title="Crop a square, then export it as a circle"
+        description="The editor keeps the crop square so the final PNG is perfectly circular and ready for avatars, profile images, and logos."
+        onReset={clear}
+        resetIcon={<RefreshCcw data-icon="inline-start" />}
+        preview={
+          <>
             <CirclePreview
               imageUrl={image.objectUrl}
               crop={crop}
@@ -203,145 +179,116 @@ export function CircleCropTool() {
                 transparent, which is ideal for overlays and avatars.
               </AlertDescription>
             </Alert>
-          </div>
+          </>
+        }
+        settings={
+          <ToolSettingsCard
+            title="Crop details"
+            fileName={image.fileName}
+            footer={
+              <ToolPrimaryFooter>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsEditorOpen(true)}
+                >
+                  <Crop data-icon="inline-start" />
+                  Adjust crop
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-full"
+                  disabled={isExporting}
+                  onClick={handleExport}
+                >
+                  <Download data-icon="inline-start" />
+                  {isExporting ? "Exporting PNG..." : "Download Circle PNG"}
+                </Button>
+              </ToolPrimaryFooter>
+            }
+          >
+            <ToolStatGrid>
+              <ToolStatCard label="Original width" value={`${image.width}px`} />
+              <ToolStatCard
+                label="Original height"
+                value={`${image.height}px`}
+              />
+              <ToolStatCard
+                label="Crop size"
+                value={`${Math.round(crop.size)}px`}
+              />
+              <ToolStatCard
+                label="Input size"
+                value={formatFileSize(image.fileSize)}
+              />
+            </ToolStatGrid>
 
-          <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
-            <CardHeader>
-              <CardTitle>Crop details</CardTitle>
-              <CardDescription className="break-all">
-                {image.fileName}
-              </CardDescription>
-            </CardHeader>
+            <Separator />
 
-            <CardContent className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Original width</CardDescription>
-                    <CardTitle className="text-lg">{image.width}px</CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Original height</CardDescription>
-                    <CardTitle className="text-lg">{image.height}px</CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Crop size</CardDescription>
-                    <CardTitle className="text-lg">
-                      {Math.round(crop.size)}px
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Input size</CardDescription>
-                    <CardTitle className="text-lg">
-                      {formatFileSize(image.fileSize)}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-              </div>
+            <Alert>
+              <Crop />
+              <AlertTitle>Edit crop</AlertTitle>
+              <AlertDescription>
+                Open the crop dialog to move the square selection or resize it
+                from the lower-right handle.
+              </AlertDescription>
+            </Alert>
 
-              <Separator />
+            {exportSuccess ? (
+              <StatusAlert
+                status="success"
+                title="Download ready"
+                message={exportSuccess}
+              />
+            ) : null}
 
-              <Alert>
-                <Crop />
-                <AlertTitle>Edit crop</AlertTitle>
-                <AlertDescription>
-                  Open the crop dialog to move the square selection or resize it
-                  from the lower-right handle.
-                </AlertDescription>
-              </Alert>
+            {exportError ? (
+              <StatusAlert
+                status="error"
+                title="Export failed"
+                message={exportError}
+              />
+            ) : null}
+          </ToolSettingsCard>
+        }
+        gridClassName="lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.95fr)]"
+      />
 
-              {exportSuccess ? (
-                <StatusAlert
-                  status="success"
-                  title="Download ready"
-                  message={exportSuccess}
-                />
-              ) : null}
-
-              {exportError ? (
-                <StatusAlert
-                  status="error"
-                  title="Export failed"
-                  message={exportError}
-                />
-              ) : null}
-            </CardContent>
-
-            <CardFooter className="flex-col gap-2 sm:flex-col">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsEditorOpen(true)}
-              >
-                <Crop data-icon="inline-start" />
-                Adjust crop
-              </Button>
-              <Button
-                size="lg"
-                className="w-full"
-                disabled={isExporting}
-                onClick={handleExport}
-              >
-                <Download data-icon="inline-start" />
-                {isExporting ? "Exporting PNG..." : "Download Circle PNG"}
-              </Button>
-            </CardFooter>
-          </Card>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="max-h-[calc(100%-2rem)] w-[min(1120px,calc(100%-2rem))] max-w-[calc(100%-2rem)] overflow-hidden p-0 sm:max-w-[min(1120px,calc(100%-2rem))]">
-          <DialogHeader className="px-6 pt-6">
-            <DialogTitle>Adjust square crop</DialogTitle>
-            <DialogDescription>
-              Move the crop box to frame the image, or drag the lower-right
-              handle to resize it before exporting the final circle.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-6 overflow-auto px-6 pb-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.85fr)]">
-            <SquareCropEditor
+      <ToolEditorDialog
+        open={isEditorOpen}
+        onOpenChange={setIsEditorOpen}
+        title="Adjust square crop"
+        description="Move the crop box to frame the image, or drag the lower-right handle to resize it before exporting the final circle."
+        editor={
+          <SquareCropEditor
+            imageUrl={image.objectUrl}
+            imageWidth={image.width}
+            imageHeight={image.height}
+            crop={crop}
+            onCropChange={handleCropChange}
+            className="min-w-0"
+          />
+        }
+        sidebar={
+          <>
+            <CirclePreview
               imageUrl={image.objectUrl}
+              crop={crop}
               imageWidth={image.width}
               imageHeight={image.height}
-              crop={crop}
-              onCropChange={handleCropChange}
-              className="min-w-0"
             />
 
-            <div className="flex flex-col gap-4">
-              <CirclePreview
-                imageUrl={image.objectUrl}
-                crop={crop}
-                imageWidth={image.width}
-                imageHeight={image.height}
-              />
-
-              <Alert>
-                <Crop />
-                <AlertTitle>Crop size</AlertTitle>
-                <AlertDescription>
-                  The current square selection is {Math.round(crop.size)}px by{" "}
-                  {Math.round(crop.size)}px.
-                </AlertDescription>
-              </Alert>
-            </div>
-          </div>
-
-          <DialogFooter className="mt-0" showCloseButton={false}>
-            <DialogClose render={<Button variant="outline" />}>
-              Done
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <Alert>
+              <Crop />
+              <AlertTitle>Crop size</AlertTitle>
+              <AlertDescription>
+                The current square selection is {Math.round(crop.size)}px by{" "}
+                {Math.round(crop.size)}px.
+              </AlertDescription>
+            </Alert>
+          </>
+        }
+      />
     </>
   )
 }

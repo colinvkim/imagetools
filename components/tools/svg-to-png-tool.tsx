@@ -7,18 +7,15 @@ import { FileDropzone } from "@/components/shared/file-dropzone"
 import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+  ToolPrimaryFooter,
+  ToolSettingsCard,
+  ToolStatCard,
+  ToolStatGrid,
+  ToolWorkspace,
+} from "@/components/tools/shared/tool-workspace"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldContent,
@@ -266,9 +263,10 @@ export function SvgToPngTool() {
   if (svgs.length === 0) {
     return (
       <FileDropzone
-        title="Turn SVG artwork into PNG files"
-        description="Choose one SVG or a whole batch, keep a shared export width, and download PNGs entirely in the browser."
+        title="Export SVG artwork as PNG or WebP files"
+        description="Choose one SVG or a whole batch, keep a shared export width, and download raster exports entirely in the browser."
         accept=".svg,image/svg+xml"
+        acceptedFormatsLabel="SVG"
         helperText="Bulk upload is supported here. Paste works for a copied SVG file or raw SVG markup."
         isLoading={isLoading}
         error={error}
@@ -348,29 +346,14 @@ export function SvgToPngTool() {
   }
 
   return (
-    <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
-      <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
-        <Badge variant="outline" className="self-start">
-          SVG Export
-        </Badge>
-        <CardTitle className="text-2xl tracking-tight">
-          Export a whole SVG batch as PNG or WebP
-        </CardTitle>
-        <CardDescription>
-          Use a shared export width or a scale preset, choose the output format,
-          then download raster exports for every selected SVG directly from the
-          browser.
-        </CardDescription>
-        <CardAction>
-          <Button variant="outline" onClick={handleClear}>
-            <RefreshCcw data-icon="inline-start" />
-            Choose another batch
-          </Button>
-        </CardAction>
-      </CardHeader>
-
-      <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.95fr)]">
-        <div className="flex flex-col gap-4">
+    <ToolWorkspace
+      badge="SVG Export"
+      title="Export a whole SVG batch as PNG or WebP"
+      description="Use a shared export width or a scale preset, choose the output format, then download raster exports for every selected SVG directly from the browser."
+      onReset={handleClear}
+      resetIcon={<RefreshCcw data-icon="inline-start" />}
+      preview={
+        <>
           <CheckerboardSurface
             className="py-4"
             contentClassName="flex min-h-[18rem] items-center justify-center p-4"
@@ -391,196 +374,172 @@ export function SvgToPngTool() {
               apply to every selected SVG.
             </AlertDescription>
           </Alert>
-        </div>
-
-        <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
-          <CardHeader>
-            <CardTitle>Export settings</CardTitle>
-            <CardDescription>
-              {svgs.length} file{svgs.length === 1 ? "" : "s"} selected
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="flex flex-col gap-5">
-            <div className="grid grid-cols-2 gap-3">
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Files</CardDescription>
-                  <CardTitle className="text-lg">{svgs.length}</CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Total size</CardDescription>
-                  <CardTitle className="text-lg">
-                    {formatFileSize(totalFileSize)}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Preview width</CardDescription>
-                  <CardTitle className="text-lg">{outputWidth}px</CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Preview height</CardDescription>
-                  <CardTitle className="text-lg">{outputHeight}px</CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Format</CardDescription>
-                  <CardTitle className="text-lg">
-                    {outputFormat.label}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-            </div>
-
-            <Separator />
-
-            <FieldGroup>
-              <Field>
-                <FieldLabel>Output format</FieldLabel>
-                <FieldContent>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={[outputFormatValue]}
-                    onValueChange={(groupValue) =>
-                      handleFormatChange(groupValue[0] ?? "")
-                    }
-                    className="flex w-full flex-wrap gap-2"
-                  >
-                    {OUTPUT_FORMAT_OPTIONS.map((format) => (
-                      <ToggleGroupItem
-                        key={format.value}
-                        value={format.value}
-                        className="min-w-16"
-                      >
-                        {format.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                  <FieldDescription>
-                    PNG is best for lossless export. WebP is useful when you
-                    want smaller files.
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
-
-              <Field>
-                <FieldLabel>Scale presets</FieldLabel>
-                <FieldContent>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={selectedScale ? [selectedScale] : []}
-                    onValueChange={(groupValue) =>
-                      handleScaleChange(groupValue[0] ?? "")
-                    }
-                    className="flex w-full flex-wrap gap-2"
-                  >
-                    {SCALE_OPTIONS.map((option) => (
-                      <ToggleGroupItem
-                        key={option.value}
-                        value={option.value}
-                        className="min-w-14"
-                      >
-                        {option.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                  <FieldDescription>
-                    Presets scale each SVG from its own natural width.
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="svg-output-width">
-                  Shared custom width
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="svg-output-width"
-                    name="svg-output-width"
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={outputWidthInput}
-                    onChange={handleWidthChange}
-                    autoComplete="off"
-                    inputMode="numeric"
-                  />
-                  <FieldDescription>
-                    When you type a width, every selected SVG exports at that
-                    width while preserving its own aspect ratio.
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
-            </FieldGroup>
-
-            <BatchFileList
-              items={svgs}
-              getKey={(svg) => svg.objectUrl}
-              getTitle={(svg) => svg.fileName}
-              getDescription={(svg) => {
-                const svgWidth = selectedScale
-                  ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
-                  : outputWidth
-                const svgHeight = Math.max(
-                  1,
-                  Math.round(svgWidth / svg.aspectRatio)
-                )
-
-                return `${Math.round(svg.width)}px x ${Math.round(svg.height)}px -> ${svgWidth}px x ${svgHeight}px, ${formatFileSize(svg.fileSize)}`
-              }}
+        </>
+      }
+      settings={
+        <ToolSettingsCard
+          title="Export settings"
+          footer={
+            <ToolPrimaryFooter className="pt-0">
+              <Button
+                size="lg"
+                className="w-full"
+                disabled={isConverting}
+                onClick={handleConvertAll}
+              >
+                <Download data-icon="inline-start" />
+                {isConverting
+                  ? `Exporting ${outputFormat.label}...`
+                  : `Download ${svgs.length} ${outputFormat.label}${svgs.length === 1 ? "" : "s"}`}
+              </Button>
+            </ToolPrimaryFooter>
+          }
+        >
+          <ToolStatGrid>
+            <ToolStatCard label="Files" value={svgs.length} />
+            <ToolStatCard
+              label="Total size"
+              value={formatFileSize(totalFileSize)}
             />
+            <ToolStatCard
+              label="Preview width"
+              value={`${outputWidth}px`}
+            />
+            <ToolStatCard
+              label="Preview height"
+              value={`${outputHeight}px`}
+            />
+            <ToolStatCard label="Format" value={outputFormat.label} />
+          </ToolStatGrid>
 
-            <Alert>
-              <Download />
-              <AlertTitle>Output</AlertTitle>
-              <AlertDescription>
-                Every SVG downloads as a {outputFormat.label} with its own
-                aspect ratio preserved.
-              </AlertDescription>
-            </Alert>
+          <Separator />
 
-            {conversionSuccess ? (
-              <StatusAlert
-                status="success"
-                title="Downloads ready"
-                message={conversionSuccess}
-              />
-            ) : null}
+          <FieldGroup>
+            <Field>
+              <FieldLabel>Output format</FieldLabel>
+              <FieldContent>
+                <ToggleGroup
+                  multiple={false}
+                  variant="outline"
+                  value={[outputFormatValue]}
+                  onValueChange={(groupValue) =>
+                    handleFormatChange(groupValue[0] ?? "")
+                  }
+                  className="flex w-full flex-wrap gap-2"
+                >
+                  {OUTPUT_FORMAT_OPTIONS.map((format) => (
+                    <ToggleGroupItem
+                      key={format.value}
+                      value={format.value}
+                      className="min-w-16"
+                    >
+                      {format.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                <FieldDescription>
+                  PNG is best for lossless export. WebP is useful when you want
+                  smaller files.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
 
-            {conversionError ? (
-              <StatusAlert
-                status="error"
-                title="Conversion failed"
-                message={conversionError}
-              />
-            ) : null}
-          </CardContent>
+            <Field>
+              <FieldLabel>Scale presets</FieldLabel>
+              <FieldContent>
+                <ToggleGroup
+                  multiple={false}
+                  variant="outline"
+                  value={selectedScale ? [selectedScale] : []}
+                  onValueChange={(groupValue) =>
+                    handleScaleChange(groupValue[0] ?? "")
+                  }
+                  className="flex w-full flex-wrap gap-2"
+                >
+                  {SCALE_OPTIONS.map((option) => (
+                    <ToggleGroupItem
+                      key={option.value}
+                      value={option.value}
+                      className="min-w-14"
+                    >
+                      {option.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                <FieldDescription>
+                  Presets scale each SVG from its own natural width.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
 
-          <CardFooter>
-            <Button
-              size="lg"
-              className="w-full"
-              disabled={isConverting}
-              onClick={handleConvertAll}
-            >
-              <Download data-icon="inline-start" />
-              {isConverting
-                ? `Exporting ${outputFormat.label}...`
-                : `Download ${svgs.length} ${outputFormat.label}${svgs.length === 1 ? "" : "s"}`}
-            </Button>
-          </CardFooter>
-        </Card>
-      </CardContent>
-    </Card>
+            <Field>
+              <FieldLabel htmlFor="svg-output-width">
+                Shared custom width
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="svg-output-width"
+                  name="svg-output-width"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={outputWidthInput}
+                  onChange={handleWidthChange}
+                  autoComplete="off"
+                  inputMode="numeric"
+                />
+                <FieldDescription>
+                  When you type a width, every selected SVG exports at that
+                  width while preserving its own aspect ratio.
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+
+          <BatchFileList
+            items={svgs}
+            getKey={(svg) => svg.objectUrl}
+            getTitle={(svg) => svg.fileName}
+            getDescription={(svg) => {
+              const svgWidth = selectedScale
+                ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
+                : outputWidth
+              const svgHeight = Math.max(
+                1,
+                Math.round(svgWidth / svg.aspectRatio)
+              )
+
+              return `${Math.round(svg.width)}px x ${Math.round(svg.height)}px -> ${svgWidth}px x ${svgHeight}px, ${formatFileSize(svg.fileSize)}`
+            }}
+          />
+
+          <Alert>
+            <Download />
+            <AlertTitle>Output</AlertTitle>
+            <AlertDescription>
+              Every SVG downloads as a {outputFormat.label} with its own aspect
+              ratio preserved.
+            </AlertDescription>
+          </Alert>
+
+          {conversionSuccess ? (
+            <StatusAlert
+              status="success"
+              title="Downloads ready"
+              message={conversionSuccess}
+            />
+          ) : null}
+
+          {conversionError ? (
+            <StatusAlert
+              status="error"
+              title="Conversion failed"
+              message={conversionError}
+            />
+          ) : null}
+        </ToolSettingsCard>
+      }
+      gridClassName="lg:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.95fr)]"
+    />
   )
 }

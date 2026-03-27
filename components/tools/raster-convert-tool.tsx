@@ -7,18 +7,15 @@ import { FileDropzone } from "@/components/shared/file-dropzone"
 import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+  ToolPrimaryFooter,
+  ToolSettingsCard,
+  ToolStatCard,
+  ToolStatGrid,
+  ToolWorkspace,
+} from "@/components/tools/shared/tool-workspace"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldContent,
@@ -220,7 +217,8 @@ export function RasterConvertTool() {
         title="Convert PNG, JPG, and WebP images"
         description="Choose one image or a whole batch, preview the first item instantly, and export fresh PNG or WebP files without uploading anything anywhere."
         accept={RASTER_IMAGE_ACCEPT}
-        helperText="Bulk upload is supported here. Output format is chosen after upload, and the browser may ask you to allow multiple downloads."
+        acceptedFormatsLabel="PNG, JPG, or WebP"
+        helperText="Bulk upload is supported here. Output format is chosen after upload."
         isLoading={isLoading}
         error={error}
         supportsPaste
@@ -234,28 +232,14 @@ export function RasterConvertTool() {
   const totalFileSize = images.reduce((sum, image) => sum + image.fileSize, 0)
 
   return (
-    <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
-      <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
-        <Badge variant="outline" className="self-start">
-          Raster Convert
-        </Badge>
-        <CardTitle className="text-2xl tracking-tight">
-          Batch-convert raster images in the browser
-        </CardTitle>
-        <CardDescription>
-          Every selected image keeps its original pixel dimensions and downloads
-          as PNG or WebP directly from the browser.
-        </CardDescription>
-        <CardAction>
-          <Button variant="outline" onClick={clear}>
-            <RefreshCcw data-icon="inline-start" />
-            Choose another batch
-          </Button>
-        </CardAction>
-      </CardHeader>
-
-      <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.95fr)]">
-        <div className="flex flex-col gap-4">
+    <ToolWorkspace
+      badge="Raster Convert"
+      title="Batch-convert raster images in the browser"
+      description="Every selected image keeps its original pixel dimensions and downloads as PNG or WebP directly from the browser."
+      onReset={clear}
+      resetIcon={<RefreshCcw data-icon="inline-start" />}
+      preview={
+        <>
           <CheckerboardSurface
             className="py-4"
             contentClassName="flex min-h-[18rem] items-center justify-center p-4"
@@ -276,138 +260,115 @@ export function RasterConvertTool() {
               {selectedOutputFormat.label} download for every selected image.
             </AlertDescription>
           </Alert>
-        </div>
-
-        <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
-          <CardHeader>
-            <CardTitle>Batch details</CardTitle>
-            <CardDescription>
-              {images.length} file{images.length === 1 ? "" : "s"} selected
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Files</CardDescription>
-                  <CardTitle className="text-lg">{images.length}</CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>Total size</CardDescription>
-                  <CardTitle className="text-lg">
-                    {formatFileSize(totalFileSize)}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>First width</CardDescription>
-                  <CardTitle className="text-lg">
-                    {firstImage.width}px
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-              <Card size="sm">
-                <CardHeader>
-                  <CardDescription>First height</CardDescription>
-                  <CardTitle className="text-lg">
-                    {firstImage.height}px
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-            </div>
-
-            <Field>
-              <FieldLabel>Output format</FieldLabel>
-              <FieldDescription>
-                PNG is the safest default. WebP usually produces smaller files.
-              </FieldDescription>
-              <FieldContent>
-                <FieldGroup>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={[outputFormatValue]}
-                    onValueChange={(groupValue) => {
-                      const value = groupValue[0] ?? ""
-
-                      if (!value) {
-                        return
-                      }
-
-                      resetActionState()
-                      setOutputFormatValue(value)
-                    }}
-                    className="flex w-full flex-wrap justify-start gap-2"
-                  >
-                    {OUTPUT_FORMAT_OPTIONS.map((option) => (
-                      <ToggleGroupItem
-                        key={option.value}
-                        value={option.value}
-                        className="min-w-24"
-                      >
-                        {option.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                </FieldGroup>
-              </FieldContent>
-            </Field>
-
-            <Separator />
-
-            <BatchFileList
-              items={images}
-              getKey={(image) => image.objectUrl}
-              getTitle={(image) => image.fileName}
-              getDescription={(image) =>
-                `${image.width}px x ${image.height}px, ${formatFileSize(image.fileSize)}`
-              }
+        </>
+      }
+      settings={
+        <ToolSettingsCard
+          title="Batch details"
+          footer={
+            <ToolPrimaryFooter className="pt-0">
+              <Button
+                size="lg"
+                className="w-full"
+                disabled={isConverting}
+                onClick={handleConvertAll}
+              >
+                <Download data-icon="inline-start" />
+                {isConverting
+                  ? `Exporting ${selectedOutputFormat.label}s...`
+                  : `Download ${images.length} ${selectedOutputFormat.label}${images.length === 1 ? "" : "s"}`}
+              </Button>
+            </ToolPrimaryFooter>
+          }
+        >
+          <ToolStatGrid>
+            <ToolStatCard label="Files" value={images.length} />
+            <ToolStatCard
+              label="Total size"
+              value={formatFileSize(totalFileSize)}
             />
+            <ToolStatCard label="First width" value={`${firstImage.width}px`} />
+            <ToolStatCard
+              label="First height"
+              value={`${firstImage.height}px`}
+            />
+          </ToolStatGrid>
 
-            <Alert>
-              <Download />
-              <AlertTitle>Output</AlertTitle>
-              <AlertDescription>
-                Each file downloads as a {selectedOutputFormat.label} with the
-                same resolution as its original image.
-              </AlertDescription>
-            </Alert>
+          <Field>
+            <FieldLabel>Output format</FieldLabel>
+            <FieldDescription>
+              PNG is the safest default. WebP usually produces smaller files.
+            </FieldDescription>
+            <FieldContent>
+              <FieldGroup>
+                <ToggleGroup
+                  multiple={false}
+                  variant="outline"
+                  value={[outputFormatValue]}
+                  onValueChange={(groupValue) => {
+                    const value = groupValue[0] ?? ""
 
-            {conversionSuccess ? (
-              <StatusAlert
-                status="success"
-                title="Downloads ready"
-                message={conversionSuccess}
-              />
-            ) : null}
+                    if (!value) {
+                      return
+                    }
 
-            {conversionError ? (
-              <StatusAlert
-                status="error"
-                title="Conversion failed"
-                message={conversionError}
-              />
-            ) : null}
-          </CardContent>
+                    resetActionState()
+                    setOutputFormatValue(value)
+                  }}
+                  className="flex w-full flex-wrap justify-start gap-2"
+                >
+                  {OUTPUT_FORMAT_OPTIONS.map((option) => (
+                    <ToggleGroupItem
+                      key={option.value}
+                      value={option.value}
+                      className="min-w-24"
+                    >
+                      {option.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </FieldGroup>
+            </FieldContent>
+          </Field>
 
-          <CardFooter>
-            <Button
-              size="lg"
-              className="w-full"
-              disabled={isConverting}
-              onClick={handleConvertAll}
-            >
-              <Download data-icon="inline-start" />
-              {isConverting
-                ? `Exporting ${selectedOutputFormat.label}s...`
-                : `Download ${images.length} ${selectedOutputFormat.label}${images.length === 1 ? "" : "s"}`}
-            </Button>
-          </CardFooter>
-        </Card>
-      </CardContent>
-    </Card>
+          <Separator />
+
+          <BatchFileList
+            items={images}
+            getKey={(image) => image.objectUrl}
+            getTitle={(image) => image.fileName}
+            getDescription={(image) =>
+              `${image.width}px x ${image.height}px, ${formatFileSize(image.fileSize)}`
+            }
+          />
+
+          <Alert>
+            <Download />
+            <AlertTitle>Output</AlertTitle>
+            <AlertDescription>
+              Each file downloads as a {selectedOutputFormat.label} with the
+              same resolution as its original image.
+            </AlertDescription>
+          </Alert>
+
+          {conversionSuccess ? (
+            <StatusAlert
+              status="success"
+              title="Downloads ready"
+              message={conversionSuccess}
+            />
+          ) : null}
+
+          {conversionError ? (
+            <StatusAlert
+              status="error"
+              title="Conversion failed"
+              message={conversionError}
+            />
+          ) : null}
+        </ToolSettingsCard>
+      }
+      gridClassName="lg:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.95fr)]"
+    />
   )
 }

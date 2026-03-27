@@ -7,27 +7,16 @@ import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { RectCropEditor } from "@/components/tools/shared/rect-crop-editor"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
+import { ToolEditorDialog } from "@/components/tools/shared/tool-editor-dialog"
+import {
+  ToolPrimaryFooter,
+  ToolSettingsCard,
+  ToolStatCard,
+  ToolStatGrid,
+  ToolWorkspace,
+} from "@/components/tools/shared/tool-workspace"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import {
   Field,
   FieldContent,
@@ -243,6 +232,7 @@ export function AspectRatioCropTool() {
         title="Crop an image to a chosen aspect ratio"
         description="Upload or paste a PNG, JPG, or WebP image, choose an aspect-ratio preset or go freeform, and export the cropped result locally."
         accept={RASTER_IMAGE_ACCEPT}
+        acceptedFormatsLabel="PNG, JPG, or WebP"
         helperText="Paste, drag and drop, or browse from your device."
         isLoading={isLoading}
         error={error}
@@ -254,28 +244,14 @@ export function AspectRatioCropTool() {
 
   return (
     <>
-      <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
-        <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
-          <Badge variant="outline" className="self-start">
-            Aspect Ratio Crop
-          </Badge>
-          <CardTitle className="text-2xl tracking-tight">
-            Crop to a preset ratio or keep it freeform
-          </CardTitle>
-          <CardDescription>
-            Choose a common aspect ratio like 1:1, 4:5, 3:2, or 16:9, adjust the
-            crop, and export the result in the original raster format.
-          </CardDescription>
-          <CardAction>
-            <Button variant="outline" onClick={clear}>
-              <RefreshCcw data-icon="inline-start" />
-              Choose another file
-            </Button>
-          </CardAction>
-        </CardHeader>
-
-        <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.95fr)]">
-          <div className="flex flex-col gap-4">
+      <ToolWorkspace
+        badge="Aspect Ratio Crop"
+        title="Crop to a preset ratio or keep it freeform"
+        description="Choose a common aspect ratio like 1:1, 4:5, 3:2, or 16:9, adjust the crop, and export the result in the original raster format."
+        onReset={clear}
+        resetIcon={<RefreshCcw data-icon="inline-start" />}
+        preview={
+          <>
             <CropPreview
               imageUrl={image.objectUrl}
               crop={crop}
@@ -291,194 +267,157 @@ export function AspectRatioCropTool() {
                 mode lets you crop to any width and height.
               </AlertDescription>
             </Alert>
-          </div>
+          </>
+        }
+        settings={
+          <ToolSettingsCard
+            title="Crop settings"
+            fileName={image.fileName}
+            footer={
+              <ToolPrimaryFooter>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsEditorOpen(true)}
+                >
+                  <Crop data-icon="inline-start" />
+                  Adjust crop
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-full"
+                  disabled={isExporting}
+                  onClick={handleExport}
+                >
+                  <Download data-icon="inline-start" />
+                  {isExporting
+                    ? `Exporting ${exportConfig.label}...`
+                    : `Download ${exportConfig.label}`}
+                </Button>
+              </ToolPrimaryFooter>
+            }
+          >
+            <ToolStatGrid>
+              <ToolStatCard
+                label="Original size"
+                value={`${image.width} x ${image.height}`}
+              />
+              <ToolStatCard
+                label="Crop size"
+                value={`${Math.round(crop.width)} x ${Math.round(crop.height)}`}
+              />
+              <ToolStatCard
+                label="Aspect ratio"
+                value={aspectRatioOption.label}
+              />
+              <ToolStatCard label="Output format" value={exportConfig.label} />
+              <ToolStatCard
+                label="Input size"
+                value={formatFileSize(image.fileSize)}
+              />
+            </ToolStatGrid>
 
-          <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
-            <CardHeader>
-              <CardTitle>Crop settings</CardTitle>
-              <CardDescription className="break-all">
-                {image.fileName}
-              </CardDescription>
-            </CardHeader>
+            <Separator />
 
-            <CardContent className="flex flex-col gap-5">
-              <div className="grid grid-cols-2 gap-3">
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Original size</CardDescription>
-                    <CardTitle className="text-lg">
-                      {image.width} x {image.height}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Crop size</CardDescription>
-                    <CardTitle className="text-lg">
-                      {Math.round(crop.width)} x {Math.round(crop.height)}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Aspect ratio</CardDescription>
-                    <CardTitle className="text-lg">
-                      {aspectRatioOption.label}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Output format</CardDescription>
-                    <CardTitle className="text-lg">
-                      {exportConfig.label}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card size="sm">
-                  <CardHeader>
-                    <CardDescription>Input size</CardDescription>
-                    <CardTitle className="text-lg">
-                      {formatFileSize(image.fileSize)}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-              </div>
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Aspect ratio presets</FieldLabel>
+                <FieldContent>
+                  <ToggleGroup
+                    multiple={false}
+                    variant="outline"
+                    value={[selectedAspectRatio]}
+                    onValueChange={(groupValue) =>
+                      handleAspectRatioChange(groupValue[0] ?? "")
+                    }
+                    className="flex w-full flex-wrap gap-2"
+                  >
+                    {ASPECT_RATIO_OPTIONS.map((option) => (
+                      <ToggleGroupItem
+                        key={option.value}
+                        value={option.value}
+                        className="min-w-20"
+                      >
+                        {option.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                  <FieldDescription>
+                    {aspectRatioOption.summary}. The crop dialog updates to
+                    match the selected ratio.
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
+            </FieldGroup>
 
-              <Separator />
+            <Alert>
+              <Crop />
+              <AlertTitle>Edit crop</AlertTitle>
+              <AlertDescription>
+                Open the crop dialog to reposition the frame or resize it with
+                the lower-right handle.
+              </AlertDescription>
+            </Alert>
 
-              <FieldGroup>
-                <Field>
-                  <FieldLabel>Aspect ratio presets</FieldLabel>
-                  <FieldContent>
-                    <ToggleGroup
-                      multiple={false}
-                      variant="outline"
-                      value={[selectedAspectRatio]}
-                      onValueChange={(groupValue) =>
-                        handleAspectRatioChange(groupValue[0] ?? "")
-                      }
-                      className="flex w-full flex-wrap gap-2"
-                    >
-                      {ASPECT_RATIO_OPTIONS.map((option) => (
-                        <ToggleGroupItem
-                          key={option.value}
-                          value={option.value}
-                          className="min-w-20"
-                        >
-                          {option.label}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
-                    <FieldDescription>
-                      {aspectRatioOption.summary}. The crop dialog updates to
-                      match the selected ratio.
-                    </FieldDescription>
-                  </FieldContent>
-                </Field>
-              </FieldGroup>
+            {exportSuccess ? (
+              <StatusAlert
+                status="success"
+                title="Download ready"
+                message={exportSuccess}
+              />
+            ) : null}
 
-              <Alert>
-                <Crop />
-                <AlertTitle>Edit crop</AlertTitle>
-                <AlertDescription>
-                  Open the crop dialog to reposition the frame or resize it with
-                  the lower-right handle.
-                </AlertDescription>
-              </Alert>
+            {exportError ? (
+              <StatusAlert
+                status="error"
+                title="Crop failed"
+                message={exportError}
+              />
+            ) : null}
+          </ToolSettingsCard>
+        }
+        gridClassName="lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.95fr)]"
+      />
 
-              {exportSuccess ? (
-                <StatusAlert
-                  status="success"
-                  title="Download ready"
-                  message={exportSuccess}
-                />
-              ) : null}
-
-              {exportError ? (
-                <StatusAlert
-                  status="error"
-                  title="Crop failed"
-                  message={exportError}
-                />
-              ) : null}
-            </CardContent>
-
-            <CardFooter className="flex-col gap-2 sm:flex-col">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsEditorOpen(true)}
-              >
-                <Crop data-icon="inline-start" />
-                Adjust crop
-              </Button>
-              <Button
-                size="lg"
-                className="w-full"
-                disabled={isExporting}
-                onClick={handleExport}
-              >
-                <Download data-icon="inline-start" />
-                {isExporting
-                  ? `Exporting ${exportConfig.label}...`
-                  : `Download ${exportConfig.label}`}
-              </Button>
-            </CardFooter>
-          </Card>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="max-h-[calc(100%-2rem)] w-[min(1120px,calc(100%-2rem))] max-w-[calc(100%-2rem)] overflow-hidden p-0 sm:max-w-[min(1120px,calc(100%-2rem))]">
-          <DialogHeader className="px-6 pt-6">
-            <DialogTitle>Adjust crop</DialogTitle>
-            <DialogDescription>
-              Move the crop box to frame the image, or drag the lower-right
-              handle to resize it before exporting the final crop.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-6 overflow-auto px-6 pb-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.85fr)]">
-            <RectCropEditor
+      <ToolEditorDialog
+        open={isEditorOpen}
+        onOpenChange={setIsEditorOpen}
+        title="Adjust crop"
+        description="Move the crop box to frame the image, or drag the lower-right handle to resize it before exporting the final crop."
+        editor={
+          <RectCropEditor
+            imageUrl={image.objectUrl}
+            imageWidth={image.width}
+            imageHeight={image.height}
+            crop={crop}
+            onCropChange={handleCropChange}
+            aspectRatio={aspectRatioOption.aspectRatio ?? undefined}
+            className="min-w-0"
+          />
+        }
+        sidebar={
+          <>
+            <CropPreview
               imageUrl={image.objectUrl}
+              crop={crop}
               imageWidth={image.width}
               imageHeight={image.height}
-              crop={crop}
-              onCropChange={handleCropChange}
-              aspectRatio={aspectRatioOption.aspectRatio ?? undefined}
-              className="min-w-0"
             />
 
-            <div className="flex flex-col gap-4">
-              <CropPreview
-                imageUrl={image.objectUrl}
-                crop={crop}
-                imageWidth={image.width}
-                imageHeight={image.height}
-              />
-
-              <Alert>
-                <Frame />
-                <AlertTitle>Current frame</AlertTitle>
-                <AlertDescription>
-                  {aspectRatioOption.label === "Freeform"
-                    ? "Freeform crop is active."
-                    : `${aspectRatioOption.label} aspect ratio is locked.`}{" "}
-                  The current selection is {Math.round(crop.width)}px by{" "}
-                  {Math.round(crop.height)}px.
-                </AlertDescription>
-              </Alert>
-            </div>
-          </div>
-
-          <DialogFooter className="mt-0" showCloseButton={false}>
-            <DialogClose render={<Button variant="outline" />}>
-              Done
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <Alert>
+              <Frame />
+              <AlertTitle>Current frame</AlertTitle>
+              <AlertDescription>
+                {aspectRatioOption.label === "Freeform"
+                  ? "Freeform crop is active."
+                  : `${aspectRatioOption.label} aspect ratio is locked.`}{" "}
+                The current selection is {Math.round(crop.width)}px by{" "}
+                {Math.round(crop.height)}px.
+              </AlertDescription>
+            </Alert>
+          </>
+        }
+      />
     </>
   )
 }

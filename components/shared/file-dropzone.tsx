@@ -21,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import {
   getAcceptedClipboardFiles,
   parseAcceptAttribute,
@@ -35,6 +36,7 @@ type FileDropzoneProps = {
   onFilesSelect?: (files: File[]) => void | Promise<void>
   isLoading?: boolean
   error?: string | null
+  acceptedFormatsLabel?: string
   helperText?: string
   supportsPaste?: boolean
   multiple?: boolean
@@ -49,6 +51,7 @@ export function FileDropzone({
   onFilesSelect,
   isLoading = false,
   error,
+  acceptedFormatsLabel,
   helperText,
   supportsPaste = false,
   multiple = false,
@@ -155,7 +158,7 @@ export function FileDropzone({
         <label
           htmlFor={inputId}
           className={cn(
-            "group flex min-h-64 cursor-pointer flex-col items-center justify-center gap-4 rounded-[1.5rem] border border-dashed px-6 py-10 text-center transition",
+            "group flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 rounded-[1.5rem] border border-dashed px-6 py-10 text-center transition-colors motion-reduce:transition-none",
             isDragging
               ? "border-sky-500 bg-sky-500/8"
               : "border-border/80 bg-background/60 hover:border-sky-400/70 hover:bg-accent/30"
@@ -187,7 +190,7 @@ export function FileDropzone({
             void handleSelectedFiles(files)
           }}
         >
-          <div className="rounded-3xl border border-border/80 bg-card p-4 shadow-sm transition group-hover:scale-[1.02]">
+          <div className="rounded-3xl border border-border/80 bg-card p-4 shadow-sm transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
             {isLoading ? (
               <LoaderCircle className="size-7 animate-spin text-primary" />
             ) : (
@@ -200,19 +203,24 @@ export function FileDropzone({
                 ? "Drop files here or choose them from your device"
                 : "Drop a file here or choose one from your device"}
             </p>
-            <p className="text-sm text-muted-foreground">
-              Accepted:{" "}
-              <span className="font-medium text-foreground">{accept}</span>
-            </p>
+            {acceptedFormatsLabel ? (
+              <p className="text-sm text-muted-foreground">
+                Accepted formats:{" "}
+                <span className="font-medium text-foreground">
+                  {acceptedFormatsLabel}
+                </span>
+              </p>
+            ) : null}
             {helperText ? (
               <p className="text-sm text-muted-foreground">{helperText}</p>
             ) : null}
           </div>
+          <Separator className="max-w-sm" />
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="secondary">Drag and drop</Badge>
+            <Badge variant="secondary">Drag & drop</Badge>
             <Badge variant="secondary">Browse</Badge>
             {supportsPaste ? (
-              <Badge variant="secondary">Paste from clipboard</Badge>
+              <Badge variant="secondary">Paste</Badge>
             ) : null}
           </div>
           <Button
