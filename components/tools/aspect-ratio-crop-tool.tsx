@@ -46,9 +46,12 @@ import {
 } from "@/lib/image/crop"
 import { getRasterExportConfig } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
+import {
+  RASTER_IMAGE_ACCEPT,
+  RASTER_IMAGE_EXTENSIONS,
+  RASTER_IMAGE_MIME_TYPES,
+} from "@/lib/image/raster"
 
-const IMAGE_UPLOAD_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"]
-const IMAGE_UPLOAD_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"]
 const ASPECT_RATIO_OPTIONS = [
   {
     label: "Freeform",
@@ -137,8 +140,8 @@ function CropPreview({
 
 export function AspectRatioCropTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
-    mimeTypes: IMAGE_UPLOAD_MIME_TYPES,
-    extensions: IMAGE_UPLOAD_EXTENSIONS,
+    mimeTypes: [...RASTER_IMAGE_MIME_TYPES],
+    extensions: [...RASTER_IMAGE_EXTENSIONS],
     pasteMode: "when-has-image",
   })
   const [crop, setCrop] = React.useState<RectCrop | null>(null)
@@ -239,7 +242,7 @@ export function AspectRatioCropTool() {
       <FileDropzone
         title="Crop an image to a chosen aspect ratio"
         description="Upload or paste a PNG, JPG, or WebP image, choose an aspect-ratio preset or go freeform, and export the cropped result locally."
-        accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+        accept={RASTER_IMAGE_ACCEPT}
         helperText="Paste, drag and drop, or browse from your device."
         isLoading={isLoading}
         error={error}

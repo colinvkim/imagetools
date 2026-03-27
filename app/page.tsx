@@ -22,7 +22,7 @@ import { createPageMetadata } from "@/lib/site-metadata"
 export const metadata: Metadata = createPageMetadata({
   title: "imagetools | free, client-side utilities",
   description:
-    "Resize images, convert files, circle-crop images, add rounded corners, and rasterize assets directly in your browser.",
+    "Resize images, convert files, crop assets, trim transparent pixels, and rasterize artwork directly in your browser.",
 })
 
 export default function Page() {

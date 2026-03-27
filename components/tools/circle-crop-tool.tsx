@@ -36,9 +36,11 @@ import {
   type SquareCrop,
 } from "@/lib/image/crop"
 import { formatFileSize } from "@/lib/image/format"
-
-const IMAGE_UPLOAD_MIME_TYPES = ["image/*"]
-const IMAGE_UPLOAD_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"]
+import {
+  GENERIC_IMAGE_EDIT_ACCEPT,
+  GENERIC_IMAGE_EDIT_EXTENSIONS,
+  GENERIC_IMAGE_EDIT_MIME_TYPES,
+} from "@/lib/image/raster"
 
 function CirclePreview({
   imageUrl,
@@ -88,8 +90,8 @@ function CirclePreview({
 
 export function CircleCropTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
-    mimeTypes: IMAGE_UPLOAD_MIME_TYPES,
-    extensions: IMAGE_UPLOAD_EXTENSIONS,
+    mimeTypes: [...GENERIC_IMAGE_EDIT_MIME_TYPES],
+    extensions: [...GENERIC_IMAGE_EDIT_EXTENSIONS],
     pasteMode: "when-has-image",
   })
   const [crop, setCrop] = React.useState<SquareCrop | null>(null)
@@ -152,7 +154,7 @@ export function CircleCropTool() {
       <FileDropzone
         title="Crop an image into a perfect circle"
         description="Upload or paste an image, adjust a square crop in a dialog, and export a transparent PNG with a circular cutout."
-        accept="image/*,.jpg,.jpeg,.png,.webp"
+        accept={GENERIC_IMAGE_EDIT_ACCEPT}
         helperText="Paste, drag and drop, or browse from your device."
         isLoading={isLoading}
         error={error}

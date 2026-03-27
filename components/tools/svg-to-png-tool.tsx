@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
+import { getNormalizedFileName } from "@/lib/file-input"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
@@ -140,7 +141,7 @@ async function parseSvgFile(file: File) {
 
   return parseSvgContent(
     content,
-    file.name,
+    getNormalizedFileName(file, { fallbackBaseName: "pasted-artwork" }),
     file.type || "image/svg+xml",
     file.size
   )

@@ -3,6 +3,13 @@ export type AcceptedFilesConfig = {
   extensions: string[]
 }
 
+const MIME_TYPE_EXTENSION_MAP: Record<string, string> = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/webp": ".webp",
+  "image/svg+xml": ".svg",
+}
+
 export function parseAcceptAttribute(accept: string): AcceptedFilesConfig {
   const entries = accept
     .split(",")
@@ -54,4 +61,28 @@ export function getAcceptedClipboardFiles(
     .map((item) => item.getAsFile())
     .filter((file): file is File => file !== null)
     .filter((file) => matchesAcceptedFile(file, mimeTypes, extensions))
+}
+
+export function getDefaultFileExtensionForMimeType(mimeType: string) {
+  return MIME_TYPE_EXTENSION_MAP[mimeType] ?? ""
+}
+
+export function getNormalizedFileName(
+  file: File,
+  options: {
+    fallbackBaseName?: string
+    index?: number
+  } = {}
+) {
+  const trimmedName = file.name.trim()
+
+  if (trimmedName) {
+    return trimmedName
+  }
+
+  const fallbackBaseName = options.fallbackBaseName ?? "pasted-file"
+  const suffix =
+    options.index === undefined ? "" : `-${Math.max(1, options.index + 1)}`
+
+  return `${fallbackBaseName}${suffix}${getDefaultFileExtensionForMimeType(file.type)}`
 }

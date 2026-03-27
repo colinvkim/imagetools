@@ -1,15 +1,10 @@
 "use client"
 
-import {
-  type ChangeEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import {
   getAcceptedClipboardFiles,
+  getNormalizedFileName,
   matchesAcceptedFile,
 } from "@/lib/file-input"
 import { getImageDimensions } from "@/lib/image/load-image"
@@ -66,7 +61,9 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 
         setImage({
           file,
-          fileName: file.name,
+          fileName: getNormalizedFileName(file, {
+            fallbackBaseName: "pasted-image",
+          }),
           mimeType: file.type,
           objectUrl,
           width: dimensions.width,
@@ -91,33 +88,6 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     setError(null)
     setIsLoading(false)
   }, [])
-
-  const handleInputChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-
-      if (!file) {
-        return
-      }
-
-      await selectFile(file)
-      event.target.value = ""
-    },
-    [selectFile]
-  )
-
-  const handleDrop = useCallback(
-    async (fileList: FileList | File[]) => {
-      const [file] = Array.from(fileList)
-
-      if (!file) {
-        return
-      }
-
-      await selectFile(file)
-    },
-    [selectFile]
-  )
 
   useEffect(() => {
     if (!image) {
@@ -162,8 +132,6 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     error,
     isLoading,
     clear,
-    handleDrop,
-    handleInputChange,
     selectFile,
   }
 }

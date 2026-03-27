@@ -38,9 +38,12 @@ import {
 } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import { loadImageElement } from "@/lib/image/load-image"
+import {
+  RASTER_IMAGE_ACCEPT,
+  RASTER_IMAGE_EXTENSIONS,
+  RASTER_IMAGE_MIME_TYPES,
+} from "@/lib/image/raster"
 
-const RESIZE_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"]
-const RESIZE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"]
 const SCALE_OPTIONS = [
   { label: "25%", value: "0.25" },
   { label: "50%", value: "0.5" },
@@ -94,8 +97,8 @@ function ResizePreview({
 
 export function ResizeImageTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
-    mimeTypes: RESIZE_MIME_TYPES,
-    extensions: RESIZE_EXTENSIONS,
+    mimeTypes: [...RASTER_IMAGE_MIME_TYPES],
+    extensions: [...RASTER_IMAGE_EXTENSIONS],
     pasteMode: "when-has-image",
   })
   const [widthInput, setWidthInput] = React.useState("")
@@ -130,7 +133,7 @@ export function ResizeImageTool() {
       <FileDropzone
         title="Resize images without leaving the browser"
         description="Upload or paste a PNG, JPG, or WebP image, set the dimensions you want, and export a resized version locally."
-        accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+        accept={RASTER_IMAGE_ACCEPT}
         helperText="Aspect ratio stays locked by default, and paste support works here too."
         isLoading={isLoading}
         error={error}

@@ -1,9 +1,7 @@
 import type { Metadata } from "next"
 
-import { PageHero } from "@/components/site/page-hero"
-import { PageShell } from "@/components/site/page-shell"
+import { ToolPage } from "@/components/site/tool-page"
 import { TrimTransparentPixelsTool } from "@/components/tools/trim-transparent-pixels-tool"
-import { Separator } from "@/components/ui/separator"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
@@ -14,15 +12,11 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function TrimTransparentPixelsPage() {
   return (
-    <main>
-      <PageShell>
-        <PageHero
-          title="Trim transparent padding from logos, icons, and stickers"
-          description="Upload a transparent PNG or WebP image and imagetools will detect the visible bounds, preview the tighter crop, and export the result locally."
-        />
-        <Separator />
-        <TrimTransparentPixelsTool />
-      </PageShell>
-    </main>
+    <ToolPage
+      title="Trim transparent padding from logos, icons, and stickers"
+      description="Upload a transparent PNG or WebP image and imagetools will detect the visible bounds, preview the tighter crop, and export the result locally."
+    >
+      <TrimTransparentPixelsTool />
+    </ToolPage>
   )
 }

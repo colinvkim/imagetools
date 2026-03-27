@@ -29,6 +29,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
+import { getNormalizedFileName } from "@/lib/file-input"
 import {
   canvasToBlob,
   downloadBlob,
@@ -36,6 +37,11 @@ import {
 } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import { getImageDimensions, loadImageElement } from "@/lib/image/load-image"
+import {
+  RASTER_IMAGE_ACCEPT,
+  RASTER_IMAGE_EXTENSIONS,
+  RASTER_IMAGE_MIME_TYPES,
+} from "@/lib/image/raster"
 
 type UploadedRaster = {
   file: File
@@ -46,12 +52,6 @@ type UploadedRaster = {
   fileSize: number
 }
 
-const ACCEPTED_RASTER_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"] as const
-const ACCEPTED_RASTER_MIME_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-] as const
 const OUTPUT_FORMAT_OPTIONS = [
   {
     label: "PNG",
@@ -69,37 +69,14 @@ const OUTPUT_FORMAT_OPTIONS = [
   },
 ] as const
 
-function getDefaultRasterExtension(file: File) {
-  switch (file.type) {
-    case "image/png":
-      return ".png"
-    case "image/jpeg":
-      return ".jpg"
-    case "image/webp":
-      return ".webp"
-    default:
-      return ".png"
-  }
-}
-
-function getNormalizedRasterFileName(file: File, index = 0) {
-  const trimmedName = file.name.trim()
-
-  if (trimmedName) {
-    return trimmedName
-  }
-
-  return `pasted-image-${index + 1}${getDefaultRasterExtension(file)}`
-}
-
 function isAcceptedRaster(file: File) {
   const lowerCaseName = file.name.toLowerCase()
 
   return (
-    ACCEPTED_RASTER_MIME_TYPES.includes(
-      file.type as (typeof ACCEPTED_RASTER_MIME_TYPES)[number]
+    RASTER_IMAGE_MIME_TYPES.includes(
+      file.type as (typeof RASTER_IMAGE_MIME_TYPES)[number]
     ) ||
-    ACCEPTED_RASTER_EXTENSIONS.some((extension) =>
+    RASTER_IMAGE_EXTENSIONS.some((extension) =>
       lowerCaseName.endsWith(extension)
     )
   )
@@ -113,7 +90,10 @@ async function parseRasterFile(file: File, index = 0): Promise<UploadedRaster> {
 
     return {
       file,
-      fileName: getNormalizedRasterFileName(file, index),
+      fileName: getNormalizedFileName(file, {
+        fallbackBaseName: "pasted-image",
+        index,
+      }),
       objectUrl,
       width: dimensions.width,
       height: dimensions.height,
@@ -239,7 +219,7 @@ export function RasterConvertTool() {
       <FileDropzone
         title="Convert PNG, JPG, and WebP images"
         description="Choose one image or a whole batch, preview the first item instantly, and export fresh PNG or WebP files without uploading anything anywhere."
-        accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+        accept={RASTER_IMAGE_ACCEPT}
         helperText="Bulk upload is supported here. Output format is chosen after upload, and the browser may ask you to allow multiple downloads."
         isLoading={isLoading}
         error={error}

@@ -24,12 +24,14 @@ import { exportRectCrop } from "@/lib/image/crop"
 import { getRasterExportConfig } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
+  TRANSPARENT_RASTER_IMAGE_ACCEPT,
+  TRANSPARENT_RASTER_IMAGE_EXTENSIONS,
+  TRANSPARENT_RASTER_IMAGE_MIME_TYPES,
+} from "@/lib/image/raster"
+import {
   detectTransparentBounds,
   type TrimDetectionResult,
 } from "@/lib/image/trim"
-
-const IMAGE_UPLOAD_MIME_TYPES = ["image/png", "image/webp"]
-const IMAGE_UPLOAD_EXTENSIONS = [".png", ".webp"]
 
 function TrimPreview({
   imageUrl,
@@ -115,8 +117,8 @@ function TrimPreview({
 
 export function TrimTransparentPixelsTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
-    mimeTypes: IMAGE_UPLOAD_MIME_TYPES,
-    extensions: IMAGE_UPLOAD_EXTENSIONS,
+    mimeTypes: [...TRANSPARENT_RASTER_IMAGE_MIME_TYPES],
+    extensions: [...TRANSPARENT_RASTER_IMAGE_EXTENSIONS],
     pasteMode: "when-has-image",
   })
   const [trimResult, setTrimResult] =
@@ -187,7 +189,7 @@ export function TrimTransparentPixelsTool() {
       <FileDropzone
         title="Trim transparent pixels from logos, icons, and stickers"
         description="Upload or paste a transparent PNG or WebP image and imagetools will detect the visible bounds automatically."
-        accept=".png,.webp,image/png,image/webp"
+        accept={TRANSPARENT_RASTER_IMAGE_ACCEPT}
         helperText="Works best for assets with transparent padding around the subject."
         isLoading={isLoading}
         error={error}

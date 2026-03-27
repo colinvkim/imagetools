@@ -51,10 +51,12 @@ import {
   type RectCrop,
 } from "@/lib/image/crop"
 import { formatFileSize } from "@/lib/image/format"
-
+import {
+  GENERIC_IMAGE_EDIT_ACCEPT,
+  GENERIC_IMAGE_EDIT_EXTENSIONS,
+  GENERIC_IMAGE_EDIT_MIME_TYPES,
+} from "@/lib/image/raster"
 const RADIUS_PRESETS = ["16", "32", "64", "96"] as const
-const IMAGE_UPLOAD_MIME_TYPES = ["image/*"]
-const IMAGE_UPLOAD_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"]
 
 function getRadiusValue(value: string, maxRadius: number) {
   const parsedValue = Number.parseInt(value, 10)
@@ -127,8 +129,8 @@ function RoundedPreview({
 
 export function RoundedCornersTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
-    mimeTypes: IMAGE_UPLOAD_MIME_TYPES,
-    extensions: IMAGE_UPLOAD_EXTENSIONS,
+    mimeTypes: [...GENERIC_IMAGE_EDIT_MIME_TYPES],
+    extensions: [...GENERIC_IMAGE_EDIT_EXTENSIONS],
     pasteMode: "when-has-image",
   })
   const [crop, setCrop] = React.useState<RectCrop | null>(null)
@@ -169,7 +171,7 @@ export function RoundedCornersTool() {
       <FileDropzone
         title="Add rounded corners to an image"
         description="Upload or paste an image, keep the full frame or crop it in a dialog, choose a preset or custom radius, and export a transparent PNG."
-        accept="image/*,.jpg,.jpeg,.png,.webp"
+        accept={GENERIC_IMAGE_EDIT_ACCEPT}
         helperText="Paste, drag and drop, or browse from your device."
         isLoading={isLoading}
         error={error}
