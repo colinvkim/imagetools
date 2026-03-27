@@ -90,7 +90,7 @@ export function CircleCropTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
     mimeTypes: IMAGE_UPLOAD_MIME_TYPES,
     extensions: IMAGE_UPLOAD_EXTENSIONS,
-    enablePaste: true,
+    pasteMode: "when-has-image",
   })
   const [crop, setCrop] = React.useState<SquareCrop | null>(null)
   const [isEditorOpen, setIsEditorOpen] = React.useState(false)

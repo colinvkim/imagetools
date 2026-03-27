@@ -122,7 +122,7 @@ export function ResizeImageTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
     mimeTypes: RESIZE_MIME_TYPES,
     extensions: RESIZE_EXTENSIONS,
-    enablePaste: true,
+    pasteMode: "when-has-image",
   })
   const [widthInput, setWidthInput] = React.useState("")
   const [heightInput, setHeightInput] = React.useState("")

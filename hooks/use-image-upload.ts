@@ -8,6 +8,10 @@ import {
   useState,
 } from "react"
 
+import {
+  getAcceptedClipboardFiles,
+  matchesAcceptedFile,
+} from "@/lib/file-input"
 import { getImageDimensions } from "@/lib/image/load-image"
 
 type UploadedImage = {
@@ -23,64 +27,14 @@ type UploadedImage = {
 type UseImageUploadOptions = {
   mimeTypes?: string[]
   extensions?: string[]
-  enablePaste?: boolean
-}
-
-function matchesAcceptedFile(
-  file: File,
-  mimeTypes: string[],
-  extensions: string[]
-) {
-  const lowerName = file.name.toLowerCase()
-
-  const matchesMimeType =
-    mimeTypes.length === 0 ||
-    mimeTypes.some((mimeType) => {
-      if (mimeType === "image/*") {
-        return file.type.startsWith("image/")
-      }
-
-      return file.type === mimeType
-    })
-
-  const matchesExtension =
-    extensions.length === 0 ||
-    extensions.some((extension) => lowerName.endsWith(extension.toLowerCase()))
-
-  return matchesMimeType || matchesExtension
-}
-
-function getPasteImageFile(
-  event: ClipboardEvent,
-  mimeTypes: string[],
-  extensions: string[]
-) {
-  const items = event.clipboardData?.items
-
-  if (!items) {
-    return null
-  }
-
-  for (const item of Array.from(items)) {
-    if (!item.type.startsWith("image/")) {
-      continue
-    }
-
-    const file = item.getAsFile()
-
-    if (file && matchesAcceptedFile(file, mimeTypes, extensions)) {
-      return file
-    }
-  }
-
-  return null
+  pasteMode?: "never" | "always" | "when-empty" | "when-has-image"
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}) {
   const {
     mimeTypes = ["image/*"],
     extensions = [],
-    enablePaste = false,
+    pasteMode = "never",
   } = options
 
   const [image, setImage] = useState<UploadedImage | null>(null)
@@ -176,12 +130,17 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   }, [image])
 
   useEffect(() => {
-    if (!enablePaste) {
+    const shouldEnablePaste =
+      pasteMode === "always" ||
+      (pasteMode === "when-empty" && !image) ||
+      (pasteMode === "when-has-image" && Boolean(image))
+
+    if (!shouldEnablePaste) {
       return
     }
 
     const onPaste = (event: ClipboardEvent) => {
-      const file = getPasteImageFile(event, mimeTypes, extensions)
+      const file = getAcceptedClipboardFiles(event, mimeTypes, extensions)[0]
 
       if (!file) {
         return
@@ -196,7 +155,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     return () => {
       document.removeEventListener("paste", onPaste)
     }
-  }, [enablePaste, extensions, mimeTypes, selectFile])
+  }, [extensions, image, mimeTypes, pasteMode, selectFile])
 
   return {
     image,

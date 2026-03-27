@@ -1,6 +1,14 @@
 "use client"
 
-import { type ChangeEvent, useId, useRef, useState } from "react"
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { ImageUp, LoaderCircle, Sparkles } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -13,6 +21,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  getAcceptedClipboardFiles,
+  parseAcceptAttribute,
+} from "@/lib/file-input"
 import { cn } from "@/lib/utils"
 
 type FileDropzoneProps = {
@@ -45,21 +57,25 @@ export function FileDropzone({
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const acceptedFiles = useMemo(() => parseAcceptAttribute(accept), [accept])
 
-  const handleSelectedFiles = async (files: File[]) => {
-    if (files.length === 0) {
-      return
-    }
+  const handleSelectedFiles = useCallback(
+    async (files: File[]) => {
+      if (files.length === 0) {
+        return
+      }
 
-    if (multiple && onFilesSelect) {
-      await onFilesSelect(files)
-      return
-    }
+      if (multiple && onFilesSelect) {
+        await onFilesSelect(files)
+        return
+      }
 
-    if (onFileSelect) {
-      await onFileSelect(files[0]!)
-    }
-  }
+      if (onFileSelect) {
+        await onFileSelect(files[0]!)
+      }
+    },
+    [multiple, onFileSelect, onFilesSelect]
+  )
 
   const handleInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
@@ -71,6 +87,38 @@ export function FileDropzone({
     await handleSelectedFiles(files)
     event.target.value = ""
   }
+
+  useEffect(() => {
+    if (!supportsPaste) {
+      return
+    }
+
+    const onPaste = (event: ClipboardEvent) => {
+      const files = getAcceptedClipboardFiles(
+        event,
+        acceptedFiles.mimeTypes,
+        acceptedFiles.extensions
+      )
+
+      if (files.length === 0) {
+        return
+      }
+
+      event.preventDefault()
+      void handleSelectedFiles(files)
+    }
+
+    document.addEventListener("paste", onPaste)
+
+    return () => {
+      document.removeEventListener("paste", onPaste)
+    }
+  }, [
+    acceptedFiles.extensions,
+    acceptedFiles.mimeTypes,
+    handleSelectedFiles,
+    supportsPaste,
+  ])
 
   return (
     <Card

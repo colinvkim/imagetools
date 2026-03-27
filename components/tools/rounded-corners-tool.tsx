@@ -129,7 +129,7 @@ export function RoundedCornersTool() {
   const { image, error, isLoading, clear, selectFile } = useImageUpload({
     mimeTypes: IMAGE_UPLOAD_MIME_TYPES,
     extensions: IMAGE_UPLOAD_EXTENSIONS,
-    enablePaste: true,
+    pasteMode: "when-has-image",
   })
   const [crop, setCrop] = React.useState<RectCrop | null>(null)
   const [radiusInput, setRadiusInput] = React.useState("32")

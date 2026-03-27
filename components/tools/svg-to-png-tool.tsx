@@ -245,28 +245,6 @@ export function SvgToPngTool() {
 
   React.useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
-      const items = event.clipboardData?.items
-
-      if (!items) {
-        return
-      }
-
-      for (const item of Array.from(items)) {
-        if (item.type !== "image/svg+xml") {
-          continue
-        }
-
-        const file = item.getAsFile()
-
-        if (!file) {
-          continue
-        }
-
-        event.preventDefault()
-        void handleFilesSelect([file])
-        return
-      }
-
       const markup = getSvgMarkupFromClipboard(event)
 
       if (!markup) {

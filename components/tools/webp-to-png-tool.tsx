@@ -92,20 +92,6 @@ function getNormalizedRasterFileName(file: File, index = 0) {
   return `pasted-image-${index + 1}${getDefaultRasterExtension(file)}`
 }
 
-function getAcceptedPastedRasterFiles(event: ClipboardEvent) {
-  const items = event.clipboardData?.items
-
-  if (!items) {
-    return []
-  }
-
-  const files = Array.from(items)
-    .map((item) => item.getAsFile())
-    .filter((file): file is File => file !== null)
-
-  return files.filter(isAcceptedRaster)
-}
-
 function isAcceptedRaster(file: File) {
   const lowerCaseName = file.name.toLowerCase()
 
@@ -119,10 +105,7 @@ function isAcceptedRaster(file: File) {
   )
 }
 
-async function parseRasterFile(
-  file: File,
-  index = 0
-): Promise<UploadedRaster> {
+async function parseRasterFile(file: File, index = 0): Promise<UploadedRaster> {
   const objectUrl = URL.createObjectURL(file)
 
   try {
@@ -229,25 +212,6 @@ export function WebpToPngTool() {
     },
     [replaceItems, resetActionState, setError, setIsLoading]
   )
-
-  React.useEffect(() => {
-    const onPaste = (event: ClipboardEvent) => {
-      const pastedFiles = getAcceptedPastedRasterFiles(event)
-
-      if (pastedFiles.length === 0) {
-        return
-      }
-
-      event.preventDefault()
-      void handleFilesSelect(pastedFiles)
-    }
-
-    document.addEventListener("paste", onPaste)
-
-    return () => {
-      document.removeEventListener("paste", onPaste)
-    }
-  }, [handleFilesSelect])
 
   const selectedOutputFormat =
     OUTPUT_FORMAT_OPTIONS.find(
