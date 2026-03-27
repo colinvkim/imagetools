@@ -55,6 +55,22 @@ const SCALE_OPTIONS = [
   { label: "4x", value: "4" },
   { label: "8x", value: "8" },
 ] as const
+const OUTPUT_FORMAT_OPTIONS = [
+  {
+    label: "PNG",
+    value: "png",
+    mimeType: "image/png",
+    extension: ".png",
+    quality: undefined,
+  },
+  {
+    label: "WebP",
+    value: "webp",
+    mimeType: "image/webp",
+    extension: ".webp",
+    quality: 0.92,
+  },
+] as const
 
 function isAcceptedSvg(file: File) {
   return (
@@ -147,6 +163,7 @@ export function SvgToPngTool() {
   } = useObjectUrlBatch<UploadedSvg>()
   const [selectedScale, setSelectedScale] = React.useState("1")
   const [outputWidthInput, setOutputWidthInput] = React.useState("")
+  const [outputFormatValue, setOutputFormatValue] = React.useState("png")
 
   const handleFilesSelect = React.useCallback(
     async (files: File[]) => {
@@ -174,6 +191,7 @@ export function SvgToPngTool() {
         if (firstSvg) {
           setSelectedScale("1")
           setOutputWidthInput(String(Math.round(firstSvg.width)))
+          setOutputFormatValue("png")
         }
 
         if (invalidCount > 0) {
@@ -208,6 +226,7 @@ export function SvgToPngTool() {
         replaceItems([pastedSvg])
         setSelectedScale("1")
         setOutputWidthInput(String(Math.round(pastedSvg.width)))
+        setOutputFormatValue("png")
       } catch {
         setError("We couldn't read that SVG. Please try another file.")
       } finally {
@@ -221,6 +240,7 @@ export function SvgToPngTool() {
     clear()
     setSelectedScale("1")
     setOutputWidthInput("")
+    setOutputFormatValue("png")
   }, [clear])
 
   React.useEffect(() => {
@@ -287,6 +307,10 @@ export function SvgToPngTool() {
     Math.round(outputWidth / firstSvg.aspectRatio)
   )
   const totalFileSize = svgs.reduce((sum, svg) => sum + svg.fileSize, 0)
+  const outputFormat =
+    OUTPUT_FORMAT_OPTIONS.find(
+      (format) => format.value === outputFormatValue
+    ) ?? OUTPUT_FORMAT_OPTIONS[0]
 
   const handleScaleChange = (value: string) => {
     if (!firstSvg || !value) {
@@ -304,6 +328,15 @@ export function SvgToPngTool() {
     setOutputWidthInput(event.target.value)
   }
 
+  const handleFormatChange = (value: string) => {
+    if (!value) {
+      return
+    }
+
+    resetActionState()
+    setOutputFormatValue(value)
+  }
+
   const handleConvertAll = async () => {
     await runAction({
       action: async () => {
@@ -312,16 +345,25 @@ export function SvgToPngTool() {
             ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
             : outputWidth
           const svgHeight = Math.max(1, Math.round(svgWidth / svg.aspectRatio))
-          const blob = await rasterizeSvgToPng(svg.content, svgWidth, svgHeight)
+          const blob = await rasterizeSvgToPng(
+            svg.content,
+            svgWidth,
+            svgHeight,
+            outputFormat.mimeType,
+            outputFormat.quality
+          )
           const fileName =
             Math.round(svg.width) === svgWidth
-              ? replaceFileExtension(svg.fileName, ".png")
-              : replaceFileExtension(svg.fileName, `-${svgWidth}w.png`)
+              ? replaceFileExtension(svg.fileName, outputFormat.extension)
+              : replaceFileExtension(
+                  svg.fileName,
+                  `-${svgWidth}w${outputFormat.extension}`
+                )
 
           downloadBlob(blob, fileName)
         }
       },
-      successMessage: `${svgs.length} PNG download${svgs.length === 1 ? "" : "s"} started successfully.`,
+      successMessage: `${svgs.length} ${outputFormat.label} download${svgs.length === 1 ? "" : "s"} started successfully.`,
       fallbackErrorMessage: "Conversion failed. Please try another SVG batch.",
     })
   }
@@ -330,14 +372,15 @@ export function SvgToPngTool() {
     <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
       <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
         <Badge variant="outline" className="self-start">
-          SVG to PNG
+          SVG Export
         </Badge>
         <CardTitle className="text-2xl tracking-tight">
-          Rasterize a whole SVG batch at once
+          Export a whole SVG batch as PNG or WebP
         </CardTitle>
         <CardDescription>
-          Use a shared export width or a scale preset, then download PNGs for
-          every selected SVG directly from the browser.
+          Use a shared export width or a scale preset, choose the output format,
+          then download raster exports for every selected SVG directly from the
+          browser.
         </CardDescription>
         <CardAction>
           <Button variant="outline" onClick={handleClear}>
@@ -407,11 +450,48 @@ export function SvgToPngTool() {
                   <CardTitle className="text-lg">{outputHeight}px</CardTitle>
                 </CardHeader>
               </Card>
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Format</CardDescription>
+                  <CardTitle className="text-lg">
+                    {outputFormat.label}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
             </div>
 
             <Separator />
 
             <FieldGroup>
+              <Field>
+                <FieldLabel>Output format</FieldLabel>
+                <FieldContent>
+                  <ToggleGroup
+                    multiple={false}
+                    variant="outline"
+                    value={[outputFormatValue]}
+                    onValueChange={(groupValue) =>
+                      handleFormatChange(groupValue[0] ?? "")
+                    }
+                    className="flex w-full flex-wrap gap-2"
+                  >
+                    {OUTPUT_FORMAT_OPTIONS.map((format) => (
+                      <ToggleGroupItem
+                        key={format.value}
+                        value={format.value}
+                        className="min-w-16"
+                      >
+                        {format.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                  <FieldDescription>
+                    PNG is best for lossless export. WebP is useful when you
+                    want smaller files.
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
+
               <Field>
                 <FieldLabel>Scale presets</FieldLabel>
                 <FieldContent>
@@ -483,8 +563,8 @@ export function SvgToPngTool() {
               <Download />
               <AlertTitle>Output</AlertTitle>
               <AlertDescription>
-                Every SVG downloads as a PNG with its own aspect ratio
-                preserved.
+                Every SVG downloads as a {outputFormat.label} with its own
+                aspect ratio preserved.
               </AlertDescription>
             </Alert>
 
@@ -514,8 +594,8 @@ export function SvgToPngTool() {
             >
               <Download data-icon="inline-start" />
               {isConverting
-                ? "Exporting PNGs..."
-                : `Download ${svgs.length} PNG${svgs.length === 1 ? "" : "s"}`}
+                ? `Exporting ${outputFormat.label}...`
+                : `Download ${svgs.length} ${outputFormat.label}${svgs.length === 1 ? "" : "s"}`}
             </Button>
           </CardFooter>
         </Card>

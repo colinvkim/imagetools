@@ -50,10 +50,10 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     href: "/svg-to-png",
-    title: "SVG to PNG",
+    title: "SVG Export",
     description:
-      "Rasterize SVGs at the size you want without sending artwork to a server.",
-    shortDescription: "Rasterize SVGs at the size you choose.",
+      "Rasterize SVGs as PNG or WebP at the size you want without sending artwork to a server.",
+    shortDescription: "Rasterize SVGs as PNG or WebP.",
     icon: Scaling,
   },
 ]

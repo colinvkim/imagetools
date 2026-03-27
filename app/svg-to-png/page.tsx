@@ -7,9 +7,9 @@ import { SvgToPngTool } from "@/components/tools/svg-to-png-tool"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "SVG to PNG",
+  title: "SVG Export",
   description:
-    "Rasterize SVG artwork into PNG files at the size you choose without leaving the browser.",
+    "Rasterize SVG artwork into PNG or WebP files at the size you choose without leaving the browser.",
 })
 
 export default function SvgToPngPage() {
@@ -17,8 +17,8 @@ export default function SvgToPngPage() {
     <main>
       <PageShell>
         <PageHero
-          title="Convert SVGs into PNGs at the exact size you need"
-          description="Upload vector artwork, choose an export width, and rasterize it locally without a server round-trip."
+          title="Export SVGs as PNG or WebP at the exact size you need"
+          description="Upload vector artwork, choose an export format and width, and rasterize it locally without a server round-trip."
         />
         <Separator />
         <SvgToPngTool />

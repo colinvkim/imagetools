@@ -93,7 +93,9 @@ export function createSvgObjectUrl(svgContent: string) {
 export async function rasterizeSvgToPng(
   svgContent: string,
   outputWidth: number,
-  outputHeight: number
+  outputHeight: number,
+  outputMimeType = "image/png",
+  quality?: number
 ) {
   const objectUrl = createSvgObjectUrl(svgContent)
 
@@ -112,7 +114,7 @@ export async function rasterizeSvgToPng(
     context.clearRect(0, 0, outputWidth, outputHeight)
     context.drawImage(image, 0, 0, outputWidth, outputHeight)
 
-    return await canvasToBlob(canvas, "image/png")
+    return await canvasToBlob(canvas, outputMimeType, quality)
   } finally {
     URL.revokeObjectURL(objectUrl)
   }

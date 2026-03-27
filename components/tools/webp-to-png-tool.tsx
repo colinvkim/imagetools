@@ -96,42 +96,45 @@ export function WebpToPngTool() {
     runAction,
   } = useObjectUrlBatch<UploadedWebp>()
 
-  const handleFilesSelect = React.useCallback(async (files: File[]) => {
-    setIsLoading(true)
-    setError(null)
-    resetActionState()
+  const handleFilesSelect = React.useCallback(
+    async (files: File[]) => {
+      setIsLoading(true)
+      setError(null)
+      resetActionState()
 
-    const validFiles = files.filter(isAcceptedWebp)
-    const invalidCount = files.length - validFiles.length
+      const validFiles = files.filter(isAcceptedWebp)
+      const invalidCount = files.length - validFiles.length
 
-    if (validFiles.length === 0) {
-      replaceItems([])
-      setError("No valid WebP files were selected.")
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      const parsedImages = await Promise.all(validFiles.map(parseWebpFile))
-
-      replaceItems(parsedImages)
-
-      if (invalidCount > 0) {
-        setError(
-          `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only WebP files are supported here.`
-        )
+      if (validFiles.length === 0) {
+        replaceItems([])
+        setError("No valid WebP files were selected.")
+        setIsLoading(false)
+        return
       }
-    } catch (caughtError) {
-      replaceItems([])
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "We couldn't read those WebP files. Please try again."
-      )
-    } finally {
-      setIsLoading(false)
-    }
-  }, [replaceItems, resetActionState, setError, setIsLoading])
+
+      try {
+        const parsedImages = await Promise.all(validFiles.map(parseWebpFile))
+
+        replaceItems(parsedImages)
+
+        if (invalidCount > 0) {
+          setError(
+            `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only WebP files are supported here.`
+          )
+        }
+      } catch (caughtError) {
+        replaceItems([])
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "We couldn't read those WebP files. Please try again."
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [replaceItems, resetActionState, setError, setIsLoading]
+  )
 
   const handleConvertAll = async () => {
     if (images.length === 0) {
