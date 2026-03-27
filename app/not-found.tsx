@@ -14,7 +14,7 @@ import {
 
 export default function NotFound() {
   return (
-    <main>
+    <main id="main-content">
       <PageShell className="py-12">
         <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)]">
           <CardHeader className="gap-4">

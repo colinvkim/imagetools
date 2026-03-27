@@ -347,12 +347,14 @@ export function RoundedCornersTool() {
                   <FieldContent>
                     <Input
                       id="rounded-radius"
+                      name="rounded-radius"
                       type="number"
                       min={0}
                       max={Math.floor(maxRadius)}
                       step={1}
                       value={radiusInput}
                       onChange={handleRadiusChange}
+                      autoComplete="off"
                       inputMode="numeric"
                     />
                     <FieldDescription>

@@ -58,6 +58,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="font-sans antialiased">
       <body className="min-h-svh bg-background text-foreground">
         <ThemeProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            Skip to main content
+          </a>
           <div className="min-h-svh bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_top_right,rgba(45,212,191,0.12),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.08),transparent_26%),linear-gradient(to_bottom,rgba(255,255,255,0.98),rgba(248,250,252,0.96))] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,116,144,0.28),transparent_24%),radial-gradient(circle_at_top_right,rgba(15,118,110,0.24),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.14),transparent_24%),linear-gradient(to_bottom,rgba(2,6,23,0.98),rgba(15,23,42,0.96))]">
             <SiteHeader />
             {children}

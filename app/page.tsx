@@ -29,7 +29,7 @@ export default function Page() {
   const toolCountLabel = `${TOOL_DEFINITIONS.length} tools live`
 
   return (
-    <main>
+    <main id="main-content">
       <PageShell className="gap-10 py-10 sm:py-12">
         <section className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">

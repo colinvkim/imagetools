@@ -26,7 +26,7 @@ export function SiteFooter() {
                 <Link
                   key={tool.href}
                   href={tool.href}
-                  className="hover:text-foreground"
+                  className="rounded-sm transition-colors hover:text-foreground focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   {tool.title}
                 </Link>

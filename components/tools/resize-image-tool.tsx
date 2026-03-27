@@ -395,11 +395,13 @@ export function ResizeImageTool() {
                 <FieldContent>
                   <Input
                     id="resize-width"
+                    name="resize-width"
                     type="number"
                     min={1}
                     step={1}
                     value={widthInput}
                     onChange={handleWidthChange}
+                    autoComplete="off"
                     inputMode="numeric"
                   />
                 </FieldContent>
@@ -410,11 +412,13 @@ export function ResizeImageTool() {
                 <FieldContent>
                   <Input
                     id="resize-height"
+                    name="resize-height"
                     type="number"
                     min={1}
                     step={1}
                     value={heightInput}
                     onChange={handleHeightChange}
+                    autoComplete="off"
                     inputMode="numeric"
                   />
                   <FieldDescription>

@@ -506,11 +506,13 @@ export function SvgToPngTool() {
                 <FieldContent>
                   <Input
                     id="svg-output-width"
+                    name="svg-output-width"
                     type="number"
                     min={1}
                     step={1}
                     value={outputWidthInput}
                     onChange={handleWidthChange}
+                    autoComplete="off"
                     inputMode="numeric"
                   />
                   <FieldDescription>
