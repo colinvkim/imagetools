@@ -34,6 +34,7 @@ import {
   canvasToBlob,
   downloadBlob,
   getFileNameWithoutExtension,
+  getRasterExportConfig,
 } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import { loadImageElement } from "@/lib/image/load-image"
@@ -55,33 +56,6 @@ function getDimensionValue(value: string, fallback: number) {
   }
 
   return parsedValue
-}
-
-function getExportConfig(mimeType: string) {
-  if (mimeType === "image/jpeg") {
-    return {
-      mimeType: "image/jpeg",
-      extension: ".jpg",
-      label: "JPG",
-      quality: 0.92,
-    }
-  }
-
-  if (mimeType === "image/webp") {
-    return {
-      mimeType: "image/webp",
-      extension: ".webp",
-      label: "WebP",
-      quality: 0.92,
-    }
-  }
-
-  return {
-    mimeType: "image/png",
-    extension: ".png",
-    label: "PNG",
-    quality: undefined,
-  }
 }
 
 function ResizePreview({
@@ -169,7 +143,7 @@ export function ResizeImageTool() {
   const aspectRatio = image.width / image.height
   const outputWidth = getDimensionValue(widthInput, image.width)
   const outputHeight = getDimensionValue(heightInput, image.height)
-  const exportConfig = getExportConfig(image.mimeType)
+  const exportConfig = getRasterExportConfig(image.mimeType)
 
   const handleScaleChange = (value: string) => {
     if (!image || !value) {

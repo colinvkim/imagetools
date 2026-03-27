@@ -2,13 +2,14 @@ import type { Metadata } from "next"
 
 export const SITE_NAME = "imagetools"
 export const SITE_DESCRIPTION =
-  "Fast, client-side image tools for conversion, cropping, and rounded corners."
+  "Fast, client-side image tools for conversion, resizing, cropping, and rounded corners."
 export const SITE_KEYWORDS = [
   "image tools",
   "client-side image tools",
   "webp to png",
   "svg to png",
   "circle crop",
+  "aspect ratio crop",
   "rounded corners",
   "resize image",
   "browser image editor",

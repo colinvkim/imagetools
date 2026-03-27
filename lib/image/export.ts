@@ -43,6 +43,33 @@ export function getFileNameWithoutExtension(fileName: string) {
   return fileName.slice(0, lastDotIndex)
 }
 
+export function getRasterExportConfig(mimeType: string) {
+  if (mimeType === "image/jpeg") {
+    return {
+      mimeType: "image/jpeg",
+      extension: ".jpg",
+      label: "JPG",
+      quality: 0.92,
+    }
+  }
+
+  if (mimeType === "image/webp") {
+    return {
+      mimeType: "image/webp",
+      extension: ".webp",
+      label: "WebP",
+      quality: 0.92,
+    }
+  }
+
+  return {
+    mimeType: "image/png",
+    extension: ".png",
+    label: "PNG",
+    quality: undefined,
+  }
+}
+
 export function downloadBlob(blob: Blob, fileName: string) {
   const objectUrl = URL.createObjectURL(blob)
   const link = document.createElement("a")

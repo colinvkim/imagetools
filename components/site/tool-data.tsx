@@ -1,4 +1,5 @@
 import {
+  Crop,
   CircleDashed,
   Expand,
   FileImage,
@@ -39,6 +40,14 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Position a square crop, preview the result, and export a transparent circular PNG.",
     shortDescription: "Crop to a transparent circular PNG.",
     icon: CircleDashed,
+  },
+  {
+    href: "/aspect-ratio-crop",
+    title: "Aspect Ratio Crop",
+    description:
+      "Crop PNG, JPG, and WebP images with presets like 1:1, 4:5, 3:2, 16:9, or freeform.",
+    shortDescription: "Crop images to common aspect ratios.",
+    icon: Crop,
   },
   {
     href: "/rounded-corners",

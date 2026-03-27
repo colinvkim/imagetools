@@ -2,6 +2,7 @@ import {
   canvasToBlob,
   downloadBlob,
   getFileNameWithoutExtension,
+  getRasterExportConfig,
 } from "@/lib/image/export"
 import { loadImageElement } from "@/lib/image/load-image"
 
@@ -57,6 +58,37 @@ export function createFullRectCrop(
   }
 }
 
+export function createCenteredAspectRatioCrop(
+  imageWidth: number,
+  imageHeight: number,
+  aspectRatio: number,
+  centerX = imageWidth / 2,
+  centerY = imageHeight / 2
+): RectCrop {
+  const safeAspectRatio = Math.max(aspectRatio, 0.0001)
+  const imageAspectRatio = imageWidth / imageHeight
+  let width = imageWidth
+  let height = imageHeight
+
+  if (imageAspectRatio > safeAspectRatio) {
+    height = imageHeight
+    width = height * safeAspectRatio
+  } else {
+    width = imageWidth
+    height = width / safeAspectRatio
+  }
+
+  const x = Math.min(Math.max(centerX - width / 2, 0), imageWidth - width)
+  const y = Math.min(Math.max(centerY - height / 2, 0), imageHeight - height)
+
+  return {
+    x,
+    y,
+    width,
+    height,
+  }
+}
+
 export function clampRectCrop(
   crop: RectCrop,
   imageWidth: number,
@@ -66,6 +98,42 @@ export function clampRectCrop(
 ): RectCrop {
   const width = Math.min(Math.max(crop.width, minWidth), imageWidth)
   const height = Math.min(Math.max(crop.height, minHeight), imageHeight)
+  const x = Math.min(Math.max(crop.x, 0), imageWidth - width)
+  const y = Math.min(Math.max(crop.y, 0), imageHeight - height)
+
+  return { x, y, width, height }
+}
+
+export function clampRectCropToAspectRatio(
+  crop: RectCrop,
+  imageWidth: number,
+  imageHeight: number,
+  aspectRatio: number,
+  minWidth = 48,
+  minHeight = 48
+): RectCrop {
+  const safeAspectRatio = Math.max(aspectRatio, 0.0001)
+  const requiredMinWidth = Math.max(minWidth, minHeight * safeAspectRatio)
+  const maxWidth = imageWidth
+  const maxHeight = imageHeight
+  let width = Math.max(crop.width, requiredMinWidth)
+  let height = width / safeAspectRatio
+
+  if (height < minHeight) {
+    height = minHeight
+    width = height * safeAspectRatio
+  }
+
+  if (width > maxWidth) {
+    width = maxWidth
+    height = width / safeAspectRatio
+  }
+
+  if (height > maxHeight) {
+    height = maxHeight
+    width = height * safeAspectRatio
+  }
+
   const x = Math.min(Math.max(crop.x, 0), imageWidth - width)
   const y = Math.min(Math.max(crop.y, 0), imageHeight - height)
 
@@ -171,4 +239,51 @@ export async function exportRoundedCrop(params: {
   const blob = await canvasToBlob(canvas, "image/png")
   const baseFileName = getFileNameWithoutExtension(params.fileName)
   downloadBlob(blob, `${baseFileName || params.fileName}-rounded.png`)
+}
+
+export async function exportRectCrop(params: {
+  imageUrl: string
+  crop: RectCrop
+  fileName: string
+  mimeType: string
+}) {
+  const sourceImage = await loadImageElement(params.imageUrl)
+  const outputWidth = Math.max(1, Math.round(params.crop.width))
+  const outputHeight = Math.max(1, Math.round(params.crop.height))
+  const canvas = document.createElement("canvas")
+  canvas.width = outputWidth
+  canvas.height = outputHeight
+
+  const context = canvas.getContext("2d")
+
+  if (!context) {
+    throw new Error("Canvas is not available in this browser.")
+  }
+
+  context.clearRect(0, 0, outputWidth, outputHeight)
+  context.drawImage(
+    sourceImage,
+    params.crop.x,
+    params.crop.y,
+    params.crop.width,
+    params.crop.height,
+    0,
+    0,
+    outputWidth,
+    outputHeight
+  )
+
+  const exportConfig = getRasterExportConfig(params.mimeType)
+  const blob = await canvasToBlob(
+    canvas,
+    exportConfig.mimeType,
+    exportConfig.quality
+  )
+  const baseFileName = getFileNameWithoutExtension(params.fileName)
+  downloadBlob(
+    blob,
+    `${baseFileName || params.fileName}-${outputWidth}x${outputHeight}${exportConfig.extension}`
+  )
+
+  return exportConfig
 }

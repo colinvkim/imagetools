@@ -3,7 +3,11 @@
 import * as React from "react"
 
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
-import { clampRectCrop, type RectCrop } from "@/lib/image/crop"
+import {
+  clampRectCrop,
+  clampRectCropToAspectRatio,
+  type RectCrop,
+} from "@/lib/image/crop"
 import { cn } from "@/lib/utils"
 
 type RectCropEditorProps = {
@@ -14,6 +18,7 @@ type RectCropEditorProps = {
   onCropChange: (crop: RectCrop) => void
   minCropWidth?: number
   minCropHeight?: number
+  aspectRatio?: number
   className?: string
 }
 
@@ -54,6 +59,7 @@ export function RectCropEditor({
   onCropChange,
   minCropWidth = 64,
   minCropHeight = 64,
+  aspectRatio,
   className,
 }: RectCropEditorProps) {
   const dragStateRef = React.useRef<DragState | null>(null)
@@ -62,16 +68,32 @@ export function RectCropEditor({
   const commitCropChange = React.useCallback(
     (nextCrop: RectCrop) => {
       onCropChange(
-        clampRectCrop(
-          nextCrop,
-          imageWidth,
-          imageHeight,
-          minCropWidth,
-          minCropHeight
-        )
+        aspectRatio
+          ? clampRectCropToAspectRatio(
+              nextCrop,
+              imageWidth,
+              imageHeight,
+              aspectRatio,
+              minCropWidth,
+              minCropHeight
+            )
+          : clampRectCrop(
+              nextCrop,
+              imageWidth,
+              imageHeight,
+              minCropWidth,
+              minCropHeight
+            )
       )
     },
-    [imageHeight, imageWidth, minCropHeight, minCropWidth, onCropChange]
+    [
+      aspectRatio,
+      imageHeight,
+      imageWidth,
+      minCropHeight,
+      minCropWidth,
+      onCropChange,
+    ]
   )
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -100,10 +122,37 @@ export function RectCropEditor({
       return
     }
 
+    if (!aspectRatio) {
+      commitCropChange({
+        ...dragState.initialCrop,
+        width: dragState.initialCrop.width + deltaX,
+        height: dragState.initialCrop.height + deltaY,
+      })
+      return
+    }
+
+    const widthDeltaFromHeight = deltaY * aspectRatio
+    const useHeightDrivenResize =
+      Math.abs(widthDeltaFromHeight) > Math.abs(deltaX)
+    let width = useHeightDrivenResize
+      ? dragState.initialCrop.width + widthDeltaFromHeight
+      : dragState.initialCrop.width + deltaX
+    let height = width / aspectRatio
+
+    if (height < minCropHeight) {
+      height = minCropHeight
+      width = height * aspectRatio
+    }
+
+    if (width < minCropWidth) {
+      width = minCropWidth
+      height = width / aspectRatio
+    }
+
     commitCropChange({
       ...dragState.initialCrop,
-      width: dragState.initialCrop.width + deltaX,
-      height: dragState.initialCrop.height + deltaY,
+      width,
+      height,
     })
   }
 

@@ -123,6 +123,7 @@ export default function OpenGraphImage() {
               "Raster Convert",
               "SVG Export",
               "Circle Crop",
+              "Aspect Ratio Crop",
               "Rounded Corners",
             ].map((label) => (
               <div
