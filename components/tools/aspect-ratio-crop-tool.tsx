@@ -161,7 +161,7 @@ export function AspectRatioCropTool() {
 
     setCrop(createFullRectCrop(image.width, image.height))
     setSelectedAspectRatio("freeform")
-    setIsEditorOpen(true)
+    setIsEditorOpen(false)
     setExportError(null)
     setExportSuccess(null)
   }, [image])
