@@ -125,6 +125,7 @@ export default function OpenGraphImage() {
               "Circle Crop",
               "Aspect Ratio Crop",
               "Rounded Corners",
+              "Trim Transparent Pixels",
             ].map((label) => (
               <div
                 key={label}

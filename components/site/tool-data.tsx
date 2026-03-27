@@ -3,6 +3,7 @@ import {
   CircleDashed,
   Expand,
   FileImage,
+  Scan,
   type LucideIcon,
   ScanFace,
   Scaling,
@@ -56,6 +57,14 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Apply rounded corners with presets or a custom radius while preserving any aspect ratio.",
     shortDescription: "Add rounded corners to any image shape.",
     icon: ScanFace,
+  },
+  {
+    href: "/trim-transparent-pixels",
+    title: "Trim Transparent Pixels",
+    description:
+      "Detect transparent padding around PNG and WebP images, preview the tighter bounds, and export the trimmed result locally.",
+    shortDescription: "Auto-crop transparent edges.",
+    icon: Scan,
   },
   {
     href: "/svg-to-png",
