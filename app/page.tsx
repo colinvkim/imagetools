@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, MonitorSmartphone, ShieldCheck, Sparkles, Zap } from "lucide-react"
+import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react"
 
 import { PageShell } from "@/components/site/page-shell"
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
@@ -135,47 +135,6 @@ export default function Page() {
               )
             })}
           </div>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-3">
-          <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
-            <CardHeader>
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                <ShieldCheck className="size-5 text-primary" />
-              </div>
-              <CardTitle>Privacy-First</CardTitle>
-              <CardDescription className="leading-6">
-                Core workflows stay client-side, so common conversions and
-                cleanup tasks do not require file uploads.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
-            <CardHeader>
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                <Zap className="size-5 text-primary" />
-              </div>
-              <CardTitle>Quick One-Off Tasks</CardTitle>
-              <CardDescription className="leading-6">
-                Open a tool, adjust the one thing that matters, and export the
-                result without a long editing workflow.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="rounded-[1.5rem] border-border/70 bg-card/80">
-            <CardHeader>
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                <MonitorSmartphone className="size-5 text-primary" />
-              </div>
-              <CardTitle>Desktop & Mobile</CardTitle>
-              <CardDescription className="leading-6">
-                The interface is designed to stay usable across desktop and
-                mobile browsers without changing the core flow.
-              </CardDescription>
-            </CardHeader>
-          </Card>
         </section>
       </PageShell>
     </main>
