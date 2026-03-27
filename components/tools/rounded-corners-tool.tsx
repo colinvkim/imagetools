@@ -162,7 +162,7 @@ export function RoundedCornersTool() {
         description="Upload or paste an image, keep the full frame or crop it in a dialog, choose a preset or custom radius, and export a transparent PNG."
         accept={GENERIC_IMAGE_EDIT_ACCEPT}
         acceptedFormatsLabel="PNG, JPG, or WebP"
-        helperText="Paste, drag and drop, or browse from your device."
+        helperText="Keep the full frame or open Adjust crop before exporting."
         isLoading={isLoading}
         error={error}
         supportsPaste

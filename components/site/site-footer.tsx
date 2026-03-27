@@ -20,7 +20,7 @@ export function SiteFooter() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <h2 className="text-sm font-medium">Live tools</h2>
+            <h2 className="text-sm font-medium">Tools</h2>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               {TOOL_DEFINITIONS.map((tool) => (
                 <Link

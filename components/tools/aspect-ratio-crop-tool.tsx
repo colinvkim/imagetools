@@ -233,7 +233,7 @@ export function AspectRatioCropTool() {
         description="Upload or paste a PNG, JPG, or WebP image, choose an aspect-ratio preset or go freeform, and export the cropped result locally."
         accept={RASTER_IMAGE_ACCEPT}
         acceptedFormatsLabel="PNG, JPG, or WebP"
-        helperText="Paste, drag and drop, or browse from your device."
+        helperText="Choose a preset later, then open Adjust crop when you're ready."
         isLoading={isLoading}
         error={error}
         supportsPaste

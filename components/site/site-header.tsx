@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
+import { ThemeToggle } from "@/components/site/theme-toggle"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
@@ -27,8 +28,11 @@ export function SiteHeader() {
             <Badge variant="outline">All client-side</Badge>
           </Link>
 
-          <div className="hidden text-sm text-muted-foreground lg:block">
-            Fast image utilities that keep files on your device.
+          <div className="flex items-center gap-3">
+            <div className="hidden text-sm text-muted-foreground lg:block">
+              Fast image utilities that keep files on your device.
+            </div>
+            <ThemeToggle />
           </div>
         </div>
 

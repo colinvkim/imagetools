@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -26,7 +25,7 @@ export const metadata: Metadata = createPageMetadata({
 })
 
 export default function Page() {
-  const toolCountLabel = `${TOOL_DEFINITIONS.length} tools live`
+  const toolCountLabel = `${TOOL_DEFINITIONS.length} tools available`
 
   return (
     <main id="main-content">
@@ -98,7 +97,7 @@ export default function Page() {
         <section className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Badge variant="outline" className="self-start">
-              Live tools
+              Tools
             </Badge>
             <h2 className="text-2xl font-semibold tracking-tight">
               {TOOL_DEFINITIONS.length} focused utilities, one consistent
@@ -122,9 +121,6 @@ export default function Page() {
                         <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
                           <Icon className="size-5 text-primary" />
                         </div>
-                        <CardAction>
-                          <Badge>Live</Badge>
-                        </CardAction>
                       </div>
                       <CardTitle className="text-xl">{tool.title}</CardTitle>
                       <CardDescription className="line-clamp-3 leading-6">

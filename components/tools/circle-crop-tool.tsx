@@ -145,7 +145,7 @@ export function CircleCropTool() {
         description="Upload or paste an image, adjust a square crop in a dialog, and export a transparent PNG with a circular cutout."
         accept={GENERIC_IMAGE_EDIT_ACCEPT}
         acceptedFormatsLabel="PNG, JPG, or WebP"
-        helperText="Paste, drag and drop, or browse from your device."
+        helperText="The crop editor stays closed until you choose Adjust crop."
         isLoading={isLoading}
         error={error}
         supportsPaste
