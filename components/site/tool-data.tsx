@@ -26,10 +26,10 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     href: "/webp-to-png",
-    title: "WebP to PNG",
+    title: "Raster Convert",
     description:
-      "Convert WebP assets into PNGs locally, with instant preview and download.",
-    shortDescription: "Convert WebP assets into PNGs locally.",
+      "Convert PNG, JPG, and WebP assets into PNG or WebP locally, with instant preview and batch download.",
+    shortDescription: "Convert raster images into PNG or WebP.",
     icon: FileImage,
   },
   {

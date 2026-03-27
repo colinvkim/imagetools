@@ -19,7 +19,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Separator } from "@/components/ui/separator"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
 import {
   canvasToBlob,
@@ -29,7 +37,7 @@ import {
 import { formatFileSize } from "@/lib/image/format"
 import { getImageDimensions, loadImageElement } from "@/lib/image/load-image"
 
-type UploadedWebp = {
+type UploadedRaster = {
   file: File
   fileName: string
   objectUrl: string
@@ -38,11 +46,43 @@ type UploadedWebp = {
   fileSize: number
 }
 
-function isAcceptedWebp(file: File) {
-  return file.type === "image/webp" || file.name.toLowerCase().endsWith(".webp")
+const ACCEPTED_RASTER_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"] as const
+const ACCEPTED_RASTER_MIME_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+] as const
+const OUTPUT_FORMAT_OPTIONS = [
+  {
+    label: "PNG",
+    value: "png",
+    mimeType: "image/png",
+    extension: ".png",
+    quality: undefined,
+  },
+  {
+    label: "WebP",
+    value: "webp",
+    mimeType: "image/webp",
+    extension: ".webp",
+    quality: 0.92,
+  },
+] as const
+
+function isAcceptedRaster(file: File) {
+  const lowerCaseName = file.name.toLowerCase()
+
+  return (
+    ACCEPTED_RASTER_MIME_TYPES.includes(
+      file.type as (typeof ACCEPTED_RASTER_MIME_TYPES)[number]
+    ) ||
+    ACCEPTED_RASTER_EXTENSIONS.some((extension) =>
+      lowerCaseName.endsWith(extension)
+    )
+  )
 }
 
-async function parseWebpFile(file: File): Promise<UploadedWebp> {
+async function parseRasterFile(file: File): Promise<UploadedRaster> {
   const objectUrl = URL.createObjectURL(file)
 
   try {
@@ -62,7 +102,10 @@ async function parseWebpFile(file: File): Promise<UploadedWebp> {
   }
 }
 
-async function exportWebpFileAsPng(image: UploadedWebp) {
+async function exportRasterFile(
+  image: UploadedRaster,
+  outputFormat: (typeof OUTPUT_FORMAT_OPTIONS)[number]
+) {
   const sourceImage = await loadImageElement(image.objectUrl)
   const canvas = document.createElement("canvas")
   canvas.width = image.width
@@ -76,8 +119,15 @@ async function exportWebpFileAsPng(image: UploadedWebp) {
 
   context.drawImage(sourceImage, 0, 0, image.width, image.height)
 
-  const blob = await canvasToBlob(canvas, "image/png")
-  downloadBlob(blob, replaceFileExtension(image.fileName, ".png"))
+  const blob = await canvasToBlob(
+    canvas,
+    outputFormat.mimeType,
+    outputFormat.quality
+  )
+  downloadBlob(
+    blob,
+    replaceFileExtension(image.fileName, outputFormat.extension)
+  )
 }
 
 export function WebpToPngTool() {
@@ -94,7 +144,8 @@ export function WebpToPngTool() {
     clear,
     resetActionState,
     runAction,
-  } = useObjectUrlBatch<UploadedWebp>()
+  } = useObjectUrlBatch<UploadedRaster>()
+  const [outputFormatValue, setOutputFormatValue] = React.useState("png")
 
   const handleFilesSelect = React.useCallback(
     async (files: File[]) => {
@@ -102,24 +153,25 @@ export function WebpToPngTool() {
       setError(null)
       resetActionState()
 
-      const validFiles = files.filter(isAcceptedWebp)
+      const validFiles = files.filter(isAcceptedRaster)
       const invalidCount = files.length - validFiles.length
 
       if (validFiles.length === 0) {
         replaceItems([])
-        setError("No valid WebP files were selected.")
+        setError("No valid PNG, JPG, or WebP files were selected.")
         setIsLoading(false)
         return
       }
 
       try {
-        const parsedImages = await Promise.all(validFiles.map(parseWebpFile))
+        const parsedImages = await Promise.all(validFiles.map(parseRasterFile))
 
         replaceItems(parsedImages)
+        setOutputFormatValue("png")
 
         if (invalidCount > 0) {
           setError(
-            `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only WebP files are supported here.`
+            `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only PNG, JPG, and WebP files are supported here.`
           )
         }
       } catch (caughtError) {
@@ -127,7 +179,7 @@ export function WebpToPngTool() {
         setError(
           caughtError instanceof Error
             ? caughtError.message
-            : "We couldn't read those WebP files. Please try again."
+            : "We couldn't read those images. Please try again."
         )
       } finally {
         setIsLoading(false)
@@ -135,6 +187,11 @@ export function WebpToPngTool() {
     },
     [replaceItems, resetActionState, setError, setIsLoading]
   )
+
+  const selectedOutputFormat =
+    OUTPUT_FORMAT_OPTIONS.find(
+      (option) => option.value === outputFormatValue
+    ) ?? OUTPUT_FORMAT_OPTIONS[0]
 
   const handleConvertAll = async () => {
     if (images.length === 0) {
@@ -144,10 +201,10 @@ export function WebpToPngTool() {
     await runAction({
       action: async () => {
         for (const image of images) {
-          await exportWebpFileAsPng(image)
+          await exportRasterFile(image, selectedOutputFormat)
         }
       },
-      successMessage: `${images.length} PNG download${images.length === 1 ? "" : "s"} started successfully.`,
+      successMessage: `${images.length} ${selectedOutputFormat.label} download${images.length === 1 ? "" : "s"} started successfully.`,
       fallbackErrorMessage: "Conversion failed. Please try another batch.",
     })
   }
@@ -155,10 +212,10 @@ export function WebpToPngTool() {
   if (images.length === 0) {
     return (
       <FileDropzone
-        title="Convert WebP files into PNGs"
-        description="Choose one WebP or a whole batch, preview the first item instantly, and export PNGs without uploading anything anywhere."
-        accept=".webp,image/webp"
-        helperText="Bulk upload is supported here. The browser may ask you to allow multiple downloads."
+        title="Convert PNG, JPG, and WebP images"
+        description="Choose one image or a whole batch, preview the first item instantly, and export fresh PNG or WebP files without uploading anything anywhere."
+        accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+        helperText="Bulk upload is supported here. Output format is chosen after upload, and the browser may ask you to allow multiple downloads."
         isLoading={isLoading}
         error={error}
         supportsPaste
@@ -175,14 +232,14 @@ export function WebpToPngTool() {
     <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
       <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
         <Badge variant="outline" className="self-start">
-          WebP to PNG
+          Raster Convert
         </Badge>
         <CardTitle className="text-2xl tracking-tight">
-          Batch-convert WebP files into PNGs
+          Batch-convert raster images in the browser
         </CardTitle>
         <CardDescription>
-          Every selected WebP keeps its original pixel dimensions and downloads
-          as a PNG directly from the browser.
+          Every selected image keeps its original pixel dimensions and downloads
+          as PNG or WebP directly from the browser.
         </CardDescription>
         <CardAction>
           <Button variant="outline" onClick={clear}>
@@ -211,7 +268,7 @@ export function WebpToPngTool() {
             <AlertTitle>Batch preview</AlertTitle>
             <AlertDescription>
               Showing the first file in the batch. Clicking download starts a
-              PNG download for every selected WebP.
+              {selectedOutputFormat.label} download for every selected image.
             </AlertDescription>
           </Alert>
         </div>
@@ -257,6 +314,43 @@ export function WebpToPngTool() {
               </Card>
             </div>
 
+            <Field>
+              <FieldLabel>Output format</FieldLabel>
+              <FieldDescription>
+                PNG is the safest default. WebP usually produces smaller files.
+              </FieldDescription>
+              <FieldContent>
+                <FieldGroup>
+                  <ToggleGroup
+                    multiple={false}
+                    variant="outline"
+                    value={[outputFormatValue]}
+                    onValueChange={(groupValue) => {
+                      const value = groupValue[0] ?? ""
+
+                      if (!value) {
+                        return
+                      }
+
+                      resetActionState()
+                      setOutputFormatValue(value)
+                    }}
+                    className="flex w-full flex-wrap justify-start gap-2"
+                  >
+                    {OUTPUT_FORMAT_OPTIONS.map((option) => (
+                      <ToggleGroupItem
+                        key={option.value}
+                        value={option.value}
+                        className="min-w-24"
+                      >
+                        {option.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </FieldGroup>
+              </FieldContent>
+            </Field>
+
             <Separator />
 
             <BatchFileList
@@ -272,8 +366,8 @@ export function WebpToPngTool() {
               <Download />
               <AlertTitle>Output</AlertTitle>
               <AlertDescription>
-                Each file downloads as a PNG with the same resolution as its
-                original WebP.
+                Each file downloads as a {selectedOutputFormat.label} with the
+                same resolution as its original image.
               </AlertDescription>
             </Alert>
 
@@ -303,8 +397,8 @@ export function WebpToPngTool() {
             >
               <Download data-icon="inline-start" />
               {isConverting
-                ? "Exporting PNGs..."
-                : `Download ${images.length} PNG${images.length === 1 ? "" : "s"}`}
+                ? `Exporting ${selectedOutputFormat.label}s...`
+                : `Download ${images.length} ${selectedOutputFormat.label}${images.length === 1 ? "" : "s"}`}
             </Button>
           </CardFooter>
         </Card>

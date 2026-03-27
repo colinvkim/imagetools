@@ -7,9 +7,9 @@ import { Separator } from "@/components/ui/separator"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "WebP to PNG",
+  title: "Raster Convert",
   description:
-    "Convert WebP images into PNG files locally with instant preview and direct download.",
+    "Convert PNG, JPG, and WebP images into PNG or WebP files locally with instant preview and direct download.",
 })
 
 export default function WebpToPngPage() {
@@ -17,8 +17,8 @@ export default function WebpToPngPage() {
     <main>
       <PageShell>
         <PageHero
-          title="Fast WebP to PNG conversion, fully in the browser"
-          description="Convert WebP images locally with instant preview and a direct PNG download."
+          title="Fast raster image conversion, fully in the browser"
+          description="Convert PNG, JPG, and WebP images locally with instant preview and direct PNG or WebP downloads."
         />
         <Separator />
         <WebpToPngTool />
