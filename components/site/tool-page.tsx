@@ -12,12 +12,10 @@ type ToolPageProps = {
 
 export function ToolPage({ title, description, children }: ToolPageProps) {
   return (
-    <main id="main-content">
-      <PageShell>
-        <PageHero title={title} description={description} />
-        <Separator />
-        {children}
-      </PageShell>
-    </main>
+    <PageShell>
+      <PageHero title={title} description={description} />
+      <Separator />
+      {children}
+    </PageShell>
   )
 }
