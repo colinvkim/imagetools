@@ -36,7 +36,7 @@ export default function NotFound() {
             <Alert>
               <AlertTitle>Try a live tool instead</AlertTitle>
               <AlertDescription>
-                Circle Crop, Rounded Corners, WebP to PNG, and SVG to PNG are
+                Circle Crop, Rounded Corners, Raster Convert, and SVG Export are
                 all available right now.
               </AlertDescription>
             </Alert>

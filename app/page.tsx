@@ -61,7 +61,7 @@ export default function Page() {
                   render={<Link href="/svg-to-png" />}
                 >
                   <ArrowRight data-icon="inline-start" />
-                  Open SVG to PNG
+                  Open SVG Export
                 </Button>
               </div>
             </div>

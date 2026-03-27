@@ -153,7 +153,7 @@ async function exportRasterFile(
   )
 }
 
-export function WebpToPngTool() {
+export function RasterConvertTool() {
   const {
     items: images,
     error,

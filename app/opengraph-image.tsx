@@ -120,8 +120,8 @@ export default function OpenGraphImage() {
           >
             {[
               "Resize Image",
-              "WebP to PNG",
-              "SVG to PNG",
+              "Raster Convert",
+              "SVG Export",
               "Circle Crop",
               "Rounded Corners",
             ].map((label) => (

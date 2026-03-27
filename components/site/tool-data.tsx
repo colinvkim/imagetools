@@ -25,7 +25,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     icon: Expand,
   },
   {
-    href: "/webp-to-png",
+    href: "/raster-convert",
     title: "Raster Convert",
     description:
       "Convert PNG, JPG, and WebP assets into PNG or WebP locally, with instant preview and batch download.",
