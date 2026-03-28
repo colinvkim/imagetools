@@ -13,7 +13,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function RoundedCornersPage() {
   return (
     <ToolPage
-      title="Add rounded corners with presets or a custom radius"
+      title="Add Rounded Corners with Presets or a Custom Radius"
       description="Crop if you want to, keep the original aspect ratio if you don’t, and export a transparent PNG entirely in the browser."
     >
       <RoundedCornersTool />

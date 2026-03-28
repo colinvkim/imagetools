@@ -401,14 +401,8 @@ export function SvgToPngTool() {
               label="Total size"
               value={formatFileSize(totalFileSize)}
             />
-            <ToolStatCard
-              label="Preview width"
-              value={`${outputWidth}px`}
-            />
-            <ToolStatCard
-              label="Preview height"
-              value={`${outputHeight}px`}
-            />
+            <ToolStatCard label="Preview width" value={`${outputWidth}px`} />
+            <ToolStatCard label="Preview height" value={`${outputHeight}px`} />
             <ToolStatCard label="Format" value={outputFormat.label} />
           </ToolStatGrid>
 

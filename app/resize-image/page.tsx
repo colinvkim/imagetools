@@ -13,7 +13,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function ResizeImagePage() {
   return (
     <ToolPage
-      title="Resize images with exact dimensions and quick scale presets"
+      title="Resize Images with Exact Dimensions and Quick Scale Presets"
       description="Upload a raster image, keep the aspect ratio locked if you want, and export a resized version locally without uploading anything."
     >
       <ResizeImageTool />

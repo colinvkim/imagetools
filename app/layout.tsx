@@ -44,8 +44,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#020617" },
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#17181c" },
   ],
 }
 
@@ -64,7 +64,7 @@ export default function RootLayout({
           >
             Skip to main content
           </a>
-          <div className="min-h-svh bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_top_right,rgba(45,212,191,0.12),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.08),transparent_26%),linear-gradient(to_bottom,rgba(255,255,255,0.98),rgba(248,250,252,0.96))] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,116,144,0.28),transparent_24%),radial-gradient(circle_at_top_right,rgba(15,118,110,0.24),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.14),transparent_24%),linear-gradient(to_bottom,rgba(2,6,23,0.98),rgba(15,23,42,0.96))]">
+          <div className="min-h-svh overflow-x-hidden">
             <SiteHeader />
             <main id="main-content">{children}</main>
             <Analytics />

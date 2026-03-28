@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
 import { ThemeToggle } from "@/components/site/theme-toggle"
-import { Badge } from "@/components/ui/badge"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 
@@ -13,27 +12,24 @@ export function SiteHeader() {
   const pathname = usePathname()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/75 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6">
+    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="flex items-center gap-3 rounded-2xl focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex min-w-0 items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <div className="rounded-2xl border border-border/70 bg-card/80 px-3 py-2 shadow-sm">
-              <span className="text-sm font-semibold tracking-tight">
+            <div className="min-w-0">
+              <div className="truncate text-lg font-semibold tracking-tight text-foreground">
                 imagetools
-              </span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Fast image utilities that run on-device.
+              </div>
             </div>
-            <Badge variant="outline">All client-side</Badge>
           </Link>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden text-sm text-muted-foreground lg:block">
-              Fast image utilities that keep files on your device.
-            </div>
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
         </div>
 
         <nav aria-label="Primary navigation">
@@ -43,7 +39,7 @@ export function SiteHeader() {
                 href="/"
                 aria-current={pathname === "/" ? "page" : undefined}
                 className={cn(
-                  "rounded-full px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  "rounded-full px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   pathname === "/"
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -57,7 +53,7 @@ export function SiteHeader() {
                   href={tool.href}
                   aria-current={pathname === tool.href ? "page" : undefined}
                   className={cn(
-                    "rounded-full px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "rounded-full px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                     pathname === tool.href
                       ? "bg-foreground text-background"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"

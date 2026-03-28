@@ -31,7 +31,7 @@ export function ToolWorkspace({
   badge,
   title,
   description,
-  resetLabel = "Choose another file",
+  resetLabel = "Choose Another File",
   onReset,
   resetIcon,
   preview,
@@ -39,13 +39,15 @@ export function ToolWorkspace({
   gridClassName,
 }: ToolWorkspaceProps) {
   return (
-    <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur">
-      <CardHeader className="bg-linear-to-r from-sky-500/12 via-teal-400/8 to-transparent">
+    <Card className="rounded-[1.5rem] border bg-card shadow-sm">
+      <CardHeader className="gap-3">
         <Badge variant="outline" className="self-start">
           {badge}
         </Badge>
         <CardTitle className="text-2xl tracking-tight">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardDescription className="max-w-3xl leading-7">
+          {description}
+        </CardDescription>
         {onReset ? (
           <CardAction>
             <Button variant="outline" onClick={onReset}>
@@ -85,14 +87,11 @@ export function ToolSettingsCard({
   contentClassName,
 }: ToolSettingsCardProps) {
   return (
-    <Card className="rounded-[1.5rem] border-border/70 bg-background/65">
+    <Card className="rounded-[1.25rem] border bg-card shadow-sm">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {fileName ? (
-          <CardDescription
-            className="min-w-0 truncate"
-            title={fileName}
-          >
+          <CardDescription className="min-w-0 truncate" title={fileName}>
             {fileName}
           </CardDescription>
         ) : null}
@@ -112,14 +111,7 @@ export function ToolStatGrid({
   className,
 }: React.ComponentProps<"div">) {
   return (
-    <div
-      className={cn(
-        "grid gap-3 sm:grid-cols-2",
-        className
-      )}
-    >
-      {children}
-    </div>
+    <div className={cn("grid gap-3 sm:grid-cols-2", className)}>{children}</div>
   )
 }
 
@@ -130,7 +122,7 @@ type ToolStatCardProps = {
 
 export function ToolStatCard({ label, value }: ToolStatCardProps) {
   return (
-    <Card size="sm">
+    <Card size="sm" className="border bg-card shadow-sm">
       <CardHeader>
         <CardDescription>{label}</CardDescription>
         <CardTitle className="text-lg tabular-nums">{value}</CardTitle>
@@ -143,5 +135,9 @@ export function ToolPrimaryFooter({
   children,
   className,
 }: React.ComponentProps<"div">) {
-  return <CardFooter className={cn("flex-col gap-2", className)}>{children}</CardFooter>
+  return (
+    <CardFooter className={cn("flex-col gap-2", className)}>
+      {children}
+    </CardFooter>
+  )
 }

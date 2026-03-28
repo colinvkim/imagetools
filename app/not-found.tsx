@@ -15,14 +15,14 @@ import {
 export default function NotFound() {
   return (
     <PageShell className="py-12">
-      <Card className="rounded-[2rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)]">
+      <Card className="rounded-[1.5rem] border bg-card shadow-sm">
         <CardHeader className="gap-4">
           <Badge variant="outline" className="self-start">
             Not Found
           </Badge>
           <div className="space-y-2">
             <CardTitle className="text-3xl tracking-tight">
-              That page doesn&apos;t exist.
+              That Page Does Not Exist.
             </CardTitle>
             <CardDescription className="max-w-2xl leading-6">
               The route may have changed, or the link may be broken. The core

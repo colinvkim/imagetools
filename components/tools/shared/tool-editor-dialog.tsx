@@ -32,7 +32,7 @@ export function ToolEditorDialog({
 }: ToolEditorDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100%-2rem)] w-[min(1120px,calc(100%-2rem))] max-w-[calc(100%-2rem)] overflow-hidden p-0 overscroll-contain sm:max-w-[min(1120px,calc(100%-2rem))]">
+      <DialogContent className="max-h-[calc(100%-2rem)] w-[min(1120px,calc(100%-2rem))] max-w-[calc(100%-2rem)] overflow-hidden overscroll-contain p-0 sm:max-w-[min(1120px,calc(100%-2rem))]">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

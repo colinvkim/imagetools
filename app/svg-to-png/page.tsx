@@ -13,7 +13,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function SvgToPngPage() {
   return (
     <ToolPage
-      title="Export SVGs as PNG or WebP at the exact size you need"
+      title="Export SVGs as PNG or WebP at the Exact Size You Need"
       description="Upload vector artwork, choose an export format and width, and rasterize it locally without a server round-trip."
     >
       <SvgToPngTool />

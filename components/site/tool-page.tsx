@@ -12,7 +12,7 @@ type ToolPageProps = {
 
 export function ToolPage({ title, description, children }: ToolPageProps) {
   return (
-    <PageShell>
+    <PageShell className="py-8 sm:py-10">
       <PageHero title={title} description={description} />
       <Separator />
       {children}

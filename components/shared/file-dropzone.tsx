@@ -97,6 +97,15 @@ export function FileDropzone({
     }
 
     const onPaste = (event: ClipboardEvent) => {
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.closest('input, textarea, select, [contenteditable="true"]'))
+      ) {
+        return
+      }
+
       const files = getAcceptedClipboardFiles(
         event,
         acceptedFiles.mimeTypes,
@@ -107,7 +116,6 @@ export function FileDropzone({
         return
       }
 
-      event.preventDefault()
       void handleSelectedFiles(files)
     }
 
@@ -128,18 +136,14 @@ export function FileDropzone({
       onDragEnter={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
       aria-busy={isLoading}
-      className={cn(
-        "relative rounded-[2rem] border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] backdrop-blur",
-        className
-      )}
+      className={cn("rounded-[1.5rem] border bg-card shadow-sm", className)}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-br from-sky-500/12 via-teal-400/8 to-transparent" />
-      <CardHeader className="relative">
+      <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-3">
             <Badge variant="outline" className="gap-2 self-start">
-              <Sparkles />
-              Client-side only
+              <Sparkles aria-hidden="true" />
+              Client-Side Only
             </Badge>
             <div className="flex flex-col gap-2">
               <CardTitle className="text-2xl tracking-tight">{title}</CardTitle>
@@ -148,20 +152,20 @@ export function FileDropzone({
               </CardDescription>
             </div>
           </div>
-          <div className="hidden rounded-3xl border border-border/70 bg-background/80 p-4 md:block">
-            <ImageUp className="size-6 text-primary" />
+          <div className="hidden rounded-2xl border bg-muted p-4 md:block">
+            <ImageUp aria-hidden="true" className="size-6 text-primary" />
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="relative flex flex-col gap-6 pb-6">
+      <CardContent className="flex flex-col gap-6 pb-6">
         <label
           htmlFor={inputId}
           className={cn(
-            "group flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 rounded-[1.5rem] border border-dashed px-6 py-10 text-center transition-colors motion-reduce:transition-none",
+            "group flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 rounded-[1.25rem] border border-dashed px-6 py-10 text-center transition-[background-color,border-color,box-shadow] motion-reduce:transition-none",
             isDragging
-              ? "border-sky-500 bg-sky-500/8"
-              : "border-border/80 bg-background/60 hover:border-sky-400/70 hover:bg-accent/30"
+              ? "border-primary bg-primary/5"
+              : "border-border bg-muted/40 hover:border-primary/50 hover:bg-muted/70"
           )}
           onDragOver={(event) => {
             event.preventDefault()
@@ -190,11 +194,14 @@ export function FileDropzone({
             void handleSelectedFiles(files)
           }}
         >
-          <div className="rounded-3xl border border-border/80 bg-card p-4 shadow-sm transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
+          <div className="rounded-2xl border bg-background p-4">
             {isLoading ? (
-              <LoaderCircle className="size-7 animate-spin text-primary" />
+              <LoaderCircle
+                aria-hidden="true"
+                className="size-7 animate-spin text-primary"
+              />
             ) : (
-              <ImageUp className="size-7 text-primary" />
+              <ImageUp aria-hidden="true" className="size-7 text-primary" />
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -217,11 +224,9 @@ export function FileDropzone({
           </div>
           <Separator className="max-w-sm" />
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="secondary">Drag & drop</Badge>
+            <Badge variant="secondary">Drag & Drop</Badge>
             <Badge variant="secondary">Browse</Badge>
-            {supportsPaste ? (
-              <Badge variant="secondary">Paste</Badge>
-            ) : null}
+            {supportsPaste ? <Badge variant="secondary">Paste</Badge> : null}
           </div>
           <Button
             type="button"
@@ -249,7 +254,7 @@ export function FileDropzone({
 
         {error ? (
           <Alert variant="destructive">
-            <Sparkles />
+            <Sparkles aria-hidden="true" />
             <AlertTitle>Upload problem</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>

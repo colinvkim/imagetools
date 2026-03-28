@@ -4,17 +4,16 @@ import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react"
 
 import { PageShell } from "@/components/site/page-shell"
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { createPageMetadata } from "@/lib/site-metadata"
 
@@ -24,87 +23,91 @@ export const metadata: Metadata = createPageMetadata({
     "Resize images, convert files, crop assets, trim transparent pixels, and rasterize artwork directly in your browser.",
 })
 
+const highlights = [
+  "Runs on-device for the core tool flows.",
+  "Works well on desktop and mobile.",
+  "Focused tools with a consistent workflow.",
+] as const
+
 export default function Page() {
   const toolCountLabel = `${TOOL_DEFINITIONS.length} tools available`
 
   return (
-    <PageShell className="gap-10 py-10 sm:py-12">
-      <section className="space-y-5">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline">{toolCountLabel}</Badge>
-          <Badge variant="outline">100% client-side</Badge>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.82fr)] lg:items-center">
-          <div className="flex min-w-0 flex-col gap-6">
-            <div className="space-y-4">
-              <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-                Fast image tools that work right in your browser.
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-                Convert files, crop images, and shape assets without sending
-                them to a server. Open a tool, drop in a file, and export what
-                you need.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Button size="lg" render={<Link href="/circle-crop" />}>
-                <Sparkles data-icon="inline-start" />
-                Try Circle Crop
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                render={<Link href="/svg-to-png" />}
-              >
-                <ArrowRight data-icon="inline-start" />
-                Open SVG Export
-              </Button>
-            </div>
+    <PageShell className="gap-10 py-8 sm:py-10">
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant="outline">{toolCountLabel}</Badge>
+            <Badge variant="outline">Client-Side</Badge>
           </div>
 
-          <Card className="rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)]">
-            <CardHeader className="gap-4">
-              <Badge variant="outline" className="self-start">
-                Privacy
-              </Badge>
-              <CardTitle className="text-2xl">
-                Files stay on your device
-              </CardTitle>
-              <CardDescription className="leading-6">
-                The current tool flows run entirely client-side, so common
-                conversions and crops do not require uploading your images.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Alert>
-                <ShieldCheck />
-                <AlertTitle>Built for quick, local work</AlertTitle>
-                <AlertDescription>
-                  Open a tool, process a file, and export it directly from the
-                  browser with minimal friction.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              Fast image tools that work directly in your browser.
+            </h1>
+            <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Resize, crop, convert, and clean up images without sending them to
+              a server. Open a tool, make the change, and export what you need.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button size="lg" render={<Link href="/resize-image" />}>
+              <Sparkles aria-hidden="true" data-icon="inline-start" />
+              Open Resize Image
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              render={<Link href="/circle-crop" />}
+            >
+              <ArrowRight aria-hidden="true" data-icon="inline-start" />
+              Open Circle Crop
+            </Button>
+          </div>
+
+          <ul className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+            {highlights.map((item) => (
+              <li key={item} className="rounded-xl border bg-card px-4 py-3">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
+
+        <Card className="rounded-[1.5rem] border bg-card shadow-sm">
+          <CardHeader className="gap-3">
+            <div className="flex items-center gap-3">
+              <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
+              <CardTitle className="text-xl">Files Stay Local</CardTitle>
+            </div>
+            <CardDescription className="leading-6">
+              The core tool flows run on-device, so common edits stay private
+              and feel fast.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Alert>
+              <AlertTitle>Simple workflow</AlertTitle>
+              <AlertDescription>
+                Choose a tool, drop in a file, preview the result, and export
+                immediately.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
       </section>
 
       <Separator />
 
-      <section className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <Badge variant="outline" className="self-start">
+      <section className="space-y-5">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             Tools
-          </Badge>
-          <h2 className="text-2xl font-semibold tracking-tight">
-            {TOOL_DEFINITIONS.length} focused utilities, one consistent
-            workflow
           </h2>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Every tool follows the same idea: drop in a file, preview the
-            result, adjust only what matters, and export immediately.
+            Each tool handles one common image task with a consistent,
+            low-friction workflow.
           </p>
         </div>
 
@@ -113,24 +116,31 @@ export default function Page() {
             const Icon = tool.icon
 
             return (
-              <Link key={tool.href} href={tool.href} className="group block">
-                <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/85 shadow-[0_18px_50px_-35px_rgba(0,0,0,0.35)] transition-[transform,box-shadow] group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-ring/40 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
-                        <Icon className="size-5 text-primary" />
-                      </div>
-                    </div>
+              <Card
+                key={tool.href}
+                className="h-full rounded-[1.5rem] border bg-card shadow-sm transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-md"
+              >
+                <CardHeader className="gap-4">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
+                    <Icon aria-hidden="true" className="size-5 text-primary" />
+                  </div>
+                  <div className="space-y-2">
                     <CardTitle className="text-xl">{tool.title}</CardTitle>
                     <CardDescription className="line-clamp-3 leading-6">
                       {tool.shortDescription}
                     </CardDescription>
-                  </CardHeader>
-                  <CardFooter className="text-sm text-muted-foreground">
-                    Open tool
-                  </CardFooter>
-                </Card>
-              </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    render={<Link href={tool.href} />}
+                  >
+                    Open Tool
+                  </Button>
+                </CardContent>
+              </Card>
             )
           })}
         </div>
