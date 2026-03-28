@@ -1,5 +1,3 @@
-import Link from "next/link"
-
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
 import { Separator } from "@/components/ui/separator"
 
@@ -22,13 +20,13 @@ export function SiteFooter() {
             <h3 className="text-sm font-medium text-foreground">Tools</h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               {TOOL_DEFINITIONS.map((tool) => (
-                <Link
+                <a
                   key={tool.href}
                   href={tool.href}
                   className="rounded-sm transition-colors hover:text-foreground focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   {tool.title}
-                </Link>
+                </a>
               ))}
             </div>
           </div>

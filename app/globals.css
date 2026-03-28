@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@view-transition {
+  navigation: auto;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -158,23 +162,83 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    mix-blend-mode: normal;
-    animation-duration: 520ms;
+  ::view-transition-group(root) {
+    animation-duration: 560ms;
     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+  }
+
   ::view-transition-old(root) {
-    animation-name: theme-old-dissolve;
+    animation-name: page-root-old;
   }
 
   ::view-transition-new(root) {
-    animation-name: theme-new-dissolve;
+    animation-name: page-root-new;
+  }
+
+  ::view-transition-group(site-brand),
+  ::view-transition-group(active-nav-pill),
+  ::view-transition-group(tool-resize-image),
+  ::view-transition-group(tool-raster-convert),
+  ::view-transition-group(tool-circle-crop),
+  ::view-transition-group(tool-aspect-ratio-crop),
+  ::view-transition-group(tool-rounded-corners),
+  ::view-transition-group(tool-trim-transparent-pixels),
+  ::view-transition-group(tool-svg-to-png) {
+    animation-duration: 720ms;
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+
+  ::view-transition-old(site-brand),
+  ::view-transition-new(site-brand),
+  ::view-transition-old(active-nav-pill),
+  ::view-transition-new(active-nav-pill),
+  ::view-transition-old(tool-resize-image),
+  ::view-transition-new(tool-resize-image),
+  ::view-transition-old(tool-raster-convert),
+  ::view-transition-new(tool-raster-convert),
+  ::view-transition-old(tool-circle-crop),
+  ::view-transition-new(tool-circle-crop),
+  ::view-transition-old(tool-aspect-ratio-crop),
+  ::view-transition-new(tool-aspect-ratio-crop),
+  ::view-transition-old(tool-rounded-corners),
+  ::view-transition-new(tool-rounded-corners),
+  ::view-transition-old(tool-trim-transparent-pixels),
+  ::view-transition-new(tool-trim-transparent-pixels),
+  ::view-transition-old(tool-svg-to-png),
+  ::view-transition-new(tool-svg-to-png) {
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(active-nav-pill),
+  ::view-transition-new(active-nav-pill) {
+    border-radius: 999px;
+  }
+
+  ::view-transition-old(tool-resize-image),
+  ::view-transition-new(tool-resize-image),
+  ::view-transition-old(tool-raster-convert),
+  ::view-transition-new(tool-raster-convert),
+  ::view-transition-old(tool-circle-crop),
+  ::view-transition-new(tool-circle-crop),
+  ::view-transition-old(tool-aspect-ratio-crop),
+  ::view-transition-new(tool-aspect-ratio-crop),
+  ::view-transition-old(tool-rounded-corners),
+  ::view-transition-new(tool-rounded-corners),
+  ::view-transition-old(tool-trim-transparent-pixels),
+  ::view-transition-new(tool-trim-transparent-pixels),
+  ::view-transition-old(tool-svg-to-png),
+  ::view-transition-new(tool-svg-to-png) {
+    border-radius: 2rem;
+    overflow: clip;
   }
 }
 
-@keyframes theme-old-dissolve {
+@keyframes page-root-old {
   from {
     opacity: 1;
     filter: blur(0) saturate(1);
@@ -183,20 +247,20 @@
 
   to {
     opacity: 0;
-    filter: blur(8px) saturate(0.96);
-    transform: scale(1.008);
+    filter: blur(6px) saturate(0.98);
+    transform: scale(1.01);
   }
 }
 
-@keyframes theme-new-dissolve {
+@keyframes page-root-new {
   from {
     opacity: 0;
-    filter: blur(8px) saturate(1.04) brightness(1.015);
-    transform: scale(0.992);
+    filter: blur(10px) saturate(1.03) brightness(1.01);
+    transform: scale(0.985);
   }
 
   60% {
-    opacity: 0.88;
+    opacity: 0.92;
   }
 
   to {

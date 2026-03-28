@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { ToolPage } from "@/components/site/tool-page"
+import { getToolDefinition } from "@/components/site/tool-data"
 import { RasterConvertTool } from "@/components/tools/raster-convert-tool"
 import { createPageMetadata } from "@/lib/site-metadata"
 
@@ -10,11 +11,17 @@ export const metadata: Metadata = createPageMetadata({
     "Convert PNG, JPG, and WebP images into PNG or WebP files locally with instant preview and direct download.",
 })
 
+const tool = getToolDefinition("/raster-convert")
+
 export default function RasterConvertPage() {
   return (
     <ToolPage
+      badge={tool.title}
       title="Convert Raster Images"
       description="Convert PNG, JPG, and WebP images locally with instant preview and direct PNG or WebP downloads."
+      icon={tool.icon}
+      transitionName={tool.transitionName}
+      accent={tool.accent}
     >
       <RasterConvertTool />
     </ToolPage>

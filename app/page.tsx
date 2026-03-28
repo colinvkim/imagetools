@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import Link from "next/link"
+import type { CSSProperties } from "react"
 import { ArrowRight, Sparkles } from "lucide-react"
 
 import { PageShell } from "@/components/site/page-shell"
@@ -54,7 +54,7 @@ export default function Page() {
             <Button
               size="lg"
               nativeButton={false}
-              render={<Link href="/resize-image" />}
+              render={<a href="/resize-image" />}
             >
               <Sparkles aria-hidden="true" data-icon="inline-start" />
               Open Resize Image
@@ -63,7 +63,7 @@ export default function Page() {
               variant="outline"
               size="lg"
               nativeButton={false}
-              render={<Link href="/circle-crop" />}
+              render={<a href="/circle-crop" />}
             >
               <ArrowRight aria-hidden="true" data-icon="inline-start" />
               Open Circle Crop
@@ -118,14 +118,27 @@ export default function Page() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {TOOL_DEFINITIONS.map((tool) => {
             const Icon = tool.icon
+            const cardStyle = {
+              viewTransitionName: tool.transitionName,
+              "--tool-accent": tool.accent,
+            } as CSSProperties
 
             return (
               <Card
                 key={tool.href}
-                className="h-full rounded-[1.5rem] border bg-card shadow-sm transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-md"
+                className="group relative h-full overflow-hidden rounded-[1.5rem] border bg-card shadow-sm transition-[transform,border-color,box-shadow] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+                style={cardStyle}
               >
-                <CardHeader className="gap-4">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 opacity-100"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(circle at top left, var(--tool-accent), transparent 62%)",
+                  }}
+                />
+                <CardHeader className="relative gap-4">
+                  <div className="flex size-10 items-center justify-center rounded-xl border border-border/70 bg-background/85 shadow-sm backdrop-blur-sm">
                     <Icon aria-hidden="true" className="size-5 text-primary" />
                   </div>
                   <div className="space-y-2">
@@ -140,7 +153,7 @@ export default function Page() {
                     variant="outline"
                     className="w-full"
                     nativeButton={false}
-                    render={<Link href={tool.href} />}
+                    render={<a href={tool.href} />}
                   >
                     Open Tool
                   </Button>
