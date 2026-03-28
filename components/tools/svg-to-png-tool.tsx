@@ -421,15 +421,17 @@ export function SvgToPngTool() {
             />
           </CheckerboardSurface>
 
-          <Alert>
-            <ScanSearch />
-            <AlertTitle>Batch preview</AlertTitle>
-            <AlertDescription>
-              Browse the batch with the preview controls or select a file from
-              the list. The current width controls still apply to every
-              selected SVG.
-            </AlertDescription>
-          </Alert>
+          {svgs.length > 1 ? (
+            <Alert>
+              <ScanSearch />
+              <AlertTitle>Batch preview</AlertTitle>
+              <AlertDescription>
+                Browse the batch with the preview controls or select a file
+                from the list. The current width controls still apply to every
+                selected SVG.
+              </AlertDescription>
+            </Alert>
+          ) : null}
         </>
       }
       settings={

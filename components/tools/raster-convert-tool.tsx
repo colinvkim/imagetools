@@ -302,15 +302,17 @@ export function RasterConvertTool() {
             />
           </CheckerboardSurface>
 
-          <Alert>
-            <Files />
-            <AlertTitle>Batch preview</AlertTitle>
-            <AlertDescription>
-              Browse the batch with the preview controls or select a file from
-              the list. Clicking download still starts a{" "}
-              {selectedOutputFormat.label} download for every selected image.
-            </AlertDescription>
-          </Alert>
+          {images.length > 1 ? (
+            <Alert>
+              <Files />
+              <AlertTitle>Batch preview</AlertTitle>
+              <AlertDescription>
+                Browse the batch with the preview controls or select a file
+                from the list. Clicking download still starts a{" "}
+                {selectedOutputFormat.label} download for every selected image.
+              </AlertDescription>
+            </Alert>
+          ) : null}
         </>
       }
       settings={
