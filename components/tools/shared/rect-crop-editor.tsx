@@ -266,11 +266,10 @@ function getHandleStrokeMetrics(crop: RectCrop) {
   const minDimension = Math.min(crop.width, crop.height)
 
   return {
-    frameStroke: Math.max(1.5, minDimension * 0.004),
+    frameStroke: Math.max(1.25, minDimension * 0.0035),
     gridStroke: Math.max(0.8, minDimension * 0.0022),
-    handleStroke: Math.max(3, minDimension * 0.012),
-    cornerLength: Math.max(18, minDimension * 0.085),
-    edgeLength: Math.max(22, minDimension * 0.12),
+    handleStroke: Math.max(3.5, minDimension * 0.011),
+    cornerLength: Math.max(20, minDimension * 0.09),
     hitSize: Math.max(28, minDimension * 0.15),
   }
 }
@@ -437,13 +436,15 @@ export function RectCropEditor({
     gridStroke,
     handleStroke,
     cornerLength,
-    edgeLength,
     hitSize,
   } = getHandleStrokeMetrics(crop)
   const gridOpacity = dragStateRef.current || isGridVisible ? 0.72 : 0
   const displayAspectRatio = imageWidth / imageHeight
-  const cornerOffset = frameStroke * 0.5
-  const edgeHandleRadius = handleStroke / 2
+  const topBracketY = crop.y - handleStroke
+  const bottomBracketY = crop.y + crop.height
+  const leftBracketX = crop.x - handleStroke
+  const rightBracketX = crop.x + crop.width
+  const edgeHitThickness = Math.max(hitSize * 0.72, handleStroke * 4)
 
   return (
     <div className={cn("w-full", className)}>
@@ -510,10 +511,10 @@ export function RectCropEditor({
               />
 
               <g
-              style={{
-                opacity: gridOpacity,
-                transition: "opacity 180ms ease",
-              }}
+                style={{
+                  opacity: gridOpacity,
+                  transition: "opacity 180ms ease",
+                }}
               >
                 <line
                   x1={crop.x + crop.width / 3}
@@ -549,109 +550,60 @@ export function RectCropEditor({
                 />
               </g>
 
-              <line
-                x1={crop.x + cornerOffset}
-                y1={crop.y + cornerLength}
-                x2={crop.x + cornerOffset}
-                y2={crop.y - cornerOffset}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-              <line
-                x1={crop.x - cornerOffset}
-                y1={crop.y + cornerOffset}
-                x2={crop.x + cornerLength}
-                y2={crop.y + cornerOffset}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-              <line
-                x1={crop.x + crop.width - cornerLength}
-                y1={crop.y + cornerOffset}
-                x2={crop.x + crop.width + cornerOffset}
-                y2={crop.y + cornerOffset}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-              <line
-                x1={crop.x + crop.width - cornerOffset}
-                y1={crop.y - cornerOffset}
-                x2={crop.x + crop.width - cornerOffset}
-                y2={crop.y + cornerLength}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-              <line
-                x1={crop.x + cornerOffset}
-                y1={crop.y + crop.height - cornerLength}
-                x2={crop.x + cornerOffset}
-                y2={crop.y + crop.height + cornerOffset}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-              <line
-                x1={crop.x - cornerOffset}
-                y1={crop.y + crop.height - cornerOffset}
-                x2={crop.x + cornerLength}
-                y2={crop.y + crop.height - cornerOffset}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-              <line
-                x1={crop.x + crop.width - cornerLength}
-                y1={crop.y + crop.height - cornerOffset}
-                x2={crop.x + crop.width + cornerOffset}
-                y2={crop.y + crop.height - cornerOffset}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-              <line
-                x1={crop.x + crop.width - cornerOffset}
-                y1={crop.y + crop.height - cornerLength}
-                x2={crop.x + crop.width - cornerOffset}
-                y2={crop.y + crop.height + cornerOffset}
-                stroke="white"
-                strokeLinecap="round"
-                strokeWidth={handleStroke}
-              />
-
               <rect
-                x={crop.x + crop.width / 2 - edgeLength / 2}
-                y={crop.y - handleStroke / 2}
-                width={edgeLength}
+                x={leftBracketX}
+                y={topBracketY}
+                width={cornerLength + handleStroke}
                 height={handleStroke}
-                rx={edgeHandleRadius}
                 fill="white"
               />
               <rect
-                x={crop.x + crop.width / 2 - edgeLength / 2}
-                y={crop.y + crop.height - handleStroke / 2}
-                width={edgeLength}
+                x={leftBracketX}
+                y={topBracketY}
+                width={handleStroke}
+                height={cornerLength + handleStroke}
+                fill="white"
+              />
+              <rect
+                x={crop.x + crop.width - cornerLength}
+                y={topBracketY}
+                width={cornerLength + handleStroke}
                 height={handleStroke}
-                rx={edgeHandleRadius}
                 fill="white"
               />
               <rect
-                x={crop.x - handleStroke / 2}
-                y={crop.y + crop.height / 2 - edgeLength / 2}
+                x={rightBracketX}
+                y={topBracketY}
                 width={handleStroke}
-                height={edgeLength}
-                rx={edgeHandleRadius}
+                height={cornerLength + handleStroke}
                 fill="white"
               />
               <rect
-                x={crop.x + crop.width - handleStroke / 2}
-                y={crop.y + crop.height / 2 - edgeLength / 2}
+                x={leftBracketX}
+                y={bottomBracketY}
+                width={cornerLength + handleStroke}
+                height={handleStroke}
+                fill="white"
+              />
+              <rect
+                x={leftBracketX}
+                y={crop.y + crop.height - cornerLength}
                 width={handleStroke}
-                height={edgeLength}
-                rx={edgeHandleRadius}
+                height={cornerLength + handleStroke}
+                fill="white"
+              />
+              <rect
+                x={crop.x + crop.width - cornerLength}
+                y={bottomBracketY}
+                width={cornerLength + handleStroke}
+                height={handleStroke}
+                fill="white"
+              />
+              <rect
+                x={rightBracketX}
+                y={crop.y + crop.height - cornerLength}
+                width={handleStroke}
+                height={cornerLength + handleStroke}
                 fill="white"
               />
             </g>
@@ -668,37 +620,37 @@ export function RectCropEditor({
             />
 
             <rect
-              x={crop.x + crop.width / 2 - hitSize / 2}
-              y={crop.y - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={crop.x}
+              y={crop.y - edgeHitThickness / 2}
+              width={crop.width}
+              height={edgeHitThickness}
               fill="rgba(255,255,255,0.001)"
               className="cursor-n-resize"
               onPointerDown={startDrag("n")}
             />
             <rect
-              x={crop.x + crop.width / 2 - hitSize / 2}
-              y={crop.y + crop.height - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={crop.x}
+              y={crop.y + crop.height - edgeHitThickness / 2}
+              width={crop.width}
+              height={edgeHitThickness}
               fill="rgba(255,255,255,0.001)"
               className="cursor-s-resize"
               onPointerDown={startDrag("s")}
             />
             <rect
-              x={crop.x - hitSize / 2}
-              y={crop.y + crop.height / 2 - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={crop.x - edgeHitThickness / 2}
+              y={crop.y}
+              width={edgeHitThickness}
+              height={crop.height}
               fill="rgba(255,255,255,0.001)"
               className="cursor-w-resize"
               onPointerDown={startDrag("w")}
             />
             <rect
-              x={crop.x + crop.width - hitSize / 2}
-              y={crop.y + crop.height / 2 - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={crop.x + crop.width - edgeHitThickness / 2}
+              y={crop.y}
+              width={edgeHitThickness}
+              height={crop.height}
               fill="rgba(255,255,255,0.001)"
               className="cursor-e-resize"
               onPointerDown={startDrag("e")}
