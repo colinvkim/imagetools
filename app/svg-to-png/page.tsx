@@ -18,7 +18,6 @@ export default function SvgToPngPage() {
     <ToolPage
       title="Export SVGs as PNG or WebP"
       description="Upload vector artwork, choose an export format and width, and rasterize it locally without a server round-trip."
-      transitionName={tool.transitionName}
       accent={tool.accent}
     >
       <SvgToPngTool />

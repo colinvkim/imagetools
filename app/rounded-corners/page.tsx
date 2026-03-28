@@ -18,7 +18,6 @@ export default function RoundedCornersPage() {
     <ToolPage
       title="Add Rounded Corners to Images"
       description="Crop if you want to, keep the original aspect ratio if you don’t, and export a transparent PNG entirely in the browser."
-      transitionName={tool.transitionName}
       accent={tool.accent}
     >
       <RoundedCornersTool />

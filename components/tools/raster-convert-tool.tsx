@@ -27,7 +27,10 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Separator } from "@/components/ui/separator"
-import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
+import {
+  revokeObjectUrls,
+  useObjectUrlBatch,
+} from "@/hooks/use-object-url-batch"
 import { getNormalizedFileName } from "@/lib/file-input"
 import {
   canvasToBlob,
@@ -145,6 +148,8 @@ export function RasterConvertTool() {
     setError,
     setIsLoading,
     replaceItems,
+    beginRequest,
+    isRequestCurrent,
     clear,
     resetActionState,
     runAction,
@@ -154,6 +159,7 @@ export function RasterConvertTool() {
 
   const handleFilesSelect = React.useCallback(
     async (files: File[]) => {
+      const requestId = beginRequest()
       setIsLoading(true)
       setError(null)
       resetActionState()
@@ -163,8 +169,10 @@ export function RasterConvertTool() {
 
       if (validFiles.length === 0) {
         replaceItems([])
-        setError("No valid PNG, JPG, or WebP files were selected.")
-        setIsLoading(false)
+        if (isRequestCurrent(requestId)) {
+          setError("No valid PNG, JPG, or WebP files were selected.")
+          setIsLoading(false)
+        }
         return
       }
 
@@ -172,6 +180,11 @@ export function RasterConvertTool() {
         const parsedImages = await Promise.all(
           validFiles.map((file, index) => parseRasterFile(file, index))
         )
+
+        if (!isRequestCurrent(requestId)) {
+          revokeObjectUrls(parsedImages)
+          return
+        }
 
         replaceItems(parsedImages)
         setPreviewIndex(0)
@@ -183,17 +196,28 @@ export function RasterConvertTool() {
           )
         }
       } catch (caughtError) {
-        replaceItems([])
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "We couldn't read those images. Please try again."
-        )
+        if (isRequestCurrent(requestId)) {
+          replaceItems([])
+          setError(
+            caughtError instanceof Error
+              ? caughtError.message
+              : "We couldn't read those images. Please try again."
+          )
+        }
       } finally {
-        setIsLoading(false)
+        if (isRequestCurrent(requestId)) {
+          setIsLoading(false)
+        }
       }
     },
-    [replaceItems, resetActionState, setError, setIsLoading]
+    [
+      beginRequest,
+      isRequestCurrent,
+      replaceItems,
+      resetActionState,
+      setError,
+      setIsLoading,
+    ]
   )
 
   const selectedOutputFormat =

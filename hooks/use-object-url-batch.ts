@@ -6,7 +6,7 @@ type ObjectUrlItem = {
   objectUrl: string
 }
 
-function revokeObjectUrls<T extends ObjectUrlItem>(items: T[]) {
+export function revokeObjectUrls<T extends ObjectUrlItem>(items: T[]) {
   for (const item of items) {
     URL.revokeObjectURL(item.objectUrl)
   }
@@ -26,6 +26,7 @@ export function useObjectUrlBatch<T extends ObjectUrlItem>() {
   const [actionError, setActionError] = React.useState<string | null>(null)
   const [actionSuccess, setActionSuccess] = React.useState<string | null>(null)
   const itemsRef = React.useRef<T[]>([])
+  const requestIdRef = React.useRef(0)
 
   const replaceItems = React.useCallback((nextItems: T[]) => {
     setItems((currentItems) => {
@@ -40,13 +41,25 @@ export function useObjectUrlBatch<T extends ObjectUrlItem>() {
     setActionSuccess(null)
   }, [])
 
+  const beginRequest = React.useCallback(() => {
+    const nextRequestId = requestIdRef.current + 1
+    requestIdRef.current = nextRequestId
+    return nextRequestId
+  }, [])
+
+  const isRequestCurrent = React.useCallback(
+    (requestId: number) => requestIdRef.current === requestId,
+    []
+  )
+
   const clear = React.useCallback(() => {
+    beginRequest()
     replaceItems([])
     setError(null)
     setIsLoading(false)
     setIsRunningAction(false)
     resetActionState()
-  }, [replaceItems, resetActionState])
+  }, [beginRequest, replaceItems, resetActionState])
 
   const runAction = React.useCallback(
     async ({
@@ -93,6 +106,8 @@ export function useObjectUrlBatch<T extends ObjectUrlItem>() {
     setError,
     setIsLoading,
     replaceItems,
+    beginRequest,
+    isRequestCurrent,
     resetActionState,
     clear,
     runAction,

@@ -28,7 +28,10 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
+import {
+  revokeObjectUrls,
+  useObjectUrlBatch,
+} from "@/hooks/use-object-url-batch"
 import { getNormalizedFileName } from "@/lib/file-input"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
@@ -157,6 +160,8 @@ export function SvgToPngTool() {
     setError,
     setIsLoading,
     replaceItems,
+    beginRequest,
+    isRequestCurrent,
     clear,
     resetActionState,
     runAction,
@@ -168,6 +173,7 @@ export function SvgToPngTool() {
 
   const handleFilesSelect = React.useCallback(
     async (files: File[]) => {
+      const requestId = beginRequest()
       setIsLoading(true)
       setError(null)
       resetActionState()
@@ -177,13 +183,20 @@ export function SvgToPngTool() {
 
       if (validFiles.length === 0) {
         replaceItems([])
-        setError("No valid SVG files were selected.")
-        setIsLoading(false)
+        if (isRequestCurrent(requestId)) {
+          setError("No valid SVG files were selected.")
+          setIsLoading(false)
+        }
         return
       }
 
       try {
         const parsedSvgs = await Promise.all(validFiles.map(parseSvgFile))
+
+        if (!isRequestCurrent(requestId)) {
+          revokeObjectUrls(parsedSvgs)
+          return
+        }
 
         replaceItems(parsedSvgs)
         setPreviewIndex(0)
@@ -202,17 +215,29 @@ export function SvgToPngTool() {
           )
         }
       } catch {
-        replaceItems([])
-        setError("We couldn't read those SVG files. Please try again.")
+        if (isRequestCurrent(requestId)) {
+          replaceItems([])
+          setError("We couldn't read those SVG files. Please try again.")
+        }
       } finally {
-        setIsLoading(false)
+        if (isRequestCurrent(requestId)) {
+          setIsLoading(false)
+        }
       }
     },
-    [replaceItems, resetActionState, setError, setIsLoading]
+    [
+      beginRequest,
+      isRequestCurrent,
+      replaceItems,
+      resetActionState,
+      setError,
+      setIsLoading,
+    ]
   )
 
   const handleMarkupPaste = React.useCallback(
     async (content: string) => {
+      const requestId = beginRequest()
       setIsLoading(true)
       setError(null)
       resetActionState()
@@ -225,18 +250,34 @@ export function SvgToPngTool() {
           new Blob([content]).size
         )
 
+        if (!isRequestCurrent(requestId)) {
+          revokeObjectUrls([pastedSvg])
+          return
+        }
+
         replaceItems([pastedSvg])
         setPreviewIndex(0)
         setSelectedScale("1")
         setOutputWidthInput(String(Math.round(pastedSvg.width)))
         setOutputFormatValue("png")
       } catch {
-        setError("We couldn't read that SVG. Please try another file.")
+        if (isRequestCurrent(requestId)) {
+          setError("We couldn't read that SVG. Please try another file.")
+        }
       } finally {
-        setIsLoading(false)
+        if (isRequestCurrent(requestId)) {
+          setIsLoading(false)
+        }
       }
     },
-    [replaceItems, resetActionState, setError, setIsLoading]
+    [
+      beginRequest,
+      isRequestCurrent,
+      replaceItems,
+      resetActionState,
+      setError,
+      setIsLoading,
+    ]
   )
 
   const handleClear = React.useCallback(() => {

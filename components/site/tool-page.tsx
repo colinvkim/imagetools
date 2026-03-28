@@ -7,7 +7,6 @@ import { Separator } from "@/components/ui/separator"
 type ToolPageProps = {
   title: string
   description: string
-  transitionName?: string
   accent?: string
   children: ReactNode
 }
@@ -15,18 +14,12 @@ type ToolPageProps = {
 export function ToolPage({
   title,
   description,
-  transitionName,
   accent,
   children,
 }: ToolPageProps) {
   return (
     <PageShell className="py-8 sm:py-10">
-      <PageHero
-        title={title}
-        description={description}
-        transitionName={transitionName}
-        accent={accent}
-      />
+      <PageHero title={title} description={description} accent={accent} />
       <Separator />
       {children}
     </PageShell>

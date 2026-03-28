@@ -15,7 +15,6 @@ export type ToolDefinition = {
   description: string
   shortDescription: string
   icon: LucideIcon
-  transitionName: string
   accent: string
 }
 
@@ -27,7 +26,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Resize PNG, JPG, and WebP images with exact dimensions and quick scale presets.",
     shortDescription: "Resize raster images with precise dimensions.",
     icon: Expand,
-    transitionName: "tool-resize-image",
     accent: "oklch(0.74 0.09 248 / 0.24)",
   },
   {
@@ -37,7 +35,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Convert PNG, JPG, and WebP assets into PNG or WebP locally, with instant preview and batch download.",
     shortDescription: "Convert raster images into PNG or WebP.",
     icon: FileImage,
-    transitionName: "tool-raster-convert",
     accent: "oklch(0.78 0.08 190 / 0.24)",
   },
   {
@@ -47,7 +44,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Position a square crop, preview the result, and export a transparent circular PNG.",
     shortDescription: "Crop to a transparent circular PNG.",
     icon: CircleDashed,
-    transitionName: "tool-circle-crop",
     accent: "oklch(0.76 0.09 8 / 0.22)",
   },
   {
@@ -57,7 +53,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Crop PNG, JPG, and WebP images with presets like 1:1, 4:5, 3:2, 16:9, or freeform.",
     shortDescription: "Crop images to common aspect ratios.",
     icon: Crop,
-    transitionName: "tool-aspect-ratio-crop",
     accent: "oklch(0.82 0.08 92 / 0.24)",
   },
   {
@@ -67,7 +62,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Apply rounded corners with presets or a custom radius while preserving any aspect ratio.",
     shortDescription: "Add rounded corners to any image shape.",
     icon: ScanFace,
-    transitionName: "tool-rounded-corners",
     accent: "oklch(0.78 0.08 32 / 0.22)",
   },
   {
@@ -77,7 +71,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Detect transparent padding around PNG and WebP images, preview the tighter bounds, and export the trimmed result locally.",
     shortDescription: "Auto-crop transparent edges.",
     icon: Scan,
-    transitionName: "tool-trim-transparent-pixels",
     accent: "oklch(0.78 0.08 152 / 0.24)",
   },
   {
@@ -87,7 +80,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
       "Rasterize SVGs as PNG or WebP at the size you want without sending artwork to a server.",
     shortDescription: "Rasterize SVGs as PNG or WebP.",
     icon: Scaling,
-    transitionName: "tool-svg-to-png",
     accent: "oklch(0.8 0.08 220 / 0.24)",
   },
 ]

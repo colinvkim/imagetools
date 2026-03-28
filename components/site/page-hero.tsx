@@ -8,7 +8,6 @@ type PageHeroProps = {
   title: string
   description: string
   icon?: LucideIcon
-  transitionName?: string
   accent?: string
 }
 
@@ -17,11 +16,9 @@ export function PageHero({
   title,
   description,
   icon: Icon,
-  transitionName,
   accent,
 }: PageHeroProps) {
   const heroStyle = {
-    viewTransitionName: transitionName,
     "--tool-accent": accent,
   } as CSSProperties
 

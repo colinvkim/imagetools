@@ -18,7 +18,6 @@ export default function ResizeImagePage() {
     <ToolPage
       title="Resize Images"
       description="Upload a raster image, keep the aspect ratio locked if you want, and export a resized version locally without uploading anything."
-      transitionName={tool.transitionName}
       accent={tool.accent}
     >
       <ResizeImageTool />

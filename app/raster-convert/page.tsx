@@ -18,7 +18,6 @@ export default function RasterConvertPage() {
     <ToolPage
       title="Convert Raster Images"
       description="Convert PNG, JPG, and WebP images locally with instant preview and direct PNG or WebP downloads."
-      transitionName={tool.transitionName}
       accent={tool.accent}
     >
       <RasterConvertTool />

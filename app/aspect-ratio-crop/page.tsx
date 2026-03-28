@@ -18,7 +18,6 @@ export default function AspectRatioCropPage() {
     <ToolPage
       title="Crop Images"
       description="Upload a raster image, choose a preset aspect ratio or go freeform, and export the cropped result locally without uploading anything."
-      transitionName={tool.transitionName}
       accent={tool.accent}
     >
       <AspectRatioCropTool />

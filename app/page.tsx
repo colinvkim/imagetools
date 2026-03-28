@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import type { CSSProperties } from "react"
 import { ArrowRight, Sparkles } from "lucide-react"
+import Link from "next/link"
 
 import { PageShell } from "@/components/site/page-shell"
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
@@ -54,7 +55,7 @@ export default function Page() {
             <Button
               size="lg"
               nativeButton={false}
-              render={<a href="/resize-image" />}
+              render={<Link href="/resize-image" />}
             >
               <Sparkles aria-hidden="true" data-icon="inline-start" />
               Open Resize Image
@@ -63,7 +64,7 @@ export default function Page() {
               variant="outline"
               size="lg"
               nativeButton={false}
-              render={<a href="/circle-crop" />}
+              render={<Link href="/circle-crop" />}
             >
               <ArrowRight aria-hidden="true" data-icon="inline-start" />
               Open Circle Crop
@@ -119,7 +120,6 @@ export default function Page() {
           {TOOL_DEFINITIONS.map((tool) => {
             const Icon = tool.icon
             const cardStyle = {
-              viewTransitionName: tool.transitionName,
               "--tool-accent": tool.accent,
             } as CSSProperties
 
@@ -153,7 +153,7 @@ export default function Page() {
                     variant="outline"
                     className="w-full"
                     nativeButton={false}
-                    render={<a href={tool.href} />}
+                    render={<Link href={tool.href} />}
                   >
                     Open Tool
                   </Button>

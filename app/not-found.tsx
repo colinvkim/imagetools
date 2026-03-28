@@ -1,4 +1,5 @@
-/* eslint-disable @next/next/no-html-link-for-pages */
+import Link from "next/link"
+
 import { PageShell } from "@/components/site/page-shell"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -39,13 +40,13 @@ export default function NotFound() {
             </AlertDescription>
           </Alert>
           <div className="flex flex-wrap gap-3">
-            <Button nativeButton={false} render={<a href="/" />}>
+            <Button nativeButton={false} render={<Link href="/" />}>
               Back to Home
             </Button>
             <Button
               variant="outline"
               nativeButton={false}
-              render={<a href="/circle-crop" />}
+              render={<Link href="/circle-crop" />}
             >
               Open Circle Crop
             </Button>
