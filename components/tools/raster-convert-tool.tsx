@@ -31,6 +31,7 @@ import {
   revokeObjectUrls,
   useObjectUrlBatch,
 } from "@/hooks/use-object-url-batch"
+import { ConcurrentMapError, mapAsyncWithConcurrency } from "@/lib/async"
 import { getNormalizedFileName } from "@/lib/file-input"
 import {
   canvasToBlob,
@@ -70,6 +71,7 @@ const OUTPUT_FORMAT_OPTIONS = [
     quality: 0.92,
   },
 ] as const
+const BATCH_PARSE_CONCURRENCY = 4
 
 function isAcceptedRaster(file: File) {
   const lowerCaseName = file.name.toLowerCase()
@@ -177,8 +179,10 @@ export function RasterConvertTool() {
       }
 
       try {
-        const parsedImages = await Promise.all(
-          validFiles.map((file, index) => parseRasterFile(file, index))
+        const parsedImages = await mapAsyncWithConcurrency(
+          validFiles,
+          (file, index) => parseRasterFile(file, index),
+          BATCH_PARSE_CONCURRENCY
         )
 
         if (!isRequestCurrent(requestId)) {
@@ -196,6 +200,10 @@ export function RasterConvertTool() {
           )
         }
       } catch (caughtError) {
+        if (caughtError instanceof ConcurrentMapError) {
+          revokeObjectUrls(caughtError.partialResults)
+        }
+
         if (isRequestCurrent(requestId)) {
           replaceItems([])
           setError(

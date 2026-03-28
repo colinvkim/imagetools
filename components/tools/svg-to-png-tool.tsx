@@ -32,6 +32,7 @@ import {
   revokeObjectUrls,
   useObjectUrlBatch,
 } from "@/hooks/use-object-url-batch"
+import { ConcurrentMapError, mapAsyncWithConcurrency } from "@/lib/async"
 import { getNormalizedFileName } from "@/lib/file-input"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
@@ -62,6 +63,7 @@ const SCALE_OPTIONS = [
   { label: "4x", value: "4" },
   { label: "8x", value: "8" },
 ] as const
+const BATCH_PARSE_CONCURRENCY = 4
 const OUTPUT_FORMAT_OPTIONS = [
   {
     label: "PNG",
@@ -195,7 +197,11 @@ export function SvgToPngTool() {
       }
 
       try {
-        const parsedSvgs = await Promise.all(validFiles.map(parseSvgFile))
+        const parsedSvgs = await mapAsyncWithConcurrency(
+          validFiles,
+          (file) => parseSvgFile(file),
+          BATCH_PARSE_CONCURRENCY
+        )
 
         if (!isRequestCurrent(requestId)) {
           revokeObjectUrls(parsedSvgs)
@@ -218,7 +224,11 @@ export function SvgToPngTool() {
             `${invalidCount} file${invalidCount === 1 ? "" : "s"} skipped because only SVG files are supported here.`
           )
         }
-      } catch {
+      } catch (caughtError) {
+        if (caughtError instanceof ConcurrentMapError) {
+          revokeObjectUrls(caughtError.partialResults)
+        }
+
         if (isRequestCurrent(requestId)) {
           replaceItems([])
           setError("We couldn't read those SVG files. Please try again.")
