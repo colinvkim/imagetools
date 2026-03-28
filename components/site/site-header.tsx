@@ -23,7 +23,10 @@ function NavItem({ href, label, isActive, itemRef }: NavItemProps) {
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "group relative rounded-full px-3 py-1.5 text-sm font-medium focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        "group relative isolate rounded-full px-3 py-1.5 text-sm font-medium focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        isActive
+          ? "z-20 text-background [-webkit-text-fill-color:var(--background)]"
+          : "z-10 text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground [-webkit-text-fill-color:currentColor]"
       )}
     >
       {!isActive ? (
@@ -32,16 +35,7 @@ function NavItem({ href, label, isActive, itemRef }: NavItemProps) {
           className="pointer-events-none absolute inset-0 z-0 rounded-full bg-muted opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
         />
       ) : null}
-      <span
-        className={cn(
-          "relative z-20",
-          isActive
-            ? "text-background"
-            : "text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground"
-        )}
-      >
-        {label}
-      </span>
+      <span className="relative z-20">{label}</span>
     </Link>
   )
 }
@@ -126,15 +120,15 @@ export function SiteHeader() {
         </div>
 
         <nav aria-label="Primary navigation">
-          <ScrollArea className="-mx-1 w-[calc(100%+0.5rem)] pb-1">
+          <ScrollArea className="site-header-nav-scrollarea -mx-1 w-[calc(100%+0.5rem)] pb-1">
             <div
               ref={navListRef}
-              className="relative flex min-w-max items-center gap-2 px-1"
+              className="relative isolate flex min-w-max items-center gap-2 px-1"
             >
               <div
                 aria-hidden="true"
                 className={cn(
-                  "pointer-events-none absolute top-0 bottom-0 left-0 z-10 rounded-full bg-foreground transition-[transform,width,opacity] duration-300 ease-[cubic-bezier(0.2,0.9,0.2,1)]",
+                  "pointer-events-none absolute top-0 bottom-0 left-0 z-0 rounded-full bg-foreground transition-[transform,width,opacity] duration-300 ease-[cubic-bezier(0.2,0.9,0.2,1)]",
                   indicatorStyle.ready ? "opacity-100" : "opacity-0"
                 )}
                 style={{
@@ -158,7 +152,10 @@ export function SiteHeader() {
                 />
               ))}
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar
+              orientation="horizontal"
+              className="site-header-nav-scrollbar"
+            />
           </ScrollArea>
         </nav>
       </div>
