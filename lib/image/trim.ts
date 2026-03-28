@@ -1,21 +1,236 @@
-import { type RectCrop } from "@/lib/image/crop"
 import { loadImageElement } from "@/lib/image/load-image"
+import {
+  buildTrimDetectionResult,
+  findOpaqueBounds,
+  type OpaqueBounds,
+  type TrimDetectionResult,
+} from "@/lib/image/trim-core"
 
-export type TrimDetectionResult = {
-  crop: RectCrop
-  imageWidth: number
-  imageHeight: number
-  trimmedTop: number
-  trimmedRight: number
-  trimmedBottom: number
-  trimmedLeft: number
-  hasTransparentBorder: boolean
+const FALLBACK_SAMPLE_MAX_SIDE = 1024
+const LARGE_TRIM_ANALYSIS_PIXELS = 20_000_000
+
+type DetectTransparentBoundsParams = {
+  file: File
+  imageUrl: string
+  signal?: AbortSignal
 }
 
-export async function detectTransparentBounds(
-  imageUrl: string
-): Promise<TrimDetectionResult | null> {
+type TrimWorkerResponse =
+  | {
+      ok: true
+      result: TrimDetectionResult | null
+    }
+  | {
+      ok: false
+      error: string
+    }
+
+function createAbortError() {
+  return new DOMException("The operation was aborted.", "AbortError")
+}
+
+function throwIfAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw createAbortError()
+  }
+}
+
+function canUseTrimWorker() {
+  return (
+    typeof Worker !== "undefined" &&
+    typeof OffscreenCanvas !== "undefined" &&
+    typeof createImageBitmap === "function"
+  )
+}
+
+function getSampleDimensions(width: number, height: number) {
+  const longestSide = Math.max(width, height)
+  const scale =
+    longestSide > FALLBACK_SAMPLE_MAX_SIDE
+      ? FALLBACK_SAMPLE_MAX_SIDE / longestSide
+      : 1
+
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  }
+}
+
+function findOpaqueColumnInStrip(
+  pixels: Uint8ClampedArray,
+  stripWidth: number,
+  stripHeight: number,
+  fromEnd = false
+) {
+  const startX = fromEnd ? stripWidth - 1 : 0
+  const endX = fromEnd ? -1 : stripWidth
+  const stepX = fromEnd ? -1 : 1
+
+  for (let x = startX; x !== endX; x += stepX) {
+    for (let y = 0; y < stripHeight; y += 1) {
+      if (pixels[(y * stripWidth + x) * 4 + 3]) {
+        return x
+      }
+    }
+  }
+
+  return null
+}
+
+function findOpaqueRowInStrip(
+  pixels: Uint8ClampedArray,
+  stripWidth: number,
+  stripHeight: number,
+  fromEnd = false
+) {
+  const startY = fromEnd ? stripHeight - 1 : 0
+  const endY = fromEnd ? -1 : stripHeight
+  const stepY = fromEnd ? -1 : 1
+
+  for (let y = startY; y !== endY; y += stepY) {
+    for (let x = 0; x < stripWidth; x += 1) {
+      if (pixels[(y * stripWidth + x) * 4 + 3]) {
+        return y
+      }
+    }
+  }
+
+  return null
+}
+
+function getSearchWindow(
+  sampleStart: number,
+  sampleEnd: number,
+  fullSize: number,
+  sampleSize: number
+) {
+  const scale = fullSize / sampleSize
+  const margin = Math.max(4, Math.ceil(scale) * 3)
+
+  return {
+    start: Math.max(0, Math.floor(sampleStart * scale) - margin),
+    end: Math.min(fullSize - 1, Math.ceil((sampleEnd + 1) * scale) + margin - 1),
+  }
+}
+
+function refineBoundsFromSample(
+  context: CanvasRenderingContext2D,
+  imageWidth: number,
+  imageHeight: number,
+  sampleBounds: OpaqueBounds,
+  sampleWidth: number,
+  sampleHeight: number
+) {
+  const horizontalWindow = {
+    left: getSearchWindow(
+      sampleBounds.minX,
+      sampleBounds.minX,
+      imageWidth,
+      sampleWidth
+    ),
+    right: getSearchWindow(
+      sampleBounds.maxX,
+      sampleBounds.maxX,
+      imageWidth,
+      sampleWidth
+    ),
+  }
+  const verticalWindow = {
+    top: getSearchWindow(
+      sampleBounds.minY,
+      sampleBounds.minY,
+      imageHeight,
+      sampleHeight
+    ),
+    bottom: getSearchWindow(
+      sampleBounds.maxY,
+      sampleBounds.maxY,
+      imageHeight,
+      sampleHeight
+    ),
+  }
+
+  const leftStripWidth = horizontalWindow.left.end - horizontalWindow.left.start + 1
+  const rightStripWidth =
+    horizontalWindow.right.end - horizontalWindow.right.start + 1
+  const topStripHeight = verticalWindow.top.end - verticalWindow.top.start + 1
+  const bottomStripHeight =
+    verticalWindow.bottom.end - verticalWindow.bottom.start + 1
+
+  const leftStrip = context.getImageData(
+    horizontalWindow.left.start,
+    0,
+    leftStripWidth,
+    imageHeight
+  )
+  const rightStrip = context.getImageData(
+    horizontalWindow.right.start,
+    0,
+    rightStripWidth,
+    imageHeight
+  )
+  const topStrip = context.getImageData(
+    0,
+    verticalWindow.top.start,
+    imageWidth,
+    topStripHeight
+  )
+  const bottomStrip = context.getImageData(
+    0,
+    verticalWindow.bottom.start,
+    imageWidth,
+    bottomStripHeight
+  )
+
+  const refinedMinX = findOpaqueColumnInStrip(
+    leftStrip.data,
+    leftStrip.width,
+    leftStrip.height
+  )
+  const refinedMaxX = findOpaqueColumnInStrip(
+    rightStrip.data,
+    rightStrip.width,
+    rightStrip.height,
+    true
+  )
+  const refinedMinY = findOpaqueRowInStrip(
+    topStrip.data,
+    topStrip.width,
+    topStrip.height
+  )
+  const refinedMaxY = findOpaqueRowInStrip(
+    bottomStrip.data,
+    bottomStrip.width,
+    bottomStrip.height,
+    true
+  )
+
+  if (
+    refinedMinX === null ||
+    refinedMaxX === null ||
+    refinedMinY === null ||
+    refinedMaxY === null
+  ) {
+    return null
+  }
+
+  return {
+    minX: horizontalWindow.left.start + refinedMinX,
+    maxX: horizontalWindow.right.start + refinedMaxX,
+    minY: verticalWindow.top.start + refinedMinY,
+    maxY: verticalWindow.bottom.start + refinedMaxY,
+  }
+}
+
+async function detectTransparentBoundsOnMainThread({
+  imageUrl,
+  signal,
+}: Omit<DetectTransparentBoundsParams, "file">) {
+  throwIfAborted(signal)
+
   const sourceImage = await loadImageElement(imageUrl)
+  throwIfAborted(signal)
+
   const imageWidth = Math.max(
     1,
     Math.round(sourceImage.naturalWidth || sourceImage.width)
@@ -24,68 +239,153 @@ export async function detectTransparentBounds(
     1,
     Math.round(sourceImage.naturalHeight || sourceImage.height)
   )
-  const canvas = document.createElement("canvas")
-  canvas.width = imageWidth
-  canvas.height = imageHeight
+  const sampleDimensions = getSampleDimensions(imageWidth, imageHeight)
+  const sampleCanvas = document.createElement("canvas")
+  sampleCanvas.width = sampleDimensions.width
+  sampleCanvas.height = sampleDimensions.height
 
-  const context = canvas.getContext("2d", { willReadFrequently: true })
+  const sampleContext = sampleCanvas.getContext("2d", { willReadFrequently: true })
 
-  if (!context) {
+  if (!sampleContext) {
     throw new Error("Canvas is not available in this browser.")
   }
 
-  context.clearRect(0, 0, imageWidth, imageHeight)
-  context.drawImage(sourceImage, 0, 0, imageWidth, imageHeight)
+  sampleContext.clearRect(0, 0, sampleDimensions.width, sampleDimensions.height)
+  sampleContext.drawImage(sourceImage, 0, 0, sampleDimensions.width, sampleDimensions.height)
 
-  const imageData = context.getImageData(0, 0, imageWidth, imageHeight)
-  const pixels = imageData.data
-  let minX = imageWidth
-  let minY = imageHeight
-  let maxX = -1
-  let maxY = -1
+  const sampledImageData = sampleContext.getImageData(
+    0,
+    0,
+    sampleDimensions.width,
+    sampleDimensions.height
+  )
+  const sampleBounds = findOpaqueBounds(
+    sampledImageData.data,
+    sampleDimensions.width,
+    sampleDimensions.height
+  )
 
-  for (let y = 0; y < imageHeight; y += 1) {
-    for (let x = 0; x < imageWidth; x += 1) {
-      const alpha = pixels[(y * imageWidth + x) * 4 + 3]
-
-      if (!alpha) {
-        continue
-      }
-
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x)
-      maxY = Math.max(maxY, y)
-    }
-  }
-
-  if (maxX === -1 || maxY === -1) {
+  if (!sampleBounds) {
     return null
   }
 
-  const crop = {
-    x: minX,
-    y: minY,
-    width: maxX - minX + 1,
-    height: maxY - minY + 1,
+  if (
+    sampleDimensions.width === imageWidth &&
+    sampleDimensions.height === imageHeight
+  ) {
+    return buildTrimDetectionResult(sampleBounds, imageWidth, imageHeight)
   }
-  const trimmedTop = minY
-  const trimmedRight = imageWidth - (maxX + 1)
-  const trimmedBottom = imageHeight - (maxY + 1)
-  const trimmedLeft = minX
 
-  return {
-    crop,
+  throwIfAborted(signal)
+
+  const fullCanvas = document.createElement("canvas")
+  fullCanvas.width = imageWidth
+  fullCanvas.height = imageHeight
+
+  const fullContext = fullCanvas.getContext("2d", { willReadFrequently: true })
+
+  if (!fullContext) {
+    throw new Error("Canvas is not available in this browser.")
+  }
+
+  fullContext.clearRect(0, 0, imageWidth, imageHeight)
+  fullContext.drawImage(sourceImage, 0, 0, imageWidth, imageHeight)
+
+  throwIfAborted(signal)
+
+  const refinedBounds = refineBoundsFromSample(
+    fullContext,
     imageWidth,
     imageHeight,
-    trimmedTop,
-    trimmedRight,
-    trimmedBottom,
-    trimmedLeft,
-    hasTransparentBorder:
-      trimmedTop > 0 ||
-      trimmedRight > 0 ||
-      trimmedBottom > 0 ||
-      trimmedLeft > 0,
+    sampleBounds,
+    sampleDimensions.width,
+    sampleDimensions.height
+  )
+
+  if (refinedBounds) {
+    return buildTrimDetectionResult(refinedBounds, imageWidth, imageHeight)
   }
+
+  const fullImageData = fullContext.getImageData(0, 0, imageWidth, imageHeight)
+  const fullBounds = findOpaqueBounds(fullImageData.data, imageWidth, imageHeight)
+
+  if (!fullBounds) {
+    return null
+  }
+
+  return buildTrimDetectionResult(fullBounds, imageWidth, imageHeight)
 }
+
+async function detectTransparentBoundsWithWorker({
+  file,
+  signal,
+}: Pick<DetectTransparentBoundsParams, "file" | "signal">) {
+  return new Promise<TrimDetectionResult | null>((resolve, reject) => {
+    const worker = new Worker(new URL("./trim.worker.ts", import.meta.url), {
+      type: "module",
+    })
+
+    const cleanup = () => {
+      worker.onmessage = null
+      worker.onerror = null
+      signal?.removeEventListener("abort", handleAbort)
+      worker.terminate()
+    }
+
+    const handleAbort = () => {
+      cleanup()
+      reject(createAbortError())
+    }
+
+    worker.onmessage = (event: MessageEvent<TrimWorkerResponse>) => {
+      cleanup()
+
+      if (event.data.ok) {
+        resolve(event.data.result)
+        return
+      }
+
+      reject(new Error(event.data.error))
+    }
+
+    worker.onerror = () => {
+      cleanup()
+      reject(new Error("Transparent edge detection failed. Please try another image."))
+    }
+
+    signal?.addEventListener("abort", handleAbort, { once: true })
+
+    if (signal?.aborted) {
+      handleAbort()
+      return
+    }
+
+    worker.postMessage({ file })
+  })
+}
+
+export async function detectTransparentBounds({
+  file,
+  imageUrl,
+  signal,
+}: DetectTransparentBoundsParams): Promise<TrimDetectionResult | null> {
+  throwIfAborted(signal)
+
+  if (canUseTrimWorker()) {
+    try {
+      return await detectTransparentBoundsWithWorker({ file, signal })
+    } catch (caughtError) {
+      if (caughtError instanceof DOMException && caughtError.name === "AbortError") {
+        throw caughtError
+      }
+    }
+  }
+
+  return detectTransparentBoundsOnMainThread({ imageUrl, signal })
+}
+
+export function isLargeTrimAnalysisImage(width: number, height: number) {
+  return width * height >= LARGE_TRIM_ANALYSIS_PIXELS
+}
+
+export type { TrimDetectionResult }

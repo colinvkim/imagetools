@@ -31,6 +31,7 @@ import {
 } from "@/lib/image/raster"
 import {
   detectTransparentBounds,
+  isLargeTrimAnalysisImage,
   type TrimDetectionResult,
 } from "@/lib/image/trim"
 
@@ -140,7 +141,7 @@ export function TrimTransparentPixelsTool() {
       return
     }
 
-    let isActive = true
+    const abortController = new AbortController()
 
     setTrimResult(null)
     setIsAnalyzing(true)
@@ -148,12 +149,12 @@ export function TrimTransparentPixelsTool() {
     setExportError(null)
     setExportSuccess(null)
 
-    void detectTransparentBounds(image.objectUrl)
+    void detectTransparentBounds({
+      file: image.file,
+      imageUrl: image.objectUrl,
+      signal: abortController.signal,
+    })
       .then((result) => {
-        if (!isActive) {
-          return
-        }
-
         if (!result) {
           setAnalysisError(
             "We couldn't find any visible pixels. This image appears to be fully transparent."
@@ -164,7 +165,10 @@ export function TrimTransparentPixelsTool() {
         setTrimResult(result)
       })
       .catch((caughtError) => {
-        if (!isActive) {
+        if (
+          caughtError instanceof DOMException &&
+          caughtError.name === "AbortError"
+        ) {
           return
         }
 
@@ -175,13 +179,13 @@ export function TrimTransparentPixelsTool() {
         )
       })
       .finally(() => {
-        if (isActive) {
+        if (!abortController.signal.aborted) {
           setIsAnalyzing(false)
         }
       })
 
     return () => {
-      isActive = false
+      abortController.abort()
     }
   }, [image])
 
@@ -202,6 +206,7 @@ export function TrimTransparentPixelsTool() {
   }
 
   const exportConfig = getRasterExportConfig(image.mimeType)
+  const isLargeAnalysisImage = isLargeTrimAnalysisImage(image.width, image.height)
   const trimmedWidth = trimResult
     ? Math.max(1, Math.round(trimResult.crop.width))
     : 0
@@ -328,6 +333,9 @@ export function TrimTransparentPixelsTool() {
               <AlertDescription>
                 imagetools is scanning the image for the first and last visible
                 pixels.
+                {isLargeAnalysisImage
+                  ? " This is a large image, so analysis may take a moment."
+                  : ""}
               </AlertDescription>
             </Alert>
           ) : null}
