@@ -43,6 +43,34 @@ export function getFileNameWithoutExtension(fileName: string) {
   return fileName.slice(0, lastDotIndex)
 }
 
+function normalizeFileExtension(extension: string) {
+  return extension.startsWith(".") ? extension : `.${extension}`
+}
+
+export function sanitizeFileNameSegment(value: string) {
+  return value
+    .trim()
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
+    .replace(/[. ]+$/g, "")
+}
+
+export function buildDownloadFileName(params: {
+  baseName: string
+  fallbackFileName: string
+  extension: string
+}) {
+  const normalizedExtension = normalizeFileExtension(params.extension)
+  const preferredBaseName = sanitizeFileNameSegment(
+    getFileNameWithoutExtension(params.baseName)
+  )
+  const fallbackBaseName = sanitizeFileNameSegment(
+    getFileNameWithoutExtension(params.fallbackFileName)
+  )
+  const resolvedBaseName = preferredBaseName || fallbackBaseName || "download"
+
+  return `${resolvedBaseName}${normalizedExtension}`
+}
+
 export function getRasterExportConfig(mimeType: string) {
   if (mimeType === "image/jpeg") {
     return {

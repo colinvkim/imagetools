@@ -1,4 +1,5 @@
 import {
+  buildDownloadFileName,
   canvasToBlob,
   downloadBlob,
   getFileNameWithoutExtension,
@@ -144,6 +145,7 @@ export async function exportCircleCrop(params: {
   imageUrl: string
   crop: SquareCrop
   fileName: string
+  outputFileName?: string
 }) {
   const sourceImage = await loadImageElement(params.imageUrl)
   const outputSize = Math.max(1, Math.round(params.crop.size))
@@ -178,7 +180,14 @@ export async function exportCircleCrop(params: {
 
   const blob = await canvasToBlob(canvas, "image/png")
   const baseFileName = getFileNameWithoutExtension(params.fileName)
-  downloadBlob(blob, `${baseFileName || params.fileName}-circle.png`)
+  downloadBlob(
+    blob,
+    buildDownloadFileName({
+      baseName: params.outputFileName ?? `${baseFileName}-circle`,
+      fallbackFileName: params.fileName,
+      extension: ".png",
+    })
+  )
 }
 
 function drawRoundedRectPath(
@@ -207,6 +216,7 @@ export async function exportRoundedCrop(params: {
   crop: RectCrop
   fileName: string
   radius: number
+  outputFileName?: string
 }) {
   const sourceImage = await loadImageElement(params.imageUrl)
   const outputWidth = Math.max(1, Math.round(params.crop.width))
@@ -238,7 +248,14 @@ export async function exportRoundedCrop(params: {
 
   const blob = await canvasToBlob(canvas, "image/png")
   const baseFileName = getFileNameWithoutExtension(params.fileName)
-  downloadBlob(blob, `${baseFileName || params.fileName}-rounded.png`)
+  downloadBlob(
+    blob,
+    buildDownloadFileName({
+      baseName: params.outputFileName ?? `${baseFileName}-rounded`,
+      fallbackFileName: params.fileName,
+      extension: ".png",
+    })
+  )
 }
 
 export async function exportRectCrop(params: {
@@ -246,6 +263,7 @@ export async function exportRectCrop(params: {
   crop: RectCrop
   fileName: string
   mimeType: string
+  outputFileName?: string
 }) {
   const sourceImage = await loadImageElement(params.imageUrl)
   const outputWidth = Math.max(1, Math.round(params.crop.width))
@@ -282,7 +300,13 @@ export async function exportRectCrop(params: {
   const baseFileName = getFileNameWithoutExtension(params.fileName)
   downloadBlob(
     blob,
-    `${baseFileName || params.fileName}-${outputWidth}x${outputHeight}${exportConfig.extension}`
+    buildDownloadFileName({
+      baseName:
+        params.outputFileName ??
+        `${baseFileName}-${outputWidth}x${outputHeight}`,
+      fallbackFileName: params.fileName,
+      extension: exportConfig.extension,
+    })
   )
 
   return exportConfig

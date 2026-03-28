@@ -6,6 +6,7 @@ import { Download, RefreshCcw, ScanSearch } from "lucide-react"
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import {
   ToolPrimaryFooter,
@@ -288,6 +289,15 @@ export function SvgToPngTool() {
     OUTPUT_FORMAT_OPTIONS.find(
       (format) => format.value === outputFormatValue
     ) ?? OUTPUT_FORMAT_OPTIONS[0]
+  const defaultSingleExportFileName =
+    svgs.length === 1
+      ? Math.round(firstSvg.width) === outputWidth
+        ? replaceFileExtension(firstSvg.fileName, outputFormat.extension)
+        : replaceFileExtension(
+            firstSvg.fileName,
+            `-${outputWidth}w${outputFormat.extension}`
+          )
+      : ""
 
   const handleScaleChange = (value: string) => {
     if (!firstSvg || !value) {
@@ -314,7 +324,7 @@ export function SvgToPngTool() {
     setOutputFormatValue(value)
   }
 
-  const handleConvertAll = async () => {
+  const handleConvertAll = async (outputFileName?: string) => {
     await runAction({
       action: async () => {
         for (const svg of svgs) {
@@ -330,7 +340,9 @@ export function SvgToPngTool() {
             outputFormat.quality
           )
           const fileName =
-            Math.round(svg.width) === svgWidth
+            svgs.length === 1 && outputFileName
+              ? outputFileName
+              : Math.round(svg.width) === svgWidth
               ? replaceFileExtension(svg.fileName, outputFormat.extension)
               : replaceFileExtension(
                   svg.fileName,
@@ -381,17 +393,32 @@ export function SvgToPngTool() {
           title="Export settings"
           footer={
             <ToolPrimaryFooter className="pt-0">
-              <Button
-                size="lg"
-                className="w-full"
-                disabled={isConverting}
-                onClick={handleConvertAll}
-              >
-                <Download data-icon="inline-start" />
-                {isConverting
-                  ? `Exporting ${outputFormat.label}...`
-                  : `Download ${svgs.length} ${outputFormat.label}${svgs.length === 1 ? "" : "s"}`}
-              </Button>
+              {svgs.length === 1 ? (
+                <DownloadFileAction
+                  buttonLabel={
+                    isConverting
+                      ? `Exporting ${outputFormat.label}...`
+                      : `Download ${outputFormat.label}`
+                  }
+                  defaultFileName={defaultSingleExportFileName}
+                  outputExtension={outputFormat.extension}
+                  resetKey={firstSvg.objectUrl}
+                  disabled={isConverting}
+                  onDownload={handleConvertAll}
+                />
+              ) : (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  disabled={isConverting}
+                  onClick={() => void handleConvertAll()}
+                >
+                  <Download data-icon="inline-start" />
+                  {isConverting
+                    ? `Exporting ${outputFormat.label}...`
+                    : `Download ${svgs.length} ${outputFormat.label}s`}
+                </Button>
+              )}
             </ToolPrimaryFooter>
           }
         >

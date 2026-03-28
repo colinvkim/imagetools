@@ -5,6 +5,7 @@ import { Download, Lock, LockOpen, RefreshCcw, Scaling } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import {
   ToolPrimaryFooter,
@@ -14,7 +15,6 @@ import {
   ToolWorkspace,
 } from "@/components/tools/shared/tool-workspace"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldContent,
@@ -28,6 +28,7 @@ import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
+  buildDownloadFileName,
   canvasToBlob,
   downloadBlob,
   getFileNameWithoutExtension,
@@ -145,6 +146,12 @@ export function ResizeImageTool() {
   const outputWidth = getDimensionValue(widthInput, image.width)
   const outputHeight = getDimensionValue(heightInput, image.height)
   const exportConfig = getRasterExportConfig(image.mimeType)
+  const baseFileName = getFileNameWithoutExtension(image.fileName)
+  const defaultExportFileName = buildDownloadFileName({
+    baseName: `${baseFileName}-${outputWidth}x${outputHeight}`,
+    fallbackFileName: image.fileName,
+    extension: exportConfig.extension,
+  })
 
   const handleScaleChange = (value: string) => {
     if (!image || !value) {
@@ -207,7 +214,7 @@ export function ResizeImageTool() {
     setHeightInput(String(Math.max(1, Math.round(nextWidth / aspectRatio))))
   }
 
-  const handleExport = async () => {
+  const handleExport = async (outputFileName = defaultExportFileName) => {
     setIsExporting(true)
     setExportError(null)
     setExportSuccess(null)
@@ -231,12 +238,7 @@ export function ResizeImageTool() {
         exportConfig.mimeType,
         exportConfig.quality
       )
-      const baseFileName = getFileNameWithoutExtension(image.fileName)
-
-      downloadBlob(
-        blob,
-        `${baseFileName || image.fileName}-${outputWidth}x${outputHeight}${exportConfig.extension}`
-      )
+      downloadBlob(blob, outputFileName)
       setExportSuccess(`${exportConfig.label} download started successfully.`)
     } catch (caughtError) {
       const message =
@@ -279,22 +281,23 @@ export function ResizeImageTool() {
         <ToolSettingsCard
           title="Resize settings"
           fileName={image.fileName}
-          footer={
-            <ToolPrimaryFooter className="pt-0">
-              <Button
-                size="lg"
-                className="w-full"
-                disabled={isExporting}
-                onClick={handleExport}
-              >
-                <Download data-icon="inline-start" />
-                {isExporting
-                  ? "Exporting image..."
-                  : `Download ${exportConfig.label}`}
-              </Button>
-            </ToolPrimaryFooter>
-          }
-        >
+            footer={
+              <ToolPrimaryFooter className="pt-0">
+                <DownloadFileAction
+                  buttonLabel={
+                    isExporting
+                      ? "Exporting image..."
+                      : `Download ${exportConfig.label}`
+                  }
+                  defaultFileName={defaultExportFileName}
+                  outputExtension={exportConfig.extension}
+                  resetKey={image.objectUrl}
+                  disabled={isExporting}
+                  onDownload={handleExport}
+                />
+              </ToolPrimaryFooter>
+            }
+          >
           <ToolStatGrid>
             <ToolStatCard
               label="Original size"
@@ -409,8 +412,9 @@ export function ResizeImageTool() {
             <Download />
             <AlertTitle>Output</AlertTitle>
             <AlertDescription>
-              Downloads a resized {exportConfig.label} file with{" "}
-              {`-${outputWidth}x${outputHeight}`} appended to the name.
+              By default, downloads a resized {exportConfig.label} file with{" "}
+              {`-${outputWidth}x${outputHeight}`} appended to the name. Use the
+              edit button beside download to rename it first.
             </AlertDescription>
           </Alert>
 

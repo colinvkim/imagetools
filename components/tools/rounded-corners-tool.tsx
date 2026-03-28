@@ -1,16 +1,11 @@
 "use client"
 
 import * as React from "react"
-import {
-  Crop,
-  Download,
-  RefreshCcw,
-  ScanFace,
-  SlidersHorizontal,
-} from "lucide-react"
+import { Crop, RefreshCcw, ScanFace, SlidersHorizontal } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { RectCropEditor } from "@/components/tools/shared/rect-crop-editor"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { ToolEditorDialog } from "@/components/tools/shared/tool-editor-dialog"
@@ -39,6 +34,7 @@ import {
   exportRoundedCrop,
   type RectCrop,
 } from "@/lib/image/crop"
+import { buildDownloadFileName, getFileNameWithoutExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
   GENERIC_IMAGE_EDIT_ACCEPT,
@@ -173,6 +169,12 @@ export function RoundedCornersTool() {
 
   const maxRadius = Math.min(crop.width, crop.height) / 2
   const radius = getRadiusValue(radiusInput, maxRadius)
+  const baseFileName = getFileNameWithoutExtension(image.fileName)
+  const defaultExportFileName = buildDownloadFileName({
+    baseName: `${baseFileName}-rounded`,
+    fallbackFileName: image.fileName,
+    extension: ".png",
+  })
 
   const handlePresetChange = (value: string) => {
     if (!value) {
@@ -192,7 +194,7 @@ export function RoundedCornersTool() {
     setRadiusInput(event.target.value)
   }
 
-  const handleExport = async () => {
+  const handleExport = async (outputFileName = defaultExportFileName) => {
     setIsExporting(true)
     setExportError(null)
     setExportSuccess(null)
@@ -203,6 +205,7 @@ export function RoundedCornersTool() {
         crop,
         fileName: image.fileName,
         radius,
+        outputFileName,
       })
       setExportSuccess("Rounded PNG download started successfully.")
     } catch (caughtError) {
@@ -259,15 +262,16 @@ export function RoundedCornersTool() {
                   <Crop data-icon="inline-start" />
                   Adjust crop
                 </Button>
-                <Button
-                  size="lg"
-                  className="w-full"
+                <DownloadFileAction
+                  buttonLabel={
+                    isExporting ? "Exporting PNG..." : "Download Rounded PNG"
+                  }
+                  defaultFileName={defaultExportFileName}
+                  outputExtension=".png"
+                  resetKey={image.objectUrl}
                   disabled={isExporting}
-                  onClick={handleExport}
-                >
-                  <Download data-icon="inline-start" />
-                  {isExporting ? "Exporting PNG..." : "Download Rounded PNG"}
-                </Button>
+                  onDownload={handleExport}
+                />
               </ToolPrimaryFooter>
             }
           >

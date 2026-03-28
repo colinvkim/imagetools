@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { Crop, Download, Frame, RefreshCcw } from "lucide-react"
+import { Crop, Frame, RefreshCcw } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { RectCropEditor } from "@/components/tools/shared/rect-crop-editor"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { ToolEditorDialog } from "@/components/tools/shared/tool-editor-dialog"
@@ -33,7 +34,11 @@ import {
   exportRectCrop,
   type RectCrop,
 } from "@/lib/image/crop"
-import { getRasterExportConfig } from "@/lib/image/export"
+import {
+  buildDownloadFileName,
+  getFileNameWithoutExtension,
+  getRasterExportConfig,
+} from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
   RASTER_IMAGE_ACCEPT,
@@ -197,35 +202,6 @@ export function AspectRatioCropTool() {
     setExportSuccess(null)
   }
 
-  const handleExport = async () => {
-    if (!image || !crop) {
-      return
-    }
-
-    setIsExporting(true)
-    setExportError(null)
-    setExportSuccess(null)
-
-    try {
-      const exportResult = await exportRectCrop({
-        imageUrl: image.objectUrl,
-        crop,
-        fileName: image.fileName,
-        mimeType: image.mimeType,
-      })
-      setExportSuccess(`${exportResult.label} download started successfully.`)
-    } catch (caughtError) {
-      const message =
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Crop export failed. Please try again."
-
-      setExportError(message)
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
   if (!image || !crop || !exportConfig) {
     return (
       <FileDropzone
@@ -240,6 +216,41 @@ export function AspectRatioCropTool() {
         onFileSelect={selectFile}
       />
     )
+  }
+
+  const outputWidth = Math.max(1, Math.round(crop.width))
+  const outputHeight = Math.max(1, Math.round(crop.height))
+  const baseFileName = getFileNameWithoutExtension(image.fileName)
+  const defaultExportFileName = buildDownloadFileName({
+    baseName: `${baseFileName}-${outputWidth}x${outputHeight}`,
+    fallbackFileName: image.fileName,
+    extension: exportConfig.extension,
+  })
+
+  const handleExport = async (outputFileName = defaultExportFileName) => {
+    setIsExporting(true)
+    setExportError(null)
+    setExportSuccess(null)
+
+    try {
+      const exportResult = await exportRectCrop({
+        imageUrl: image.objectUrl,
+        crop,
+        fileName: image.fileName,
+        mimeType: image.mimeType,
+        outputFileName,
+      })
+      setExportSuccess(`${exportResult.label} download started successfully.`)
+    } catch (caughtError) {
+      const message =
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Crop export failed. Please try again."
+
+      setExportError(message)
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   return (
@@ -283,17 +294,18 @@ export function AspectRatioCropTool() {
                   <Crop data-icon="inline-start" />
                   Adjust crop
                 </Button>
-                <Button
-                  size="lg"
-                  className="w-full"
+                <DownloadFileAction
+                  buttonLabel={
+                    isExporting
+                      ? `Exporting ${exportConfig.label}...`
+                      : `Download ${exportConfig.label}`
+                  }
+                  defaultFileName={defaultExportFileName}
+                  outputExtension={exportConfig.extension}
+                  resetKey={image.objectUrl}
                   disabled={isExporting}
-                  onClick={handleExport}
-                >
-                  <Download data-icon="inline-start" />
-                  {isExporting
-                    ? `Exporting ${exportConfig.label}...`
-                    : `Download ${exportConfig.label}`}
-                </Button>
+                  onDownload={handleExport}
+                />
               </ToolPrimaryFooter>
             }
           >

@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { Crop, Download, RefreshCcw, Scissors } from "lucide-react"
+import { Crop, RefreshCcw, Scissors } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import {
   ToolPrimaryFooter,
@@ -14,11 +15,14 @@ import {
   ToolWorkspace,
 } from "@/components/tools/shared/tool-workspace"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import { exportRectCrop } from "@/lib/image/crop"
-import { getRasterExportConfig } from "@/lib/image/export"
+import {
+  buildDownloadFileName,
+  getFileNameWithoutExtension,
+  getRasterExportConfig,
+} from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
   TRANSPARENT_RASTER_IMAGE_ACCEPT,
@@ -198,8 +202,20 @@ export function TrimTransparentPixelsTool() {
   }
 
   const exportConfig = getRasterExportConfig(image.mimeType)
+  const trimmedWidth = trimResult
+    ? Math.max(1, Math.round(trimResult.crop.width))
+    : 0
+  const trimmedHeight = trimResult
+    ? Math.max(1, Math.round(trimResult.crop.height))
+    : 0
+  const baseFileName = getFileNameWithoutExtension(image.fileName)
+  const defaultExportFileName = buildDownloadFileName({
+    baseName: `${baseFileName}-${trimmedWidth}x${trimmedHeight}`,
+    fallbackFileName: image.fileName,
+    extension: exportConfig.extension,
+  })
 
-  const handleExport = async () => {
+  const handleExport = async (outputFileName = defaultExportFileName) => {
     if (!trimResult) {
       return
     }
@@ -214,6 +230,7 @@ export function TrimTransparentPixelsTool() {
         crop: trimResult.crop,
         fileName: image.fileName,
         mimeType: image.mimeType,
+        outputFileName,
       })
       setExportSuccess(`${exportResult.label} download started successfully.`)
     } catch (caughtError) {
@@ -271,17 +288,18 @@ export function TrimTransparentPixelsTool() {
           fileName={image.fileName}
           footer={
             <ToolPrimaryFooter className="pt-0">
-              <Button
-                size="lg"
-                className="w-full"
+              <DownloadFileAction
+                buttonLabel={
+                  isExporting
+                    ? `Exporting ${exportConfig.label}...`
+                    : `Download Trimmed ${exportConfig.label}`
+                }
+                defaultFileName={defaultExportFileName}
+                outputExtension={exportConfig.extension}
+                resetKey={image.objectUrl}
                 disabled={isAnalyzing || isExporting || !trimResult}
-                onClick={handleExport}
-              >
-                <Download data-icon="inline-start" />
-                {isExporting
-                  ? `Exporting ${exportConfig.label}...`
-                  : `Download Trimmed ${exportConfig.label}`}
-              </Button>
+                onDownload={handleExport}
+              />
             </ToolPrimaryFooter>
           }
         >

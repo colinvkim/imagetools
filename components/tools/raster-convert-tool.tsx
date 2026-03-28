@@ -6,6 +6,7 @@ import { Download, Files, RefreshCcw } from "lucide-react"
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import {
   ToolPrimaryFooter,
@@ -104,7 +105,8 @@ async function parseRasterFile(file: File, index = 0): Promise<UploadedRaster> {
 
 async function exportRasterFile(
   image: UploadedRaster,
-  outputFormat: (typeof OUTPUT_FORMAT_OPTIONS)[number]
+  outputFormat: (typeof OUTPUT_FORMAT_OPTIONS)[number],
+  outputFileName?: string
 ) {
   const sourceImage = await loadImageElement(image.objectUrl)
   const canvas = document.createElement("canvas")
@@ -126,7 +128,8 @@ async function exportRasterFile(
   )
   downloadBlob(
     blob,
-    replaceFileExtension(image.fileName, outputFormat.extension)
+    outputFileName ??
+      replaceFileExtension(image.fileName, outputFormat.extension)
   )
 }
 
@@ -195,22 +198,6 @@ export function RasterConvertTool() {
       (option) => option.value === outputFormatValue
     ) ?? OUTPUT_FORMAT_OPTIONS[0]
 
-  const handleConvertAll = async () => {
-    if (images.length === 0) {
-      return
-    }
-
-    await runAction({
-      action: async () => {
-        for (const image of images) {
-          await exportRasterFile(image, selectedOutputFormat)
-        }
-      },
-      successMessage: `${images.length} ${selectedOutputFormat.label} download${images.length === 1 ? "" : "s"} started successfully.`,
-      fallbackErrorMessage: "Conversion failed. Please try another batch.",
-    })
-  }
-
   if (images.length === 0) {
     return (
       <FileDropzone
@@ -230,6 +217,30 @@ export function RasterConvertTool() {
 
   const firstImage = images[0]!
   const totalFileSize = images.reduce((sum, image) => sum + image.fileSize, 0)
+  const defaultSingleExportFileName = replaceFileExtension(
+    firstImage.fileName,
+    selectedOutputFormat.extension
+  )
+
+  const handleConvertAll = async (outputFileName?: string) => {
+    if (images.length === 0) {
+      return
+    }
+
+    await runAction({
+      action: async () => {
+        for (const image of images) {
+          await exportRasterFile(
+            image,
+            selectedOutputFormat,
+            images.length === 1 ? outputFileName : undefined
+          )
+        }
+      },
+      successMessage: `${images.length} ${selectedOutputFormat.label} download${images.length === 1 ? "" : "s"} started successfully.`,
+      fallbackErrorMessage: "Conversion failed. Please try another batch.",
+    })
+  }
 
   return (
     <ToolWorkspace
@@ -267,17 +278,32 @@ export function RasterConvertTool() {
           title="Batch details"
           footer={
             <ToolPrimaryFooter className="pt-0">
-              <Button
-                size="lg"
-                className="w-full"
-                disabled={isConverting}
-                onClick={handleConvertAll}
-              >
-                <Download data-icon="inline-start" />
-                {isConverting
-                  ? `Exporting ${selectedOutputFormat.label}s...`
-                  : `Download ${images.length} ${selectedOutputFormat.label}${images.length === 1 ? "" : "s"}`}
-              </Button>
+              {images.length === 1 ? (
+                <DownloadFileAction
+                  buttonLabel={
+                    isConverting
+                      ? `Exporting ${selectedOutputFormat.label}...`
+                      : `Download ${selectedOutputFormat.label}`
+                  }
+                  defaultFileName={defaultSingleExportFileName}
+                  outputExtension={selectedOutputFormat.extension}
+                  resetKey={firstImage.objectUrl}
+                  disabled={isConverting}
+                  onDownload={handleConvertAll}
+                />
+              ) : (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  disabled={isConverting}
+                  onClick={() => void handleConvertAll()}
+                >
+                  <Download data-icon="inline-start" />
+                  {isConverting
+                    ? `Exporting ${selectedOutputFormat.label}s...`
+                    : `Download ${images.length} ${selectedOutputFormat.label}s`}
+                </Button>
+              )}
             </ToolPrimaryFooter>
           }
         >

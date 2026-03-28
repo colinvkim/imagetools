@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { CircleDashed, Crop, Download, RefreshCcw } from "lucide-react"
+import { CircleDashed, Crop, RefreshCcw } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
+import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { SquareCropEditor } from "@/components/tools/shared/square-crop-editor"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { ToolEditorDialog } from "@/components/tools/shared/tool-editor-dialog"
@@ -24,6 +25,7 @@ import {
   exportCircleCrop,
   type SquareCrop,
 } from "@/lib/image/crop"
+import { buildDownloadFileName, getFileNameWithoutExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
   GENERIC_IMAGE_EDIT_ACCEPT,
@@ -110,34 +112,6 @@ export function CircleCropTool() {
     setExportSuccess(null)
   }, [])
 
-  const handleExport = async () => {
-    if (!image || !crop) {
-      return
-    }
-
-    setIsExporting(true)
-    setExportError(null)
-    setExportSuccess(null)
-
-    try {
-      await exportCircleCrop({
-        imageUrl: image.objectUrl,
-        crop,
-        fileName: image.fileName,
-      })
-      setExportSuccess("Circle PNG download started successfully.")
-    } catch (caughtError) {
-      const message =
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Circle crop export failed. Please try again."
-
-      setExportError(message)
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
   if (!image || !crop) {
     return (
       <FileDropzone
@@ -152,6 +126,38 @@ export function CircleCropTool() {
         onFileSelect={selectFile}
       />
     )
+  }
+
+  const baseFileName = getFileNameWithoutExtension(image.fileName)
+  const defaultExportFileName = buildDownloadFileName({
+    baseName: `${baseFileName}-circle`,
+    fallbackFileName: image.fileName,
+    extension: ".png",
+  })
+
+  const handleExport = async (outputFileName = defaultExportFileName) => {
+    setIsExporting(true)
+    setExportError(null)
+    setExportSuccess(null)
+
+    try {
+      await exportCircleCrop({
+        imageUrl: image.objectUrl,
+        crop,
+        fileName: image.fileName,
+        outputFileName,
+      })
+      setExportSuccess("Circle PNG download started successfully.")
+    } catch (caughtError) {
+      const message =
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Circle crop export failed. Please try again."
+
+      setExportError(message)
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   return (
@@ -195,15 +201,16 @@ export function CircleCropTool() {
                   <Crop data-icon="inline-start" />
                   Adjust crop
                 </Button>
-                <Button
-                  size="lg"
-                  className="w-full"
+                <DownloadFileAction
+                  buttonLabel={
+                    isExporting ? "Exporting PNG..." : "Download Circle PNG"
+                  }
+                  defaultFileName={defaultExportFileName}
+                  outputExtension=".png"
+                  resetKey={image.objectUrl}
                   disabled={isExporting}
-                  onClick={handleExport}
-                >
-                  <Download data-icon="inline-start" />
-                  {isExporting ? "Exporting PNG..." : "Download Circle PNG"}
-                </Button>
+                  onDownload={handleExport}
+                />
               </ToolPrimaryFooter>
             }
           >
