@@ -5,7 +5,6 @@ import * as React from "react"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import {
   clampRectCrop,
-  clampRectCropToAspectRatio,
   type RectCrop,
 } from "@/lib/image/crop"
 import { cn } from "@/lib/utils"
@@ -40,20 +39,30 @@ type DragState = {
   initialCrop: RectCrop
 }
 
+type SampledImageData = {
+  width: number
+  height: number
+  data: Uint8ClampedArray
+}
+
 const GRID_FADE_DELAY_MS = 700
+const IMAGE_SAMPLE_MAX_SIDE = 512
 
 function getPointInImageSpace(
   clientX: number,
   clientY: number,
   element: SVGSVGElement,
   imageWidth: number,
-  imageHeight: number
+  imageHeight: number,
+  chromePadding: number
 ) {
   const rect = element.getBoundingClientRect()
+  const virtualWidth = imageWidth + chromePadding * 2
+  const virtualHeight = imageHeight + chromePadding * 2
 
   return {
-    x: ((clientX - rect.left) / rect.width) * imageWidth,
-    y: ((clientY - rect.top) / rect.height) * imageHeight,
+    x: ((clientX - rect.left) / rect.width) * virtualWidth - chromePadding,
+    y: ((clientY - rect.top) / rect.height) * virtualHeight - chromePadding,
   }
 }
 
@@ -61,57 +70,91 @@ function getFreeformResizedCrop(
   initialCrop: RectCrop,
   handle: Exclude<DragHandle, "move">,
   deltaX: number,
-  deltaY: number
+  deltaY: number,
+  minCropWidth: number,
+  minCropHeight: number,
+  imageWidth: number,
+  imageHeight: number
 ): RectCrop {
+  const initialRight = initialCrop.x + initialCrop.width
+  const initialBottom = initialCrop.y + initialCrop.height
+
   switch (handle) {
     case "n":
       return {
-        ...initialCrop,
-        y: initialCrop.y + deltaY,
-        height: initialCrop.height - deltaY,
+        x: initialCrop.x,
+        y: Math.min(initialBottom - minCropHeight, initialCrop.y + deltaY),
+        width: initialCrop.width,
+        height: Math.max(minCropHeight, initialBottom - (initialCrop.y + deltaY)),
       }
     case "s":
       return {
         ...initialCrop,
-        height: initialCrop.height + deltaY,
+        height: Math.min(
+          imageHeight - initialCrop.y,
+          Math.max(minCropHeight, initialCrop.height + deltaY)
+        ),
       }
     case "e":
       return {
         ...initialCrop,
-        width: initialCrop.width + deltaX,
+        width: Math.min(
+          imageWidth - initialCrop.x,
+          Math.max(minCropWidth, initialCrop.width + deltaX)
+        ),
       }
     case "w":
       return {
-        ...initialCrop,
-        x: initialCrop.x + deltaX,
-        width: initialCrop.width - deltaX,
+        x: Math.min(initialRight - minCropWidth, initialCrop.x + deltaX),
+        y: initialCrop.y,
+        width: Math.max(minCropWidth, initialRight - (initialCrop.x + deltaX)),
+        height: initialCrop.height,
       }
     case "nw":
       return {
-        x: initialCrop.x + deltaX,
-        y: initialCrop.y + deltaY,
-        width: initialCrop.width - deltaX,
-        height: initialCrop.height - deltaY,
+        x: Math.min(initialRight - minCropWidth, initialCrop.x + deltaX),
+        y: Math.min(initialBottom - minCropHeight, initialCrop.y + deltaY),
+        width: Math.max(minCropWidth, initialRight - (initialCrop.x + deltaX)),
+        height: Math.max(
+          minCropHeight,
+          initialBottom - (initialCrop.y + deltaY)
+        ),
       }
     case "ne":
       return {
         x: initialCrop.x,
-        y: initialCrop.y + deltaY,
-        width: initialCrop.width + deltaX,
-        height: initialCrop.height - deltaY,
+        y: Math.min(initialBottom - minCropHeight, initialCrop.y + deltaY),
+        width: Math.min(
+          imageWidth - initialCrop.x,
+          Math.max(minCropWidth, initialCrop.width + deltaX)
+        ),
+        height: Math.max(
+          minCropHeight,
+          initialBottom - (initialCrop.y + deltaY)
+        ),
       }
     case "sw":
       return {
-        x: initialCrop.x + deltaX,
+        x: Math.min(initialRight - minCropWidth, initialCrop.x + deltaX),
         y: initialCrop.y,
-        width: initialCrop.width - deltaX,
-        height: initialCrop.height + deltaY,
+        width: Math.max(minCropWidth, initialRight - (initialCrop.x + deltaX)),
+        height: Math.min(
+          imageHeight - initialCrop.y,
+          Math.max(minCropHeight, initialCrop.height + deltaY)
+        ),
       }
     case "se":
       return {
-        ...initialCrop,
-        width: initialCrop.width + deltaX,
-        height: initialCrop.height + deltaY,
+        x: initialCrop.x,
+        y: initialCrop.y,
+        width: Math.min(
+          imageWidth - initialCrop.x,
+          Math.max(minCropWidth, initialCrop.width + deltaX)
+        ),
+        height: Math.min(
+          imageHeight - initialCrop.y,
+          Math.max(minCropHeight, initialCrop.height + deltaY)
+        ),
       }
   }
 }
@@ -123,7 +166,9 @@ function getAspectRatioCornerCrop(
   pointY: number,
   aspectRatio: number,
   minCropWidth: number,
-  minCropHeight: number
+  minCropHeight: number,
+  imageWidth: number,
+  imageHeight: number
 ): RectCrop {
   const anchorX =
     handle === "nw" || handle === "sw"
@@ -134,10 +179,15 @@ function getAspectRatioCornerCrop(
       ? initialCrop.y + initialCrop.height
       : initialCrop.y
 
-  const widthFromPointer = Math.abs(pointX - anchorX)
-  const heightFromPointer = Math.abs(pointY - anchorY)
+  const widthFromPointer =
+    handle === "nw" || handle === "sw" ? anchorX - pointX : pointX - anchorX
+  const heightFromPointer =
+    handle === "nw" || handle === "ne" ? anchorY - pointY : pointY - anchorY
 
-  let width = Math.min(widthFromPointer, heightFromPointer * aspectRatio)
+  let width = Math.min(
+    Math.max(0, widthFromPointer),
+    Math.max(0, heightFromPointer) * aspectRatio
+  )
   let height = width / aspectRatio
 
   if (width < minCropWidth) {
@@ -149,6 +199,18 @@ function getAspectRatioCornerCrop(
     height = minCropHeight
     width = height * aspectRatio
   }
+
+  const maxWidthFromAnchor =
+    handle === "nw" || handle === "sw" ? anchorX : imageWidth - anchorX
+  const maxHeightFromAnchor =
+    handle === "nw" || handle === "ne" ? anchorY : imageHeight - anchorY
+  const maxWidth = Math.min(
+    maxWidthFromAnchor,
+    maxHeightFromAnchor * aspectRatio
+  )
+
+  width = Math.min(width, maxWidth)
+  height = width / aspectRatio
 
   return {
     x: handle === "nw" || handle === "sw" ? anchorX - width : anchorX,
@@ -165,7 +227,9 @@ function getAspectRatioEdgeCrop(
   pointY: number,
   aspectRatio: number,
   minCropWidth: number,
-  minCropHeight: number
+  minCropHeight: number,
+  imageWidth: number,
+  imageHeight: number
 ): RectCrop {
   const centerX = initialCrop.x + initialCrop.width / 2
   const centerY = initialCrop.y + initialCrop.height / 2
@@ -186,6 +250,17 @@ function getAspectRatioEdgeCrop(
       height = minCropHeight
       width = height * aspectRatio
     }
+
+    const maxWidthFromAnchor =
+      handle === "e" ? imageWidth - anchoredX : anchoredX
+    const maxHeightFromCenter = Math.min(centerY, imageHeight - centerY) * 2
+    const maxWidth = Math.min(
+      maxWidthFromAnchor,
+      maxHeightFromCenter * aspectRatio
+    )
+
+    width = Math.min(width, maxWidth)
+    height = width / aspectRatio
 
     return {
       x: handle === "w" ? anchoredX - width : anchoredX,
@@ -211,6 +286,17 @@ function getAspectRatioEdgeCrop(
     height = width / aspectRatio
   }
 
+  const maxHeightFromAnchor =
+    handle === "s" ? imageHeight - anchoredY : anchoredY
+  const maxWidthFromCenter = Math.min(centerX, imageWidth - centerX) * 2
+  const maxHeight = Math.min(
+    maxHeightFromAnchor,
+    maxWidthFromCenter / aspectRatio
+  )
+
+  height = Math.min(height, maxHeight)
+  width = height * aspectRatio
+
   return {
     x: centerX - width / 2,
     y: handle === "n" ? anchoredY - height : anchoredY,
@@ -228,10 +314,21 @@ function getResizedCrop(
   deltaY: number,
   aspectRatio: number | undefined,
   minCropWidth: number,
-  minCropHeight: number
+  minCropHeight: number,
+  imageWidth: number,
+  imageHeight: number
 ) {
   if (!aspectRatio) {
-    return getFreeformResizedCrop(initialCrop, handle, deltaX, deltaY)
+    return getFreeformResizedCrop(
+      initialCrop,
+      handle,
+      deltaX,
+      deltaY,
+      minCropWidth,
+      minCropHeight,
+      imageWidth,
+      imageHeight
+    )
   }
 
   if (
@@ -247,7 +344,9 @@ function getResizedCrop(
       pointY,
       aspectRatio,
       minCropWidth,
-      minCropHeight
+      minCropHeight,
+      imageWidth,
+      imageHeight
     )
   }
 
@@ -258,7 +357,9 @@ function getResizedCrop(
     pointY,
     aspectRatio,
     minCropWidth,
-    minCropHeight
+    minCropHeight,
+    imageWidth,
+    imageHeight
   )
 }
 
@@ -272,6 +373,84 @@ function getHandleStrokeMetrics(crop: RectCrop) {
     cornerLength: Math.max(20, minDimension * 0.09),
     hitSize: Math.max(28, minDimension * 0.15),
   }
+}
+
+function getPixelLuminance(
+  sampledImage: SampledImageData,
+  x: number,
+  y: number
+) {
+  const sampleX = Math.max(0, Math.min(sampledImage.width - 1, Math.round(x)))
+  const sampleY = Math.max(0, Math.min(sampledImage.height - 1, Math.round(y)))
+  const index = (sampleY * sampledImage.width + sampleX) * 4
+  const red = sampledImage.data[index] ?? 0
+  const green = sampledImage.data[index + 1] ?? 0
+  const blue = sampledImage.data[index + 2] ?? 0
+
+  return (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255
+}
+
+function getCropChromeTone(
+  sampledImage: SampledImageData | null,
+  crop: RectCrop,
+  imageWidth: number,
+  imageHeight: number
+) {
+  if (!sampledImage) {
+    return {
+      stroke: "rgba(255,255,255,0.98)",
+      grid: "rgba(255,255,255,0.78)",
+    }
+  }
+
+  const scaleX = sampledImage.width / imageWidth
+  const scaleY = sampledImage.height / imageHeight
+  const insetX = Math.max(2, crop.width * 0.04)
+  const insetY = Math.max(2, crop.height * 0.04)
+  const sampleCountPerSide = 6
+  let luminanceTotal = 0
+  let sampleCount = 0
+
+  for (let index = 0; index < sampleCountPerSide; index += 1) {
+    const progress = (index + 0.5) / sampleCountPerSide
+    const sampleX = crop.x + crop.width * progress
+    const sampleY = crop.y + crop.height * progress
+
+    luminanceTotal += getPixelLuminance(
+      sampledImage,
+      sampleX * scaleX,
+      (crop.y + insetY) * scaleY
+    )
+    luminanceTotal += getPixelLuminance(
+      sampledImage,
+      sampleX * scaleX,
+      (crop.y + crop.height - insetY) * scaleY
+    )
+    luminanceTotal += getPixelLuminance(
+      sampledImage,
+      (crop.x + insetX) * scaleX,
+      sampleY * scaleY
+    )
+    luminanceTotal += getPixelLuminance(
+      sampledImage,
+      (crop.x + crop.width - insetX) * scaleX,
+      sampleY * scaleY
+    )
+    sampleCount += 4
+  }
+
+  const averageLuminance = sampleCount > 0 ? luminanceTotal / sampleCount : 0
+  const useDarkChrome = averageLuminance > 0.72
+
+  return useDarkChrome
+    ? {
+        stroke: "rgba(17,24,39,0.96)",
+        grid: "rgba(17,24,39,0.52)",
+      }
+    : {
+        stroke: "rgba(255,255,255,0.98)",
+        grid: "rgba(255,255,255,0.78)",
+      }
 }
 
 export function RectCropEditor({
@@ -288,7 +467,82 @@ export function RectCropEditor({
   const dragStateRef = React.useRef<DragState | null>(null)
   const gridTimeoutRef = React.useRef<number | null>(null)
   const maskId = React.useId()
+  const [sampledImage, setSampledImage] = React.useState<SampledImageData | null>(
+    null
+  )
   const [isGridVisible, setIsGridVisible] = React.useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false)
+
+  React.useEffect(() => {
+    let isCancelled = false
+    const image = new window.Image()
+
+    image.decoding = "async"
+    image.onload = () => {
+      if (isCancelled) {
+        return
+      }
+
+      const longestSide = Math.max(image.naturalWidth, image.naturalHeight)
+      const scale =
+        longestSide > IMAGE_SAMPLE_MAX_SIDE
+          ? IMAGE_SAMPLE_MAX_SIDE / longestSide
+          : 1
+      const canvasWidth = Math.max(1, Math.round(image.naturalWidth * scale))
+      const canvasHeight = Math.max(1, Math.round(image.naturalHeight * scale))
+      const canvas = document.createElement("canvas")
+      const context = canvas.getContext("2d", { willReadFrequently: true })
+
+      if (!context) {
+        setSampledImage(null)
+        return
+      }
+
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+      context.drawImage(image, 0, 0, canvasWidth, canvasHeight)
+
+      try {
+        const imageData = context.getImageData(0, 0, canvasWidth, canvasHeight)
+
+        if (!isCancelled) {
+          setSampledImage({
+            width: canvasWidth,
+            height: canvasHeight,
+            data: imageData.data,
+          })
+        }
+      } catch {
+        if (!isCancelled) {
+          setSampledImage(null)
+        }
+      }
+    }
+    image.onerror = () => {
+      if (!isCancelled) {
+        setSampledImage(null)
+      }
+    }
+    image.src = imageUrl
+
+    return () => {
+      isCancelled = true
+    }
+  }, [imageUrl])
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const handleChange = () => {
+      setPrefersReducedMotion(mediaQuery.matches)
+    }
+
+    handleChange()
+    mediaQuery.addEventListener("change", handleChange)
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange)
+    }
+  }, [])
 
   const clearGridTimeout = React.useCallback(() => {
     if (gridTimeoutRef.current !== null) {
@@ -316,35 +570,16 @@ export function RectCropEditor({
     }
   }, [clearGridTimeout])
 
-  const commitCropChange = React.useCallback(
-    (nextCrop: RectCrop) => {
-      onCropChange(
-        aspectRatio
-          ? clampRectCropToAspectRatio(
-              nextCrop,
-              imageWidth,
-              imageHeight,
-              aspectRatio,
-              minCropWidth,
-              minCropHeight
-            )
-          : clampRectCrop(
-              nextCrop,
-              imageWidth,
-              imageHeight,
-              minCropWidth,
-              minCropHeight
-            )
-      )
-    },
-    [
-      aspectRatio,
-      imageHeight,
-      imageWidth,
-      minCropHeight,
-      minCropWidth,
-      onCropChange,
-    ]
+  const clampCropPosition = React.useCallback(
+    (nextCrop: RectCrop) =>
+      clampRectCrop(
+        nextCrop,
+        imageWidth,
+        imageHeight,
+        minCropWidth,
+        minCropHeight
+      ),
+    [imageHeight, imageWidth, minCropHeight, minCropWidth]
   )
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -359,33 +594,38 @@ export function RectCropEditor({
       event.clientY,
       event.currentTarget,
       imageWidth,
-      imageHeight
+      imageHeight,
+      chromePadding
     )
     const deltaX = point.x - dragState.startX
     const deltaY = point.y - dragState.startY
 
     if (dragState.handle === "move") {
-      commitCropChange({
-        ...dragState.initialCrop,
-        x: dragState.initialCrop.x + deltaX,
-        y: dragState.initialCrop.y + deltaY,
-      })
+      onCropChange(
+        clampCropPosition({
+          ...dragState.initialCrop,
+          x: dragState.initialCrop.x + deltaX,
+          y: dragState.initialCrop.y + deltaY,
+        })
+      )
       return
     }
 
-    commitCropChange(
-      getResizedCrop(
-        dragState.initialCrop,
-        dragState.handle,
-        point.x,
-        point.y,
-        deltaX,
-        deltaY,
-        aspectRatio,
-        minCropWidth,
-        minCropHeight
-      )
+    const nextCrop = getResizedCrop(
+      dragState.initialCrop,
+      dragState.handle,
+      point.x,
+      point.y,
+      deltaX,
+      deltaY,
+      aspectRatio,
+      minCropWidth,
+      minCropHeight,
+      imageWidth,
+      imageHeight
     )
+
+    onCropChange(nextCrop)
   }
 
   const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -417,7 +657,8 @@ export function RectCropEditor({
         event.clientY,
         parentSvg,
         imageWidth,
-        imageHeight
+        imageHeight,
+        chromePadding
       )
 
       dragStateRef.current = {
@@ -439,12 +680,21 @@ export function RectCropEditor({
     hitSize,
   } = getHandleStrokeMetrics(crop)
   const gridOpacity = dragStateRef.current || isGridVisible ? 0.72 : 0
-  const displayAspectRatio = imageWidth / imageHeight
-  const topBracketY = crop.y - handleStroke
-  const bottomBracketY = crop.y + crop.height
-  const leftBracketX = crop.x - handleStroke
-  const rightBracketX = crop.x + crop.width
+  const chromePadding = Math.max(handleStroke * 2, 12)
+  const virtualWidth = imageWidth + chromePadding * 2
+  const virtualHeight = imageHeight + chromePadding * 2
+  const displayAspectRatio = virtualWidth / virtualHeight
+  const cropX = crop.x + chromePadding
+  const cropY = crop.y + chromePadding
+  const topBracketY = cropY - handleStroke
+  const bottomBracketY = cropY + crop.height
+  const leftBracketX = cropX - handleStroke
+  const rightBracketX = cropX + crop.width
   const edgeHitThickness = Math.max(hitSize * 0.72, handleStroke * 4)
+  const chromeTone = React.useMemo(
+    () => getCropChromeTone(sampledImage, crop, imageWidth, imageHeight),
+    [crop, imageHeight, imageWidth, sampledImage]
+  )
 
   return (
     <div className={cn("w-full", className)}>
@@ -456,34 +706,35 @@ export function RectCropEditor({
           className="relative mx-auto"
           style={{
             width: `min(100%, calc(68vh * ${displayAspectRatio}))`,
-            aspectRatio: `${imageWidth} / ${imageHeight}`,
+            aspectRatio: `${virtualWidth} / ${virtualHeight}`,
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs are previewed directly in the browser */}
-          <img
-            src={imageUrl}
-            alt="Crop source"
-            className="absolute inset-0 size-full object-contain"
-          />
-
           <svg
-            viewBox={`0 0 ${imageWidth} ${imageHeight}`}
+            viewBox={`0 0 ${virtualWidth} ${virtualHeight}`}
             className="absolute inset-0 size-full touch-none"
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
           >
+            <image
+              href={imageUrl}
+              x={chromePadding}
+              y={chromePadding}
+              width={imageWidth}
+              height={imageHeight}
+              preserveAspectRatio="none"
+            />
             <mask id={maskId}>
               <rect
                 x={0}
                 y={0}
-                width={imageWidth}
-                height={imageHeight}
+                width={virtualWidth}
+                height={virtualHeight}
                 fill="white"
               />
               <rect
-                x={crop.x}
-                y={crop.y}
+                x={cropX}
+                y={cropY}
                 width={crop.width}
                 height={crop.height}
                 fill="black"
@@ -493,124 +744,128 @@ export function RectCropEditor({
             <rect
               x={0}
               y={0}
-              width={imageWidth}
-              height={imageHeight}
+              width={virtualWidth}
+              height={virtualHeight}
               fill="rgba(15,23,42,0.56)"
               mask={`url(#${maskId})`}
             />
 
             <g pointerEvents="none">
               <rect
-                x={crop.x}
-                y={crop.y}
+                x={cropX}
+                y={cropY}
                 width={crop.width}
                 height={crop.height}
                 fill="transparent"
-                stroke="rgba(255,255,255,0.98)"
+                stroke={chromeTone.stroke}
                 strokeWidth={frameStroke}
               />
 
               <g
                 style={{
                   opacity: gridOpacity,
-                  transition: "opacity 180ms ease",
+                  transition: prefersReducedMotion
+                    ? undefined
+                    : "opacity 180ms ease",
                 }}
               >
                 <line
-                  x1={crop.x + crop.width / 3}
-                  y1={crop.y}
-                  x2={crop.x + crop.width / 3}
-                  y2={crop.y + crop.height}
-                  stroke="rgba(255,255,255,0.78)"
+                  x1={cropX + crop.width / 3}
+                  y1={cropY}
+                  x2={cropX + crop.width / 3}
+                  y2={cropY + crop.height}
+                  stroke={chromeTone.grid}
                   strokeWidth={gridStroke}
                 />
                 <line
-                  x1={crop.x + (crop.width / 3) * 2}
-                  y1={crop.y}
-                  x2={crop.x + (crop.width / 3) * 2}
-                  y2={crop.y + crop.height}
-                  stroke="rgba(255,255,255,0.78)"
+                  x1={cropX + (crop.width / 3) * 2}
+                  y1={cropY}
+                  x2={cropX + (crop.width / 3) * 2}
+                  y2={cropY + crop.height}
+                  stroke={chromeTone.grid}
                   strokeWidth={gridStroke}
                 />
                 <line
-                  x1={crop.x}
-                  y1={crop.y + crop.height / 3}
-                  x2={crop.x + crop.width}
-                  y2={crop.y + crop.height / 3}
-                  stroke="rgba(255,255,255,0.78)"
+                  x1={cropX}
+                  y1={cropY + crop.height / 3}
+                  x2={cropX + crop.width}
+                  y2={cropY + crop.height / 3}
+                  stroke={chromeTone.grid}
                   strokeWidth={gridStroke}
                 />
                 <line
-                  x1={crop.x}
-                  y1={crop.y + (crop.height / 3) * 2}
-                  x2={crop.x + crop.width}
-                  y2={crop.y + (crop.height / 3) * 2}
-                  stroke="rgba(255,255,255,0.78)"
+                  x1={cropX}
+                  y1={cropY + (crop.height / 3) * 2}
+                  x2={cropX + crop.width}
+                  y2={cropY + (crop.height / 3) * 2}
+                  stroke={chromeTone.grid}
                   strokeWidth={gridStroke}
                 />
               </g>
 
-              <rect
-                x={leftBracketX}
-                y={topBracketY}
-                width={cornerLength + handleStroke}
-                height={handleStroke}
-                fill="white"
-              />
-              <rect
-                x={leftBracketX}
-                y={topBracketY}
-                width={handleStroke}
-                height={cornerLength + handleStroke}
-                fill="white"
-              />
-              <rect
-                x={crop.x + crop.width - cornerLength}
-                y={topBracketY}
-                width={cornerLength + handleStroke}
-                height={handleStroke}
-                fill="white"
-              />
-              <rect
-                x={rightBracketX}
-                y={topBracketY}
-                width={handleStroke}
-                height={cornerLength + handleStroke}
-                fill="white"
-              />
-              <rect
-                x={leftBracketX}
-                y={bottomBracketY}
-                width={cornerLength + handleStroke}
-                height={handleStroke}
-                fill="white"
-              />
-              <rect
-                x={leftBracketX}
-                y={crop.y + crop.height - cornerLength}
-                width={handleStroke}
-                height={cornerLength + handleStroke}
-                fill="white"
-              />
-              <rect
-                x={crop.x + crop.width - cornerLength}
-                y={bottomBracketY}
-                width={cornerLength + handleStroke}
-                height={handleStroke}
-                fill="white"
-              />
-              <rect
-                x={rightBracketX}
-                y={crop.y + crop.height - cornerLength}
-                width={handleStroke}
-                height={cornerLength + handleStroke}
-                fill="white"
-              />
+              <g>
+                <rect
+                  x={leftBracketX}
+                  y={topBracketY}
+                  width={cornerLength + handleStroke}
+                  height={handleStroke}
+                  fill={chromeTone.stroke}
+                />
+                <rect
+                  x={leftBracketX}
+                  y={topBracketY}
+                  width={handleStroke}
+                  height={cornerLength + handleStroke}
+                  fill={chromeTone.stroke}
+                />
+                <rect
+                  x={cropX + crop.width - cornerLength}
+                  y={topBracketY}
+                  width={cornerLength + handleStroke}
+                  height={handleStroke}
+                  fill={chromeTone.stroke}
+                />
+                <rect
+                  x={rightBracketX}
+                  y={topBracketY}
+                  width={handleStroke}
+                  height={cornerLength + handleStroke}
+                  fill={chromeTone.stroke}
+                />
+                <rect
+                  x={leftBracketX}
+                  y={bottomBracketY}
+                  width={cornerLength + handleStroke}
+                  height={handleStroke}
+                  fill={chromeTone.stroke}
+                />
+                <rect
+                  x={leftBracketX}
+                  y={cropY + crop.height - cornerLength}
+                  width={handleStroke}
+                  height={cornerLength + handleStroke}
+                  fill={chromeTone.stroke}
+                />
+                <rect
+                  x={cropX + crop.width - cornerLength}
+                  y={bottomBracketY}
+                  width={cornerLength + handleStroke}
+                  height={handleStroke}
+                  fill={chromeTone.stroke}
+                />
+                <rect
+                  x={rightBracketX}
+                  y={cropY + crop.height - cornerLength}
+                  width={handleStroke}
+                  height={cornerLength + handleStroke}
+                  fill={chromeTone.stroke}
+                />
+              </g>
             </g>
 
             <rect
-              x={crop.x}
-              y={crop.y}
+              x={cropX}
+              y={cropY}
               width={crop.width}
               height={crop.height}
               fill="transparent"
@@ -620,8 +875,8 @@ export function RectCropEditor({
             />
 
             <rect
-              x={crop.x}
-              y={crop.y - edgeHitThickness / 2}
+              x={cropX}
+              y={cropY - edgeHitThickness / 2}
               width={crop.width}
               height={edgeHitThickness}
               fill="rgba(255,255,255,0.001)"
@@ -629,8 +884,8 @@ export function RectCropEditor({
               onPointerDown={startDrag("n")}
             />
             <rect
-              x={crop.x}
-              y={crop.y + crop.height - edgeHitThickness / 2}
+              x={cropX}
+              y={cropY + crop.height - edgeHitThickness / 2}
               width={crop.width}
               height={edgeHitThickness}
               fill="rgba(255,255,255,0.001)"
@@ -638,8 +893,8 @@ export function RectCropEditor({
               onPointerDown={startDrag("s")}
             />
             <rect
-              x={crop.x - edgeHitThickness / 2}
-              y={crop.y}
+              x={cropX - edgeHitThickness / 2}
+              y={cropY}
               width={edgeHitThickness}
               height={crop.height}
               fill="rgba(255,255,255,0.001)"
@@ -647,8 +902,8 @@ export function RectCropEditor({
               onPointerDown={startDrag("w")}
             />
             <rect
-              x={crop.x + crop.width - edgeHitThickness / 2}
-              y={crop.y}
+              x={cropX + crop.width - edgeHitThickness / 2}
+              y={cropY}
               width={edgeHitThickness}
               height={crop.height}
               fill="rgba(255,255,255,0.001)"
@@ -656,8 +911,8 @@ export function RectCropEditor({
               onPointerDown={startDrag("e")}
             />
             <rect
-              x={crop.x - hitSize / 2}
-              y={crop.y - hitSize / 2}
+              x={cropX - hitSize / 2}
+              y={cropY - hitSize / 2}
               width={hitSize}
               height={hitSize}
               fill="rgba(255,255,255,0.001)"
@@ -665,8 +920,8 @@ export function RectCropEditor({
               onPointerDown={startDrag("nw")}
             />
             <rect
-              x={crop.x + crop.width - hitSize / 2}
-              y={crop.y - hitSize / 2}
+              x={cropX + crop.width - hitSize / 2}
+              y={cropY - hitSize / 2}
               width={hitSize}
               height={hitSize}
               fill="rgba(255,255,255,0.001)"
@@ -674,8 +929,8 @@ export function RectCropEditor({
               onPointerDown={startDrag("ne")}
             />
             <rect
-              x={crop.x - hitSize / 2}
-              y={crop.y + crop.height - hitSize / 2}
+              x={cropX - hitSize / 2}
+              y={cropY + crop.height - hitSize / 2}
               width={hitSize}
               height={hitSize}
               fill="rgba(255,255,255,0.001)"
@@ -683,8 +938,8 @@ export function RectCropEditor({
               onPointerDown={startDrag("sw")}
             />
             <rect
-              x={crop.x + crop.width - hitSize / 2}
-              y={crop.y + crop.height - hitSize / 2}
+              x={cropX + crop.width - hitSize / 2}
+              y={cropY + crop.height - hitSize / 2}
               width={hitSize}
               height={hitSize}
               fill="rgba(255,255,255,0.001)"

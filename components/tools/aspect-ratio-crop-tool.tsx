@@ -117,6 +117,8 @@ function CropPreview({
         <img
           src={imageUrl}
           alt="Aspect-ratio crop preview"
+          width={imageWidth}
+          height={imageHeight}
           className="absolute top-0 left-0 max-w-none"
           style={{
             width: imageWidth * scale,
