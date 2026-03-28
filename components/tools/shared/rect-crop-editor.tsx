@@ -48,6 +48,10 @@ type SampledImageData = {
 const GRID_FADE_DELAY_MS = 700
 const IMAGE_SAMPLE_MAX_SIDE = 512
 
+function clampValue(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
+}
+
 function getPointInImageSpace(
   clientX: number,
   clientY: number,
@@ -78,14 +82,24 @@ function getFreeformResizedCrop(
 ): RectCrop {
   const initialRight = initialCrop.x + initialCrop.width
   const initialBottom = initialCrop.y + initialCrop.height
+  const nextLeft = clampValue(
+    initialCrop.x + deltaX,
+    0,
+    initialRight - minCropWidth
+  )
+  const nextTop = clampValue(
+    initialCrop.y + deltaY,
+    0,
+    initialBottom - minCropHeight
+  )
 
   switch (handle) {
     case "n":
       return {
         x: initialCrop.x,
-        y: Math.min(initialBottom - minCropHeight, initialCrop.y + deltaY),
+        y: nextTop,
         width: initialCrop.width,
-        height: Math.max(minCropHeight, initialBottom - (initialCrop.y + deltaY)),
+        height: initialBottom - nextTop,
       }
     case "s":
       return {
@@ -105,39 +119,33 @@ function getFreeformResizedCrop(
       }
     case "w":
       return {
-        x: Math.min(initialRight - minCropWidth, initialCrop.x + deltaX),
+        x: nextLeft,
         y: initialCrop.y,
-        width: Math.max(minCropWidth, initialRight - (initialCrop.x + deltaX)),
+        width: initialRight - nextLeft,
         height: initialCrop.height,
       }
     case "nw":
       return {
-        x: Math.min(initialRight - minCropWidth, initialCrop.x + deltaX),
-        y: Math.min(initialBottom - minCropHeight, initialCrop.y + deltaY),
-        width: Math.max(minCropWidth, initialRight - (initialCrop.x + deltaX)),
-        height: Math.max(
-          minCropHeight,
-          initialBottom - (initialCrop.y + deltaY)
-        ),
+        x: nextLeft,
+        y: nextTop,
+        width: initialRight - nextLeft,
+        height: initialBottom - nextTop,
       }
     case "ne":
       return {
         x: initialCrop.x,
-        y: Math.min(initialBottom - minCropHeight, initialCrop.y + deltaY),
+        y: nextTop,
         width: Math.min(
           imageWidth - initialCrop.x,
           Math.max(minCropWidth, initialCrop.width + deltaX)
         ),
-        height: Math.max(
-          minCropHeight,
-          initialBottom - (initialCrop.y + deltaY)
-        ),
+        height: initialBottom - nextTop,
       }
     case "sw":
       return {
-        x: Math.min(initialRight - minCropWidth, initialCrop.x + deltaX),
+        x: nextLeft,
         y: initialCrop.y,
-        width: Math.max(minCropWidth, initialRight - (initialCrop.x + deltaX)),
+        width: initialRight - nextLeft,
         height: Math.min(
           imageHeight - initialCrop.y,
           Math.max(minCropHeight, initialCrop.height + deltaY)
