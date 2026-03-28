@@ -18,7 +18,7 @@ import { Separator } from "@/components/ui/separator"
 import { createPageMetadata, getCanonicalUrl } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Free Online Image Tools",
+  title: "Home | imagetools",
   description:
     "Resize images, convert files, crop assets, trim transparent pixels, and rasterize artwork directly in your browser while keeping files on your device.",
   path: "/",
@@ -42,7 +42,7 @@ export default function Page() {
     "@type": "CollectionPage",
     name: "Free Online Image Tools",
     description:
-      "A collection of free image utilities for resizing, converting, cropping, and cleaning up files directly in the browser.",
+      "A collection of open-source image utilities for resizing, converting, cropping, and cleaning up files directly in the browser.",
     url: getCanonicalUrl("/"),
     hasPart: TOOL_DEFINITIONS.map((tool) => ({
       "@type": "SoftwareApplication",

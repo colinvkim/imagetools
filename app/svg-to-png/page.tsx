@@ -6,7 +6,7 @@ import { SvgToPngTool } from "@/components/tools/svg-to-png-tool"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "SVG to PNG Converter",
+  title: "Export SVGs",
   description:
     "Rasterize SVG artwork into PNG or WebP files at the size you choose without leaving the browser.",
   path: "/svg-to-png",

@@ -322,14 +322,14 @@ export function FileDropzone({
                       setUrlError(null)
                     }
                   }}
-                  className="h-10 rounded-xl bg-background"
+                  className="h-9 rounded-xl bg-background sm:flex-1"
                 />
                 <Button
                   type="submit"
                   variant="outline"
-                  size="lg"
+                  size="default"
                   disabled={isBusy || !urlValue.trim()}
-                  className="rounded-xl sm:min-w-40"
+                  className="rounded-xl px-4 sm:min-w-28"
                 >
                   {isUploadingFromUrl ? (
                     <LoaderCircle
@@ -339,7 +339,7 @@ export function FileDropzone({
                   ) : (
                     <Link2 data-icon="inline-start" />
                   )}
-                  Upload from URL
+                  Upload
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">

@@ -6,7 +6,7 @@ import { RasterConvertTool } from "@/components/tools/raster-convert-tool"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Convert PNG, JPG, and WebP Images",
+  title: "Convert Images",
   description:
     "Convert PNG, JPG, and WebP images into PNG or WebP files locally with instant preview and direct download.",
   path: "/raster-convert",

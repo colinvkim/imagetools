@@ -9,6 +9,7 @@ import {
   SITE_KEYWORDS,
   SITE_LOCALE,
   SITE_NAME,
+  SITE_REPOSITORY_URL,
   SITE_TAGLINE,
   getCanonicalUrl,
   getSocialImageUrl,
@@ -100,6 +101,7 @@ export default function RootLayout({
       description: SITE_DESCRIPTION,
       url: siteUrl,
       inLanguage: "en-US",
+      sameAs: [SITE_REPOSITORY_URL],
     },
     {
       "@context": "https://schema.org",
@@ -110,11 +112,6 @@ export default function RootLayout({
       description: SITE_DESCRIPTION,
       slogan: SITE_TAGLINE,
       isAccessibleForFree: true,
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-      },
       featureList: [
         "Resize images on-device",
         "Convert PNG, JPG, WebP, and SVG files in the browser",
@@ -122,6 +119,16 @@ export default function RootLayout({
         "Trim transparent pixels without uploading files",
       ],
       url: siteUrl,
+      sameAs: [SITE_REPOSITORY_URL],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      name: SITE_NAME,
+      codeRepository: SITE_REPOSITORY_URL,
+      license: "https://opensource.org/license/mit",
+      url: siteUrl,
+      programmingLanguage: ["TypeScript"],
     },
   ]
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 export const SITE_NAME = "imagetools"
 export const SITE_URL = "https://imagetools.colinkim.dev"
+export const SITE_REPOSITORY_URL = "https://github.com/colinvkim/imagetools"
 export const SITE_TAGLINE =
   "Lightning-fast image utilities that keep files on your device."
 export const SITE_DESCRIPTION =
@@ -9,6 +10,7 @@ export const SITE_DESCRIPTION =
 export const SITE_LOCALE = "en_US"
 export const SITE_KEYWORDS = [
   "image tools",
+  "open source image tools",
   "free image tools",
   "online image tools",
   "client-side image tools",
