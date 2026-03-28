@@ -248,8 +248,6 @@ export function TrimTransparentPixelsTool() {
   return (
     <ToolWorkspace
       badge="Trim Transparent Pixels"
-      title="Auto-crop transparent edges in one step"
-      description="Detect transparent padding around a visible subject, preview the tighter bounds, and export the trimmed image in its original format."
       onReset={clear}
       resetIcon={<RefreshCcw data-icon="inline-start" />}
       preview={

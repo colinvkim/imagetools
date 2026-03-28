@@ -136,7 +136,7 @@ export function FileDropzone({
       onDragEnter={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
       aria-busy={isLoading}
-      className={cn("rounded-[1.5rem] border bg-card shadow-sm", className)}
+      className={cn("gap-0 rounded-[1.5rem] border bg-card shadow-sm", className)}
     >
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
@@ -158,7 +158,7 @@ export function FileDropzone({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-6 pb-6">
+      <CardContent className="flex flex-col gap-6 pb-6 pt-4 sm:pb-8 sm:pt-5">
         <label
           htmlFor={inputId}
           className={cn(

@@ -164,8 +164,6 @@ export function CircleCropTool() {
     <>
       <ToolWorkspace
         badge="Circle Crop"
-        title="Crop a square, then export it as a circle"
-        description="The editor keeps the crop square so the final PNG is perfectly circular and ready for avatars, profile images, and logos."
         onReset={clear}
         resetIcon={<RefreshCcw data-icon="inline-start" />}
         preview={

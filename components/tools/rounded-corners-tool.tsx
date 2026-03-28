@@ -224,8 +224,6 @@ export function RoundedCornersTool() {
     <>
       <ToolWorkspace
         badge="Rounded Corners"
-        title="Keep the full frame or crop it, then soften the corners"
-        description="Use presets for quick rounded styles or type a custom radius before exporting a transparent PNG at the same aspect ratio as your crop."
         onReset={clear}
         resetIcon={<RefreshCcw data-icon="inline-start" />}
         preview={

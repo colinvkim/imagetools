@@ -396,8 +396,6 @@ export function SvgToPngTool() {
   return (
     <ToolWorkspace
       badge="SVG Export"
-      title="Export a whole SVG batch as PNG or WebP"
-      description="Use a shared export width or a scale preset, choose the output format, then download raster exports for every selected SVG directly from the browser."
       onReset={handleClear}
       resetIcon={<RefreshCcw data-icon="inline-start" />}
       preview={

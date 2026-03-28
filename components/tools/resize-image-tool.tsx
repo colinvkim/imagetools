@@ -255,8 +255,6 @@ export function ResizeImageTool() {
   return (
     <ToolWorkspace
       badge="Resize Image"
-      title="Resize an image with precise dimensions"
-      description="Adjust width and height, keep the aspect ratio locked if you want, and export a resized image directly in the browser."
       onReset={clear}
       resetIcon={<RefreshCcw data-icon="inline-start" />}
       preview={

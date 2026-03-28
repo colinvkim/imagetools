@@ -5,7 +5,6 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -17,8 +16,6 @@ import { cn } from "@/lib/utils"
 
 type ToolWorkspaceProps = {
   badge: string
-  title: string
-  description: string
   resetLabel?: string
   onReset?: () => void
   resetIcon?: React.ReactNode
@@ -29,8 +26,6 @@ type ToolWorkspaceProps = {
 
 export function ToolWorkspace({
   badge,
-  title,
-  description,
   resetLabel = "Choose Another File",
   onReset,
   resetIcon,
@@ -39,28 +34,27 @@ export function ToolWorkspace({
   gridClassName,
 }: ToolWorkspaceProps) {
   return (
-    <Card className="rounded-[1.5rem] border bg-card shadow-sm">
-      <CardHeader className="gap-3">
-        <Badge variant="outline" className="self-start">
+    <Card className="gap-0 rounded-[1.5rem] border bg-card shadow-sm">
+      <CardHeader className="flex flex-row items-center justify-between gap-4">
+        <Badge
+          variant="outline"
+          className="h-8 rounded-full px-3 text-sm font-medium"
+        >
           {badge}
         </Badge>
-        <CardTitle className="text-2xl tracking-tight">{title}</CardTitle>
-        <CardDescription className="max-w-3xl leading-7">
-          {description}
-        </CardDescription>
         {onReset ? (
-          <CardAction>
-            <Button variant="outline" onClick={onReset}>
+          <div className="shrink-0">
+            <Button variant="outline" className="rounded-full" onClick={onReset}>
               {resetIcon}
               {resetLabel}
             </Button>
-          </CardAction>
+          </div>
         ) : null}
       </CardHeader>
 
       <CardContent
         className={cn(
-          "grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.95fr)]",
+          "grid gap-6 pb-6 pt-4 sm:pb-8 sm:pt-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.95fr)]",
           gridClassName
         )}
       >

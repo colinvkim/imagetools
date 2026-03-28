@@ -257,8 +257,6 @@ export function AspectRatioCropTool() {
     <>
       <ToolWorkspace
         badge="Aspect Ratio Crop"
-        title="Crop to a preset ratio or keep it freeform"
-        description="Choose a common aspect ratio like 1:1, 4:5, 3:2, or 16:9, adjust the crop, and export the result in the original raster format."
         onReset={clear}
         resetIcon={<RefreshCcw data-icon="inline-start" />}
         preview={

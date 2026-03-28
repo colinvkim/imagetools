@@ -277,8 +277,6 @@ export function RasterConvertTool() {
   return (
     <ToolWorkspace
       badge="Raster Convert"
-      title="Batch-convert raster images in the browser"
-      description="Every selected image keeps its original pixel dimensions and downloads as PNG or WebP directly from the browser."
       onReset={clear}
       resetIcon={<RefreshCcw data-icon="inline-start" />}
       preview={
