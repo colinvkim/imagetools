@@ -6,9 +6,10 @@ import { ToolPage } from "@/components/site/tool-page"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Rounded Corners",
+  title: "Add Rounded Corners to Images",
   description:
     "Add rounded corners to any image, optionally crop it, and export a transparent PNG in the browser.",
+  path: "/rounded-corners",
 })
 
 const tool = getToolDefinition("/rounded-corners")

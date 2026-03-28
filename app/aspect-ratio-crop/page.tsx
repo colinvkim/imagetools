@@ -6,9 +6,10 @@ import { AspectRatioCropTool } from "@/components/tools/aspect-ratio-crop-tool"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Aspect Ratio Crop",
+  title: "Crop Image to Any Aspect Ratio",
   description:
     "Crop PNG, JPG, and WebP images locally with preset aspect ratios like 1:1, 4:5, 3:2, and 16:9.",
+  path: "/aspect-ratio-crop",
 })
 
 const tool = getToolDefinition("/aspect-ratio-crop")

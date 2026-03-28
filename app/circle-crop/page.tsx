@@ -6,9 +6,10 @@ import { CircleCropTool } from "@/components/tools/circle-crop-tool"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Circle Crop",
+  title: "Circle Crop Image Online",
   description:
     "Square-crop an image, preview the result, and export a transparent circular PNG locally.",
+  path: "/circle-crop",
 })
 
 const tool = getToolDefinition("/circle-crop")

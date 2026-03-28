@@ -15,12 +15,18 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { createPageMetadata } from "@/lib/site-metadata"
+import { createPageMetadata, getCanonicalUrl } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "imagetools | free, client-side utilities",
+  title: "Free Online Image Tools",
   description:
-    "Resize images, convert files, crop assets, trim transparent pixels, and rasterize artwork directly in your browser.",
+    "Resize images, convert files, crop assets, trim transparent pixels, and rasterize artwork directly in your browser while keeping files on your device.",
+  path: "/",
+  keywords: [
+    "browser image tools",
+    "free online image editor",
+    "private image converter",
+  ],
 })
 
 const highlights = [
@@ -31,9 +37,31 @@ const highlights = [
 
 export default function Page() {
   const toolCountLabel = `${TOOL_DEFINITIONS.length} tools available`
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Free Online Image Tools",
+    description:
+      "A collection of free image utilities for resizing, converting, cropping, and cleaning up files directly in the browser.",
+    url: getCanonicalUrl("/"),
+    hasPart: TOOL_DEFINITIONS.map((tool) => ({
+      "@type": "SoftwareApplication",
+      name: tool.title,
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Any",
+      description: tool.description,
+      url: getCanonicalUrl(tool.href),
+    })),
+  }
 
   return (
     <PageShell className="gap-10 py-8 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData),
+        }}
+      />
       <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="space-y-5">
           <div className="flex flex-wrap items-center gap-3">

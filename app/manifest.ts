@@ -7,6 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: SITE_NAME,
     short_name: SITE_NAME,
     description: SITE_DESCRIPTION,
+    categories: ["photo", "utilities", "productivity"],
     start_url: "/",
     display: "standalone",
     background_color: "#f8fafc",
@@ -16,6 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
+        purpose: "any",
       },
     ],
   }

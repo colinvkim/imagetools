@@ -9,6 +9,7 @@ export const metadata: Metadata = createPageMetadata({
   title: "Trim Transparent Pixels",
   description:
     "Auto-crop transparent padding from PNG and WebP images locally by detecting the visible bounds in the browser.",
+  path: "/trim-transparent-pixels",
 })
 
 const tool = getToolDefinition("/trim-transparent-pixels")

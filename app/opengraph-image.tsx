@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og"
 
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-metadata"
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/site-metadata"
 
 export const alt = `${SITE_NAME} preview`
 export const size = {
@@ -103,13 +103,13 @@ export default function OpenGraphImage() {
             </div>
             <div
               style={{
-                fontSize: 30,
-                lineHeight: 1.35,
-                color: "rgba(248,250,252,0.82)",
-              }}
-            >
-              {SITE_DESCRIPTION}
-            </div>
+              fontSize: 30,
+              lineHeight: 1.35,
+              color: "rgba(248,250,252,0.82)",
+            }}
+          >
+              {SITE_TAGLINE}
+          </div>
           </div>
 
           <div

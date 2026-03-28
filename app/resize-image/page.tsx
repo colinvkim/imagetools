@@ -6,9 +6,10 @@ import { ResizeImageTool } from "@/components/tools/resize-image-tool"
 import { createPageMetadata } from "@/lib/site-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Resize Image",
+  title: "Resize Image Online",
   description:
     "Resize PNG, JPG, and WebP images locally with precise dimensions and aspect-ratio controls.",
+  path: "/resize-image",
 })
 
 const tool = getToolDefinition("/resize-image")

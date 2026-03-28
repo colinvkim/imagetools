@@ -7,13 +7,20 @@ import { ThemeProvider } from "@/components/theme-provider"
 import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
+  SITE_LOCALE,
   SITE_NAME,
+  SITE_TAGLINE,
+  getCanonicalUrl,
+  getSocialImageUrl,
   getSiteUrl,
 } from "@/lib/site-metadata"
 import { Analytics } from "@vercel/analytics/next"
 
+const siteUrl = getSiteUrl()
+const socialImageUrl = getSocialImageUrl()
+
 export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(siteUrl),
   title: {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
@@ -21,21 +28,52 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [...SITE_KEYWORDS],
+  alternates: {
+    canonical: "/",
+  },
+  category: "technology",
+  classification: "Image utilities",
+  referrer: "origin-when-cross-origin",
+  formatDetection: {
+    telephone: false,
+  },
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    url: getCanonicalUrl("/"),
     siteName: SITE_NAME,
+    locale: SITE_LOCALE,
     type: "website",
+    images: [
+      {
+        url: socialImageUrl,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} preview image`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    images: [socialImageUrl],
   },
 }
 
@@ -54,9 +92,48 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      url: siteUrl,
+      inLanguage: "en-US",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: SITE_NAME,
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Any",
+      description: SITE_DESCRIPTION,
+      slogan: SITE_TAGLINE,
+      isAccessibleForFree: true,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      featureList: [
+        "Resize images on-device",
+        "Convert PNG, JPG, WebP, and SVG files in the browser",
+        "Crop images to a circle or aspect ratio",
+        "Trim transparent pixels without uploading files",
+      ],
+      url: siteUrl,
+    },
+  ]
+
   return (
     <html lang="en" suppressHydrationWarning className="font-sans antialiased">
       <body className="min-h-svh bg-background text-foreground">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
         <ThemeProvider>
           <a
             href="#main-content"
