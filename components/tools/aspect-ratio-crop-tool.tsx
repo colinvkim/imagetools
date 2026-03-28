@@ -432,7 +432,6 @@ export function AspectRatioCropTool() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() =>
                 handleCropChange(centerRectCrop(crop, image.width, image.height))
               }
@@ -442,7 +441,6 @@ export function AspectRatioCropTool() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() => handleCropChange(getResetCrop())}
             >
               Reset crop

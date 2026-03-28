@@ -57,7 +57,7 @@ export function ToolEditorDialog({
           ) : (
             <div />
           )}
-          <DialogClose render={<Button variant="outline" size="sm" />}>
+          <DialogClose render={<Button variant="outline" />}>
             Done
           </DialogClose>
         </DialogFooter>

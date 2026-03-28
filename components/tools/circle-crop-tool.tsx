@@ -302,7 +302,6 @@ export function CircleCropTool() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() =>
                 handleCropChange(centerSquareCrop(crop, image.width, image.height))
               }
@@ -312,7 +311,6 @@ export function CircleCropTool() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() =>
                 handleCropChange(createCenteredSquareCrop(image.width, image.height))
               }

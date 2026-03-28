@@ -405,7 +405,6 @@ export function RoundedCornersTool() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() =>
                 handleCropChange(centerRectCrop(crop, image.width, image.height))
               }
@@ -415,7 +414,6 @@ export function RoundedCornersTool() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() => handleCropChange(createFullRectCrop(image.width, image.height))}
             >
               Reset crop
