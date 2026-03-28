@@ -285,7 +285,7 @@ export function TrimTransparentPixelsTool() {
           title="Trim details"
           fileName={image.fileName}
           footer={
-            <ToolPrimaryFooter className="pt-0">
+            <ToolPrimaryFooter>
               <DownloadFileAction
                 buttonLabel={
                   isExporting

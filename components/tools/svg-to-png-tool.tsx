@@ -436,7 +436,7 @@ export function SvgToPngTool() {
         <ToolSettingsCard
           title="Export settings"
           footer={
-            <ToolPrimaryFooter className="pt-0">
+            <ToolPrimaryFooter>
               {svgs.length === 1 ? (
                 <DownloadFileAction
                   buttonLabel={

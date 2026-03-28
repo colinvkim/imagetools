@@ -317,7 +317,7 @@ export function RasterConvertTool() {
         <ToolSettingsCard
           title="Batch details"
           footer={
-            <ToolPrimaryFooter className="pt-0">
+            <ToolPrimaryFooter>
               {images.length === 1 ? (
                 <DownloadFileAction
                   buttonLabel={

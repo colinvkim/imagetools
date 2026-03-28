@@ -280,7 +280,7 @@ export function ResizeImageTool() {
           title="Resize settings"
           fileName={image.fileName}
             footer={
-              <ToolPrimaryFooter className="pt-0">
+              <ToolPrimaryFooter>
                 <DownloadFileAction
                   buttonLabel={
                     isExporting
