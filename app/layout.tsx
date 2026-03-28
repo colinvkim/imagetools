@@ -27,13 +27,10 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
   keywords: [...SITE_KEYWORDS],
   alternates: {
     canonical: "/",
   },
-  category: "technology",
-  classification: "Image utilities",
   referrer: "origin-when-cross-origin",
   formatDetection: {
     telephone: false,
@@ -101,24 +98,6 @@ export default function RootLayout({
       description: SITE_DESCRIPTION,
       url: siteUrl,
       inLanguage: "en-US",
-      sameAs: [SITE_REPOSITORY_URL],
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      name: SITE_NAME,
-      applicationCategory: "UtilitiesApplication",
-      operatingSystem: "Any",
-      description: SITE_DESCRIPTION,
-      slogan: SITE_TAGLINE,
-      isAccessibleForFree: true,
-      featureList: [
-        "Resize images on-device",
-        "Convert PNG, JPG, WebP, and SVG files in the browser",
-        "Crop images to a circle or aspect ratio",
-        "Trim transparent pixels without uploading files",
-      ],
-      url: siteUrl,
       sameAs: [SITE_REPOSITORY_URL],
     },
     {
