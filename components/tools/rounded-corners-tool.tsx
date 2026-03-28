@@ -30,11 +30,15 @@ import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
+  centerRectCrop,
   createFullRectCrop,
   exportRoundedCrop,
   type RectCrop,
 } from "@/lib/image/crop"
-import { buildDownloadFileName, getFileNameWithoutExtension } from "@/lib/image/export"
+import {
+  buildDownloadFileName,
+  getFileNameWithoutExtension,
+} from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
   GENERIC_IMAGE_EDIT_ACCEPT,
@@ -404,6 +408,28 @@ export function RoundedCornersTool() {
                 {Math.round(crop.height)}px with a {radius}px radius.
               </AlertDescription>
             </Alert>
+          </>
+        }
+        footerActions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handleCropChange(centerRectCrop(crop, image.width, image.height))
+              }
+            >
+              Center crop
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleCropChange(createFullRectCrop(image.width, image.height))}
+            >
+              Reset crop
+            </Button>
           </>
         }
       />

@@ -21,11 +21,15 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
+  centerSquareCrop,
   createCenteredSquareCrop,
   exportCircleCrop,
   type SquareCrop,
 } from "@/lib/image/crop"
-import { buildDownloadFileName, getFileNameWithoutExtension } from "@/lib/image/export"
+import {
+  buildDownloadFileName,
+  getFileNameWithoutExtension,
+} from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
   GENERIC_IMAGE_EDIT_ACCEPT,
@@ -291,6 +295,30 @@ export function CircleCropTool() {
                 {Math.round(crop.size)}px.
               </AlertDescription>
             </Alert>
+          </>
+        }
+        footerActions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handleCropChange(centerSquareCrop(crop, image.width, image.height))
+              }
+            >
+              Center crop
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handleCropChange(createCenteredSquareCrop(image.width, image.height))
+              }
+            >
+              Reset crop
+            </Button>
           </>
         }
       />

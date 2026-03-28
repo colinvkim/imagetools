@@ -20,6 +20,7 @@ type ToolEditorDialogProps = {
   description: string
   editor: React.ReactNode
   sidebar: React.ReactNode
+  footerActions?: React.ReactNode
 }
 
 export function ToolEditorDialog({
@@ -29,6 +30,7 @@ export function ToolEditorDialog({
   description,
   editor,
   sidebar,
+  footerActions,
 }: ToolEditorDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -43,7 +45,18 @@ export function ToolEditorDialog({
           <div className="flex min-w-0 flex-col gap-4">{sidebar}</div>
         </div>
 
-        <DialogFooter className="mt-0" showCloseButton={false}>
+        <DialogFooter
+          className="mt-0 flex-col gap-2 sm:justify-between"
+          showCloseButton={false}
+          inset={false}
+        >
+          {footerActions ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              {footerActions}
+            </div>
+          ) : (
+            <div />
+          )}
           <DialogClose render={<Button variant="outline" />}>Done</DialogClose>
         </DialogFooter>
       </DialogContent>

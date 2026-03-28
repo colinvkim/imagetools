@@ -29,6 +29,7 @@ import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
+  centerRectCrop,
   createCenteredAspectRatioCrop,
   createFullRectCrop,
   exportRectCrop,
@@ -253,6 +254,15 @@ export function AspectRatioCropTool() {
     }
   }
 
+  const getResetCrop = () =>
+    aspectRatioOption.aspectRatio
+      ? createCenteredAspectRatioCrop(
+          image.width,
+          image.height,
+          aspectRatioOption.aspectRatio
+        )
+      : createFullRectCrop(image.width, image.height)
+
   return (
     <>
       <ToolWorkspace
@@ -425,6 +435,28 @@ export function AspectRatioCropTool() {
                 {Math.round(crop.height)}px.
               </AlertDescription>
             </Alert>
+          </>
+        }
+        footerActions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handleCropChange(centerRectCrop(crop, image.width, image.height))
+              }
+            >
+              Center crop
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleCropChange(getResetCrop())}
+            >
+              Reset crop
+            </Button>
           </>
         }
       />

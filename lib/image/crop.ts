@@ -47,6 +47,18 @@ export function clampSquareCrop(
   return { x, y, size }
 }
 
+export function centerSquareCrop(
+  crop: SquareCrop,
+  imageWidth: number,
+  imageHeight: number
+): SquareCrop {
+  return {
+    ...crop,
+    x: (imageWidth - crop.size) / 2,
+    y: (imageHeight - crop.size) / 2,
+  }
+}
+
 export function createFullRectCrop(
   imageWidth: number,
   imageHeight: number
@@ -103,6 +115,18 @@ export function clampRectCrop(
   const y = Math.min(Math.max(crop.y, 0), imageHeight - height)
 
   return { x, y, width, height }
+}
+
+export function centerRectCrop(
+  crop: RectCrop,
+  imageWidth: number,
+  imageHeight: number
+): RectCrop {
+  return {
+    ...crop,
+    x: (imageWidth - crop.width) / 2,
+    y: (imageHeight - crop.height) / 2,
+  }
 }
 
 export function clampRectCropToAspectRatio(

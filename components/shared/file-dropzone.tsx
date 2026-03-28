@@ -183,10 +183,7 @@ export function FileDropzone({
       onDragEnter={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
       aria-busy={isBusy}
-      className={cn(
-        "gap-0 rounded-[1.5rem] border bg-card shadow-sm",
-        className
-      )}
+      className={cn("tool-surface-card", className)}
     >
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
@@ -208,7 +205,7 @@ export function FileDropzone({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-6 pt-4 pb-6 sm:pt-5 sm:pb-8">
+      <CardContent className="tool-upload-content">
         <div
           className={cn(
             "overflow-hidden rounded-[1.25rem] border border-dashed transition-[background-color,border-color,box-shadow] motion-reduce:transition-none",
