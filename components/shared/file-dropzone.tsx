@@ -202,13 +202,13 @@ export function FileDropzone({
               </CardDescription>
             </div>
           </div>
-          <div className="hidden rounded-2xl border bg-muted p-4 md:block">
+          {/* <div className="hidden rounded-2xl border bg-muted p-4 md:block">
             <ImageUp aria-hidden="true" className="size-6 text-primary" />
-          </div>
+          </div> */}
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-6 pb-6 pt-4 sm:pb-8 sm:pt-5">
+      <CardContent className="flex flex-col gap-6 pt-4 pb-6 sm:pt-5 sm:pb-8">
         <div
           className={cn(
             "overflow-hidden rounded-[1.25rem] border border-dashed transition-[background-color,border-color,box-shadow] motion-reduce:transition-none",
