@@ -428,11 +428,11 @@ export function SvgToPngTool() {
             svgs.length === 1 && outputFileName
               ? outputFileName
               : Math.round(svg.width) === validatedDimensions.width
-              ? replaceFileExtension(svg.fileName, outputFormat.extension)
-              : replaceFileExtension(
-                  svg.fileName,
-                  `-${validatedDimensions.width}w${outputFormat.extension}`
-                )
+                ? replaceFileExtension(svg.fileName, outputFormat.extension)
+                : replaceFileExtension(
+                    svg.fileName,
+                    `-${validatedDimensions.width}w${outputFormat.extension}`
+                  )
 
           downloadBlob(blob, fileName)
         }
@@ -475,8 +475,8 @@ export function SvgToPngTool() {
               <ScanSearch />
               <AlertTitle>Batch preview</AlertTitle>
               <AlertDescription>
-                Browse the batch with the preview controls or select a file
-                from the list. The current width controls still apply to every
+                Browse the batch with the preview controls or select a file from
+                the list. The current width controls still apply to every
                 selected SVG.
               </AlertDescription>
             </Alert>
@@ -562,9 +562,9 @@ export function SvgToPngTool() {
                   }))}
                   itemClassName="min-w-14"
                 />
-                <FieldDescription>
+                {/* <FieldDescription>
                   Presets scale each SVG from its own natural width.
-                </FieldDescription>
+                </FieldDescription> */}
               </FieldContent>
             </Field>
 
