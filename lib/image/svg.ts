@@ -1,5 +1,6 @@
 import { canvasToBlob } from "@/lib/image/export"
 import { loadImageElement } from "@/lib/image/load-image"
+import { validateRasterOutputDimensions } from "@/lib/image/output-dimensions"
 
 const FALLBACK_DIMENSION = 512
 
@@ -97,13 +98,18 @@ export async function rasterizeSvgToPng(
   outputMimeType = "image/png",
   quality?: number
 ) {
+  const validatedDimensions = validateRasterOutputDimensions({
+    width: outputWidth,
+    height: outputHeight,
+    label: "SVG export size",
+  })
   const objectUrl = createSvgObjectUrl(svgContent)
 
   try {
     const image = await loadImageElement(objectUrl)
     const canvas = document.createElement("canvas")
-    canvas.width = outputWidth
-    canvas.height = outputHeight
+    canvas.width = validatedDimensions.width
+    canvas.height = validatedDimensions.height
 
     const context = canvas.getContext("2d")
 
@@ -111,8 +117,14 @@ export async function rasterizeSvgToPng(
       throw new Error("Canvas is not available in this browser.")
     }
 
-    context.clearRect(0, 0, outputWidth, outputHeight)
-    context.drawImage(image, 0, 0, outputWidth, outputHeight)
+    context.clearRect(0, 0, validatedDimensions.width, validatedDimensions.height)
+    context.drawImage(
+      image,
+      0,
+      0,
+      validatedDimensions.width,
+      validatedDimensions.height
+    )
 
     return await canvasToBlob(canvas, outputMimeType, quality)
   } finally {

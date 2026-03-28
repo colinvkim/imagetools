@@ -36,6 +36,10 @@ import { getNormalizedFileName } from "@/lib/file-input"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
 import { formatFileSize } from "@/lib/image/format"
 import {
+  getRasterOutputLimitsLabel,
+  validateRasterOutputDimensions,
+} from "@/lib/image/output-dimensions"
+import {
   createSvgObjectUrl,
   parseSvgMetadata,
   rasterizeSvgToPng,
@@ -408,22 +412,26 @@ export function SvgToPngTool() {
           const svgWidth = selectedScale
             ? Math.max(1, Math.round(svg.width * Number(selectedScale)))
             : outputWidth
-          const svgHeight = Math.max(1, Math.round(svgWidth / svg.aspectRatio))
+          const validatedDimensions = validateRasterOutputDimensions({
+            width: svgWidth,
+            height: Math.max(1, Math.round(svgWidth / svg.aspectRatio)),
+            label: `Export size for ${svg.fileName}`,
+          })
           const blob = await rasterizeSvgToPng(
             svg.content,
-            svgWidth,
-            svgHeight,
+            validatedDimensions.width,
+            validatedDimensions.height,
             outputFormat.mimeType,
             outputFormat.quality
           )
           const fileName =
             svgs.length === 1 && outputFileName
               ? outputFileName
-              : Math.round(svg.width) === svgWidth
+              : Math.round(svg.width) === validatedDimensions.width
               ? replaceFileExtension(svg.fileName, outputFormat.extension)
               : replaceFileExtension(
                   svg.fileName,
-                  `-${svgWidth}w${outputFormat.extension}`
+                  `-${validatedDimensions.width}w${outputFormat.extension}`
                 )
 
           downloadBlob(blob, fileName)
@@ -578,7 +586,8 @@ export function SvgToPngTool() {
                 />
                 <FieldDescription>
                   When you type a width, every selected SVG exports at that
-                  width while preserving its own aspect ratio.
+                  width while preserving its own aspect ratio. Limit:{" "}
+                  {getRasterOutputLimitsLabel()}.
                 </FieldDescription>
               </FieldContent>
             </Field>

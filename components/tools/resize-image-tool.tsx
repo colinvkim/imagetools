@@ -36,6 +36,10 @@ import {
 import { formatFileSize } from "@/lib/image/format"
 import { loadImageElement } from "@/lib/image/load-image"
 import {
+  getRasterOutputLimitsLabel,
+  validateRasterOutputDimensions,
+} from "@/lib/image/output-dimensions"
+import {
   RASTER_IMAGE_ACCEPT,
   RASTER_IMAGE_EXTENSIONS,
   RASTER_IMAGE_MIME_TYPES,
@@ -219,10 +223,15 @@ export function ResizeImageTool() {
     setExportSuccess(null)
 
     try {
+      const validatedDimensions = validateRasterOutputDimensions({
+        width: outputWidth,
+        height: outputHeight,
+        label: "Resize output",
+      })
       const sourceImage = await loadImageElement(image.objectUrl)
       const canvas = document.createElement("canvas")
-      canvas.width = outputWidth
-      canvas.height = outputHeight
+      canvas.width = validatedDimensions.width
+      canvas.height = validatedDimensions.height
 
       const context = canvas.getContext("2d")
 
@@ -230,7 +239,13 @@ export function ResizeImageTool() {
         throw new Error("Canvas is not available in this browser.")
       }
 
-      context.drawImage(sourceImage, 0, 0, outputWidth, outputHeight)
+      context.drawImage(
+        sourceImage,
+        0,
+        0,
+        validatedDimensions.width,
+        validatedDimensions.height
+      )
 
       const blob = await canvasToBlob(
         canvas,
@@ -397,8 +412,7 @@ export function ResizeImageTool() {
                   inputMode="numeric"
                 />
                 <FieldDescription>
-                  Exports as {exportConfig.label} at {outputWidth}px by{" "}
-                  {outputHeight}px.
+                  Limit: {getRasterOutputLimitsLabel()}.
                 </FieldDescription>
               </FieldContent>
             </Field>
