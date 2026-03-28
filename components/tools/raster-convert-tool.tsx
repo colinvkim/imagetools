@@ -5,6 +5,7 @@ import { Download, Files, RefreshCcw } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { BatchFileList } from "@/components/tools/shared/batch-file-list"
+import { BatchPreviewControls } from "@/components/tools/shared/batch-preview-controls"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
@@ -149,6 +150,7 @@ export function RasterConvertTool() {
     runAction,
   } = useObjectUrlBatch<UploadedRaster>()
   const [outputFormatValue, setOutputFormatValue] = React.useState("png")
+  const [previewIndex, setPreviewIndex] = React.useState(0)
 
   const handleFilesSelect = React.useCallback(
     async (files: File[]) => {
@@ -172,6 +174,7 @@ export function RasterConvertTool() {
         )
 
         replaceItems(parsedImages)
+        setPreviewIndex(0)
         setOutputFormatValue("png")
 
         if (invalidCount > 0) {
@@ -198,6 +201,15 @@ export function RasterConvertTool() {
       (option) => option.value === outputFormatValue
     ) ?? OUTPUT_FORMAT_OPTIONS[0]
 
+  React.useEffect(() => {
+    if (images.length === 0) {
+      setPreviewIndex(0)
+      return
+    }
+
+    setPreviewIndex((currentIndex) => Math.min(currentIndex, images.length - 1))
+  }, [images.length])
+
   if (images.length === 0) {
     return (
       <FileDropzone
@@ -215,12 +227,32 @@ export function RasterConvertTool() {
     )
   }
 
-  const firstImage = images[0]!
+  const previewImage = images[previewIndex] ?? images[0]!
   const totalFileSize = images.reduce((sum, image) => sum + image.fileSize, 0)
   const defaultSingleExportFileName = replaceFileExtension(
-    firstImage.fileName,
+    previewImage.fileName,
     selectedOutputFormat.extension
   )
+
+  const selectPreviewIndex = (nextIndex: number) => {
+    if (nextIndex < 0 || nextIndex >= images.length) {
+      return
+    }
+
+    setPreviewIndex(nextIndex)
+  }
+
+  const handlePreviewPrevious = () => {
+    selectPreviewIndex(
+      previewIndex === 0 ? images.length - 1 : previewIndex - 1
+    )
+  }
+
+  const handlePreviewNext = () => {
+    selectPreviewIndex(
+      previewIndex === images.length - 1 ? 0 : previewIndex + 1
+    )
+  }
 
   const handleConvertAll = async (outputFileName?: string) => {
     if (images.length === 0) {
@@ -251,14 +283,23 @@ export function RasterConvertTool() {
       resetIcon={<RefreshCcw data-icon="inline-start" />}
       preview={
         <>
+          <BatchPreviewControls
+            currentIndex={previewIndex}
+            totalCount={images.length}
+            currentLabel={previewImage.fileName}
+            itemLabel="Image"
+            onPrevious={handlePreviewPrevious}
+            onNext={handlePreviewNext}
+          />
+
           <CheckerboardSurface
             className="py-4"
             contentClassName="flex min-h-[18rem] items-center justify-center p-4"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs are previewed with a native img element */}
             <img
-              src={firstImage.objectUrl}
-              alt={`Preview of ${firstImage.fileName}`}
+              src={previewImage.objectUrl}
+              alt={`Preview of ${previewImage.fileName}`}
               className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
             />
           </CheckerboardSurface>
@@ -267,7 +308,8 @@ export function RasterConvertTool() {
             <Files />
             <AlertTitle>Batch preview</AlertTitle>
             <AlertDescription>
-              Showing the first file in the batch. Clicking download starts a
+              Browse the batch with the preview controls or select a file from
+              the list. Clicking download still starts a{" "}
               {selectedOutputFormat.label} download for every selected image.
             </AlertDescription>
           </Alert>
@@ -287,7 +329,7 @@ export function RasterConvertTool() {
                   }
                   defaultFileName={defaultSingleExportFileName}
                   outputExtension={selectedOutputFormat.extension}
-                  resetKey={firstImage.objectUrl}
+                  resetKey={previewImage.objectUrl}
                   disabled={isConverting}
                   onDownload={handleConvertAll}
                 />
@@ -313,10 +355,13 @@ export function RasterConvertTool() {
               label="Total size"
               value={formatFileSize(totalFileSize)}
             />
-            <ToolStatCard label="First width" value={`${firstImage.width}px`} />
             <ToolStatCard
-              label="First height"
-              value={`${firstImage.height}px`}
+              label="Preview width"
+              value={`${previewImage.width}px`}
+            />
+            <ToolStatCard
+              label="Preview height"
+              value={`${previewImage.height}px`}
             />
           </ToolStatGrid>
 
@@ -365,6 +410,14 @@ export function RasterConvertTool() {
             getTitle={(image) => image.fileName}
             getDescription={(image) =>
               `${image.width}px x ${image.height}px, ${formatFileSize(image.fileSize)}`
+            }
+            selectedKey={previewImage.objectUrl}
+            onItemSelect={(image) =>
+              selectPreviewIndex(
+                images.findIndex(
+                  (candidateImage) => candidateImage.objectUrl === image.objectUrl
+                )
+              )
             }
           />
 

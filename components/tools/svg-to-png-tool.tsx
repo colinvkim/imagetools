@@ -5,6 +5,7 @@ import { Download, RefreshCcw, ScanSearch } from "lucide-react"
 
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { BatchFileList } from "@/components/tools/shared/batch-file-list"
+import { BatchPreviewControls } from "@/components/tools/shared/batch-preview-controls"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
@@ -163,6 +164,7 @@ export function SvgToPngTool() {
   const [selectedScale, setSelectedScale] = React.useState("1")
   const [outputWidthInput, setOutputWidthInput] = React.useState("")
   const [outputFormatValue, setOutputFormatValue] = React.useState("png")
+  const [previewIndex, setPreviewIndex] = React.useState(0)
 
   const handleFilesSelect = React.useCallback(
     async (files: File[]) => {
@@ -184,6 +186,7 @@ export function SvgToPngTool() {
         const parsedSvgs = await Promise.all(validFiles.map(parseSvgFile))
 
         replaceItems(parsedSvgs)
+        setPreviewIndex(0)
 
         const firstSvg = parsedSvgs[0]
 
@@ -223,6 +226,7 @@ export function SvgToPngTool() {
         )
 
         replaceItems([pastedSvg])
+        setPreviewIndex(0)
         setSelectedScale("1")
         setOutputWidthInput(String(Math.round(pastedSvg.width)))
         setOutputFormatValue("png")
@@ -237,6 +241,7 @@ export function SvgToPngTool() {
 
   const handleClear = React.useCallback(() => {
     clear()
+    setPreviewIndex(0)
     setSelectedScale("1")
     setOutputWidthInput("")
     setOutputFormatValue("png")
@@ -261,6 +266,15 @@ export function SvgToPngTool() {
     }
   }, [handleFilesSelect, handleMarkupPaste])
 
+  React.useEffect(() => {
+    if (svgs.length === 0) {
+      setPreviewIndex(0)
+      return
+    }
+
+    setPreviewIndex((currentIndex) => Math.min(currentIndex, svgs.length - 1))
+  }, [svgs.length])
+
   if (svgs.length === 0) {
     return (
       <FileDropzone
@@ -278,11 +292,11 @@ export function SvgToPngTool() {
     )
   }
 
-  const firstSvg = svgs[0]!
-  const outputWidth = getOutputWidth(outputWidthInput, firstSvg.width)
+  const previewSvg = svgs[previewIndex] ?? svgs[0]!
+  const outputWidth = getOutputWidth(outputWidthInput, previewSvg.width)
   const outputHeight = Math.max(
     1,
-    Math.round(outputWidth / firstSvg.aspectRatio)
+    Math.round(outputWidth / previewSvg.aspectRatio)
   )
   const totalFileSize = svgs.reduce((sum, svg) => sum + svg.fileSize, 0)
   const outputFormat =
@@ -291,22 +305,36 @@ export function SvgToPngTool() {
     ) ?? OUTPUT_FORMAT_OPTIONS[0]
   const defaultSingleExportFileName =
     svgs.length === 1
-      ? Math.round(firstSvg.width) === outputWidth
-        ? replaceFileExtension(firstSvg.fileName, outputFormat.extension)
+      ? Math.round(previewSvg.width) === outputWidth
+        ? replaceFileExtension(previewSvg.fileName, outputFormat.extension)
         : replaceFileExtension(
-            firstSvg.fileName,
+            previewSvg.fileName,
             `-${outputWidth}w${outputFormat.extension}`
           )
       : ""
 
+  const selectPreviewIndex = (nextIndex: number) => {
+    if (nextIndex < 0 || nextIndex >= svgs.length) {
+      return
+    }
+
+    setPreviewIndex(nextIndex)
+
+    if (selectedScale) {
+      setOutputWidthInput(
+        String(Math.round(svgs[nextIndex]!.width * Number(selectedScale)))
+      )
+    }
+  }
+
   const handleScaleChange = (value: string) => {
-    if (!firstSvg || !value) {
+    if (!previewSvg || !value) {
       return
     }
 
     resetActionState()
     setSelectedScale(value)
-    setOutputWidthInput(String(Math.round(firstSvg.width * Number(value))))
+    setOutputWidthInput(String(Math.round(previewSvg.width * Number(value))))
   }
 
   const handleWidthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -322,6 +350,14 @@ export function SvgToPngTool() {
 
     resetActionState()
     setOutputFormatValue(value)
+  }
+
+  const handlePreviewPrevious = () => {
+    selectPreviewIndex(previewIndex === 0 ? svgs.length - 1 : previewIndex - 1)
+  }
+
+  const handlePreviewNext = () => {
+    selectPreviewIndex(previewIndex === svgs.length - 1 ? 0 : previewIndex + 1)
   }
 
   const handleConvertAll = async (outputFileName?: string) => {
@@ -366,14 +402,23 @@ export function SvgToPngTool() {
       resetIcon={<RefreshCcw data-icon="inline-start" />}
       preview={
         <>
+          <BatchPreviewControls
+            currentIndex={previewIndex}
+            totalCount={svgs.length}
+            currentLabel={previewSvg.fileName}
+            itemLabel="SVG"
+            onPrevious={handlePreviewPrevious}
+            onNext={handlePreviewNext}
+          />
+
           <CheckerboardSurface
             className="py-4"
             contentClassName="flex min-h-[18rem] items-center justify-center p-4"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- local SVG object URLs are previewed directly in the browser */}
             <img
-              src={firstSvg.objectUrl}
-              alt={`Preview of ${firstSvg.fileName}`}
+              src={previewSvg.objectUrl}
+              alt={`Preview of ${previewSvg.fileName}`}
               className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
             />
           </CheckerboardSurface>
@@ -382,8 +427,9 @@ export function SvgToPngTool() {
             <ScanSearch />
             <AlertTitle>Batch preview</AlertTitle>
             <AlertDescription>
-              Showing the first file in the batch. The current width controls
-              apply to every selected SVG.
+              Browse the batch with the preview controls or select a file from
+              the list. The current width controls still apply to every
+              selected SVG.
             </AlertDescription>
           </Alert>
         </>
@@ -402,7 +448,7 @@ export function SvgToPngTool() {
                   }
                   defaultFileName={defaultSingleExportFileName}
                   outputExtension={outputFormat.extension}
-                  resetKey={firstSvg.objectUrl}
+                  resetKey={previewSvg.objectUrl}
                   disabled={isConverting}
                   onDownload={handleConvertAll}
                 />
@@ -532,6 +578,14 @@ export function SvgToPngTool() {
 
               return `${Math.round(svg.width)}px x ${Math.round(svg.height)}px -> ${svgWidth}px x ${svgHeight}px, ${formatFileSize(svg.fileSize)}`
             }}
+            selectedKey={previewSvg.objectUrl}
+            onItemSelect={(svg) =>
+              selectPreviewIndex(
+                svgs.findIndex(
+                  (candidateSvg) => candidateSvg.objectUrl === svg.objectUrl
+                )
+              )
+            }
           />
 
           <Alert>
