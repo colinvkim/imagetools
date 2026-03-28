@@ -13,7 +13,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function AspectRatioCropPage() {
   return (
     <ToolPage
-      title="Crop Images to 1:1, 4:5, 3:2, 16:9, or Any Custom Frame"
+      title="Crop Images"
       description="Upload a raster image, choose a preset aspect ratio or go freeform, and export the cropped result locally without uploading anything."
     >
       <AspectRatioCropTool />

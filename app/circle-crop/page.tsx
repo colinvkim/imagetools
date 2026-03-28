@@ -13,7 +13,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function CircleCropPage() {
   return (
     <ToolPage
-      title="Circle-Crop Images with a Square Editor and Transparent PNG Output"
+      title="Circle-Crop Images"
       description="Position a square crop in the dialog, preview the result, and export a crisp circular image entirely in the browser."
     >
       <CircleCropTool />

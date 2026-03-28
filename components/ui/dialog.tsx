@@ -92,7 +92,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 function DialogFooter({
   className,
   showCloseButton = false,
-  inset = true,
+  inset = false,
   children,
   ...props
 }: React.ComponentProps<"div"> & {

@@ -13,7 +13,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function TrimTransparentPixelsPage() {
   return (
     <ToolPage
-      title="Trim Transparent Padding from Logos, Icons, and Stickers"
+      title="Trim Transparent Padding from Images"
       description="Upload a transparent PNG or WebP image and imagetools will detect the visible bounds, preview the tighter crop, and export the result locally."
     >
       <TrimTransparentPixelsTool />

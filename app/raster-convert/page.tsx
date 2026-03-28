@@ -13,7 +13,7 @@ export const metadata: Metadata = createPageMetadata({
 export default function RasterConvertPage() {
   return (
     <ToolPage
-      title="Convert Raster Images Fully in the Browser"
+      title="Convert Raster Images"
       description="Convert PNG, JPG, and WebP images locally with instant preview and direct PNG or WebP downloads."
     >
       <RasterConvertTool />

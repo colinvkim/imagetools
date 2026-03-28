@@ -158,7 +158,7 @@ export function DownloadFileAction({
               </Field>
             </div>
 
-            <DialogFooter className="mt-4">
+            <DialogFooter className="mt-4" inset>
               <Button
                 type="button"
                 variant="outline"

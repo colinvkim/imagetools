@@ -45,7 +45,7 @@ export function ToolWorkspace({
         {onReset ? (
           <div className="shrink-0">
             <Button
-              className="rounded-full border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background"
+              className="h-8 rounded-full border-foreground bg-foreground px-3 text-sm font-medium text-background hover:bg-foreground/90 hover:text-background"
               onClick={onReset}
             >
               {resetIcon}
