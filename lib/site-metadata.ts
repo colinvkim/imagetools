@@ -4,26 +4,26 @@ export const SITE_NAME = "imagetools"
 export const SITE_URL = "https://imagetools.colinkim.dev"
 export const SITE_REPOSITORY_URL = "https://github.com/colinvkim/imagetools"
 export const SITE_TAGLINE =
-  "Lightning-fast image utilities that keep files on your device."
+  "Free, open-source image utilities that keep files on your device."
 export const SITE_DESCRIPTION =
-  "Lightning-fast image utilities for resizing, cropping, converting, and cleaning up files directly on your device."
+  "Free, open-source image tools for resizing, cropping, converting, and cleaning up files directly in your browser."
 export const SITE_LOCALE = "en_US"
 export const SITE_KEYWORDS = [
   "image tools",
-  "open source image tools",
   "free image tools",
+  "open source image tools",
   "online image tools",
-  "client-side image tools",
+  "browser image tools",
   "private image tools",
-  "on-device image editor",
+  "image converter",
+  "image resizer",
+  "image cropper",
+  "svg to png converter",
   "webp to png",
-  "svg to png",
-  "circle crop",
-  "aspect ratio crop",
+  "circle crop image",
+  "aspect ratio crop image",
   "trim transparent pixels",
-  "rounded corners",
-  "resize image",
-  "browser image editor",
+  "rounded corners image",
 ] as const
 
 export function getSiteUrl() {
@@ -36,6 +36,39 @@ export function getCanonicalUrl(path = "/") {
 
 export function getSocialImageUrl() {
   return getCanonicalUrl("/opengraph-image")
+}
+
+export function createToolStructuredData({
+  title,
+  description,
+  path,
+}: {
+  title: string
+  description: string
+  path: string
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: title,
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Any",
+    browserRequirements: "Requires JavaScript and a modern web browser.",
+    description,
+    url: getCanonicalUrl(path),
+    isAccessibleForFree: true,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    creator: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: getSiteUrl(),
+    },
+    codeRepository: SITE_REPOSITORY_URL,
+  }
 }
 
 export function createPageMetadata({

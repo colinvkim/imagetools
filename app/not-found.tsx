@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 
 import { PageShell } from "@/components/site/page-shell"
@@ -11,6 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+
+export const metadata: Metadata = {
+  title: "Page Not Found",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default function NotFound() {
   return (
@@ -35,8 +44,8 @@ export default function NotFound() {
           <Alert>
             <AlertTitle>Try a live tool instead</AlertTitle>
             <AlertDescription>
-              Circle Crop, Rounded Corners, Raster Convert, and SVG Export are
-              all available right now.
+              Circle Crop, Rounded Corners, Image Converter, and SVG to PNG
+              Converter are all available right now.
             </AlertDescription>
           </Alert>
           <div className="flex flex-wrap gap-3">

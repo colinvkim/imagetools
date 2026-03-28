@@ -8,7 +8,7 @@ import { createPageMetadata } from "@/lib/site-metadata"
 export const metadata: Metadata = createPageMetadata({
   title: "Crop Images",
   description:
-    "Crop PNG, JPG, and WebP images locally with preset aspect ratios like 1:1, 4:5, 3:2, and 16:9.",
+    "Free browser-based image cropper with preset aspect ratios like 1:1, 4:5, 3:2, and 16:9 for PNG, JPG, and WebP files.",
   path: "/aspect-ratio-crop",
 })
 
@@ -19,6 +19,7 @@ export default function AspectRatioCropPage() {
     <ToolPage
       title="Crop Images"
       description="Upload a raster image, choose a preset aspect ratio or go freeform, and export the cropped result locally without uploading anything."
+      path="/aspect-ratio-crop"
       accent={tool.accent}
     >
       <AspectRatioCropTool />

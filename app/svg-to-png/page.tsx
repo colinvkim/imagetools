@@ -8,7 +8,7 @@ import { createPageMetadata } from "@/lib/site-metadata"
 export const metadata: Metadata = createPageMetadata({
   title: "Export SVGs",
   description:
-    "Rasterize SVG artwork into PNG or WebP files at the size you choose without leaving the browser.",
+    "Free browser-based SVG to PNG and WebP converter that rasterizes SVG artwork at the size you choose without uploading files.",
   path: "/svg-to-png",
 })
 
@@ -19,6 +19,7 @@ export default function SvgToPngPage() {
     <ToolPage
       title="Export SVGs as PNG or WebP"
       description="Upload vector artwork, choose an export format and width, and rasterize it locally without a server round-trip."
+      path="/svg-to-png"
       accent={tool.accent}
     >
       <SvgToPngTool />

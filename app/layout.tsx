@@ -10,7 +10,6 @@ import {
   SITE_LOCALE,
   SITE_NAME,
   SITE_REPOSITORY_URL,
-  SITE_TAGLINE,
   getCanonicalUrl,
   getSocialImageUrl,
   getSiteUrl,

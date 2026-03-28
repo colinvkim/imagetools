@@ -8,7 +8,7 @@ import { createPageMetadata } from "@/lib/site-metadata"
 export const metadata: Metadata = createPageMetadata({
   title: "Convert Images",
   description:
-    "Convert PNG, JPG, and WebP images into PNG or WebP files locally with instant preview and direct download.",
+    "Free browser-based image converter for PNG, JPG, and WebP files with local processing and instant PNG or WebP downloads.",
   path: "/raster-convert",
 })
 
@@ -19,6 +19,7 @@ export default function RasterConvertPage() {
     <ToolPage
       title="Convert Raster Images"
       description="Convert PNG, JPG, and WebP images locally with instant preview and direct PNG or WebP downloads."
+      path="/raster-convert"
       accent={tool.accent}
     >
       <RasterConvertTool />

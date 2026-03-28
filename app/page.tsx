@@ -20,7 +20,7 @@ import { createPageMetadata, getCanonicalUrl } from "@/lib/site-metadata"
 export const metadata: Metadata = createPageMetadata({
   title: "Home | imagetools",
   description:
-    "Resize images, convert files, crop assets, trim transparent pixels, and rasterize artwork directly in your browser while keeping files on your device.",
+    "Free, open-source image tools for resizing, cropping, converting, trimming transparent pixels, and rasterizing SVGs directly in your browser.",
   path: "/",
   keywords: [
     "browser image tools",
@@ -40,9 +40,9 @@ export default function Page() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Free Online Image Tools",
+    name: "Free Open-Source Image Tools",
     description:
-      "A collection of open-source image utilities for resizing, converting, cropping, and cleaning up files directly in the browser.",
+      "A collection of free, open-source image utilities for resizing, converting, cropping, and cleaning up files directly in the browser.",
     url: getCanonicalUrl("/"),
     hasPart: TOOL_DEFINITIONS.map((tool) => ({
       "@type": "SoftwareApplication",
@@ -51,6 +51,12 @@ export default function Page() {
       operatingSystem: "Any",
       description: tool.description,
       url: getCanonicalUrl(tool.href),
+      isAccessibleForFree: true,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
     })),
   }
 

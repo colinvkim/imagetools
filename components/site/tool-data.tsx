@@ -30,10 +30,10 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     href: "/raster-convert",
-    title: "Raster Convert",
+    title: "Image Converter",
     description:
-      "Convert PNG, JPG, and WebP assets into PNG or WebP locally, with instant preview and batch download.",
-    shortDescription: "Convert raster images into PNG or WebP.",
+      "Convert PNG, JPG, and WebP images into PNG or WebP locally, with instant preview and batch download.",
+    shortDescription: "Convert PNG, JPG, and WebP images locally.",
     icon: FileImage,
     accent: "oklch(0.78 0.08 190 / 0.24)",
   },
@@ -48,7 +48,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     href: "/aspect-ratio-crop",
-    title: "Aspect Ratio Crop",
+    title: "Crop by Aspect Ratio",
     description:
       "Crop PNG, JPG, and WebP images with presets like 1:1, 4:5, 3:2, 16:9, or freeform.",
     shortDescription: "Crop images to common aspect ratios.",
@@ -75,10 +75,10 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     href: "/svg-to-png",
-    title: "SVG Export",
+    title: "SVG to PNG Converter",
     description:
       "Rasterize SVGs as PNG or WebP at the size you want without sending artwork to a server.",
-    shortDescription: "Rasterize SVGs as PNG or WebP.",
+    shortDescription: "Convert SVG files to PNG or WebP.",
     icon: Scaling,
     accent: "oklch(0.8 0.08 220 / 0.24)",
   },

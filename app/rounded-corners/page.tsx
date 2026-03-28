@@ -8,7 +8,7 @@ import { createPageMetadata } from "@/lib/site-metadata"
 export const metadata: Metadata = createPageMetadata({
   title: "Round Image Corners",
   description:
-    "Add rounded corners to any image, optionally crop it, and export a transparent PNG in the browser.",
+    "Free browser-based tool to add rounded corners to an image and export a transparent PNG locally.",
   path: "/rounded-corners",
 })
 
@@ -19,6 +19,7 @@ export default function RoundedCornersPage() {
     <ToolPage
       title="Add Rounded Corners to Images"
       description="Crop if you want to, keep the original aspect ratio if you don’t, and export a transparent PNG entirely in the browser."
+      path="/rounded-corners"
       accent={tool.accent}
     >
       <RoundedCornersTool />
