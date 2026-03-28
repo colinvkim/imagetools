@@ -2,6 +2,7 @@
 
 import {
   type ChangeEvent,
+  type FormEvent,
   useCallback,
   useEffect,
   useId,
@@ -9,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react"
-import { ImageUp, LoaderCircle, Sparkles } from "lucide-react"
+import { ImageUp, Link2, LoaderCircle, Sparkles } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -21,11 +22,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import {
   getAcceptedClipboardFiles,
   parseAcceptAttribute,
 } from "@/lib/file-input"
+import { fetchFileFromUrl } from "@/lib/url-upload"
 import { cn } from "@/lib/utils"
 
 type FileDropzoneProps = {
@@ -60,7 +63,11 @@ export function FileDropzone({
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [urlValue, setUrlValue] = useState("")
+  const [urlError, setUrlError] = useState<string | null>(null)
+  const [isUploadingFromUrl, setIsUploadingFromUrl] = useState(false)
   const acceptedFiles = useMemo(() => parseAcceptAttribute(accept), [accept])
+  const isBusy = isLoading || isUploadingFromUrl
 
   const handleSelectedFiles = useCallback(
     async (files: File[]) => {
@@ -80,6 +87,14 @@ export function FileDropzone({
     [multiple, onFileSelect, onFilesSelect]
   )
 
+  const processSelectedFiles = useCallback(
+    async (files: File[]) => {
+      setUrlError(null)
+      await handleSelectedFiles(files)
+    },
+    [handleSelectedFiles]
+  )
+
   const handleInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
 
@@ -87,9 +102,41 @@ export function FileDropzone({
       return
     }
 
-    await handleSelectedFiles(files)
+    await processSelectedFiles(files)
     event.target.value = ""
   }
+
+  const handleUrlSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      setUrlError(null)
+      setIsUploadingFromUrl(true)
+
+      try {
+        const file = await fetchFileFromUrl(urlValue, {
+          acceptedMimeTypes: acceptedFiles.mimeTypes,
+          acceptedExtensions: acceptedFiles.extensions,
+        })
+
+        await processSelectedFiles([file])
+      } catch (caughtError) {
+        setUrlError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "We couldn't import that URL."
+        )
+      } finally {
+        setIsUploadingFromUrl(false)
+      }
+    },
+    [
+      acceptedFiles.extensions,
+      acceptedFiles.mimeTypes,
+      processSelectedFiles,
+      urlValue,
+    ]
+  )
 
   useEffect(() => {
     if (!supportsPaste) {
@@ -116,7 +163,7 @@ export function FileDropzone({
         return
       }
 
-      void handleSelectedFiles(files)
+      void processSelectedFiles(files)
     }
 
     document.addEventListener("paste", onPaste)
@@ -127,7 +174,7 @@ export function FileDropzone({
   }, [
     acceptedFiles.extensions,
     acceptedFiles.mimeTypes,
-    handleSelectedFiles,
+    processSelectedFiles,
     supportsPaste,
   ])
 
@@ -135,8 +182,11 @@ export function FileDropzone({
     <Card
       onDragEnter={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
-      aria-busy={isLoading}
-      className={cn("gap-0 rounded-[1.5rem] border bg-card shadow-sm", className)}
+      aria-busy={isBusy}
+      className={cn(
+        "gap-0 rounded-[1.5rem] border bg-card shadow-sm",
+        className
+      )}
     >
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
@@ -159,10 +209,9 @@ export function FileDropzone({
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6 pb-6 pt-4 sm:pb-8 sm:pt-5">
-        <label
-          htmlFor={inputId}
+        <div
           className={cn(
-            "group flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 rounded-[1.25rem] border border-dashed px-6 py-10 text-center transition-[background-color,border-color,box-shadow] motion-reduce:transition-none",
+            "overflow-hidden rounded-[1.25rem] border border-dashed transition-[background-color,border-color,box-shadow] motion-reduce:transition-none",
             isDragging
               ? "border-primary bg-primary/5"
               : "border-border bg-muted/40 hover:border-primary/50 hover:bg-muted/70"
@@ -191,56 +240,115 @@ export function FileDropzone({
               return
             }
 
-            void handleSelectedFiles(files)
+            void processSelectedFiles(files)
           }}
         >
-          <div className="rounded-2xl border bg-background p-4">
-            {isLoading ? (
-              <LoaderCircle
-                aria-hidden="true"
-                className="size-7 animate-spin text-primary"
-              />
-            ) : (
-              <ImageUp aria-hidden="true" className="size-7 text-primary" />
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-base font-medium">
-              {multiple
-                ? "Drop files here or choose them from your device"
-                : "Drop a file here or choose one from your device"}
-            </p>
-            {acceptedFormatsLabel ? (
-              <p className="text-sm text-muted-foreground">
-                Accepted formats:{" "}
-                <span className="font-medium text-foreground">
-                  {acceptedFormatsLabel}
-                </span>
-              </p>
-            ) : null}
-            {helperText ? (
-              <p className="text-sm text-muted-foreground">{helperText}</p>
-            ) : null}
-          </div>
-          <Separator className="max-w-sm" />
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="secondary">Drag & Drop</Badge>
-            <Badge variant="secondary">Browse</Badge>
-            {supportsPaste ? <Badge variant="secondary">Paste</Badge> : null}
-          </div>
-          <Button
-            type="button"
-            size="lg"
-            className="mt-2"
-            onClick={(event) => {
-              event.preventDefault()
-              inputRef.current?.click()
-            }}
+          <label
+            htmlFor={inputId}
+            className="group flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 px-6 py-10 text-center"
           >
-            <ImageUp data-icon="inline-start" />
-            {multiple ? "Choose Files" : "Choose File"}
-          </Button>
-        </label>
+            <div className="rounded-2xl border bg-background p-4">
+              {isBusy ? (
+                <LoaderCircle
+                  aria-hidden="true"
+                  className="size-7 animate-spin text-primary"
+                />
+              ) : (
+                <ImageUp aria-hidden="true" className="size-7 text-primary" />
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-base font-medium">
+                {multiple
+                  ? "Drop files here or choose them from your device"
+                  : "Drop a file here or choose one from your device"}
+              </p>
+              {acceptedFormatsLabel ? (
+                <p className="text-sm text-muted-foreground">
+                  Accepted formats:{" "}
+                  <span className="font-medium text-foreground">
+                    {acceptedFormatsLabel}
+                  </span>
+                </p>
+              ) : null}
+              {helperText ? (
+                <p className="text-sm text-muted-foreground">{helperText}</p>
+              ) : null}
+            </div>
+            <Separator className="max-w-sm" />
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Badge variant="secondary">Drag & Drop</Badge>
+              <Badge variant="secondary">Browse</Badge>
+              {supportsPaste ? <Badge variant="secondary">Paste</Badge> : null}
+            </div>
+            <Button
+              type="button"
+              size="lg"
+              className="mt-2"
+              onClick={(event) => {
+                event.preventDefault()
+                setUrlError(null)
+                inputRef.current?.click()
+              }}
+            >
+              <ImageUp data-icon="inline-start" />
+              {multiple ? "Choose Files" : "Choose File"}
+            </Button>
+          </label>
+
+          <form
+            className="border-t border-dashed bg-background/70 px-4 py-4 sm:px-5"
+            onSubmit={handleUrlSubmit}
+          >
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 text-[0.72rem] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+                <Separator className="flex-1" />
+                <span>Upload from URL</span>
+                <Separator className="flex-1" />
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="https://example.com/image.png"
+                  value={urlValue}
+                  disabled={isBusy}
+                  onChange={(event) => {
+                    setUrlValue(event.target.value)
+                    if (urlError) {
+                      setUrlError(null)
+                    }
+                  }}
+                  className="h-10 rounded-xl bg-background"
+                />
+                <Button
+                  type="submit"
+                  variant="outline"
+                  size="lg"
+                  disabled={isBusy || !urlValue.trim()}
+                  className="rounded-xl sm:min-w-40"
+                >
+                  {isUploadingFromUrl ? (
+                    <LoaderCircle
+                      data-icon="inline-start"
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <Link2 data-icon="inline-start" />
+                  )}
+                  Upload from URL
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Fetches a direct public file link in your browser.
+                {multiple ? " URL uploads add one file at a time." : ""}
+              </p>
+            </div>
+          </form>
+        </div>
 
         <input
           ref={inputRef}
@@ -251,6 +359,14 @@ export function FileDropzone({
           className="sr-only"
           onChange={handleInputChange}
         />
+
+        {urlError ? (
+          <Alert variant="destructive">
+            <Sparkles aria-hidden="true" />
+            <AlertTitle>URL upload problem</AlertTitle>
+            <AlertDescription>{urlError}</AlertDescription>
+          </Alert>
+        ) : null}
 
         {error ? (
           <Alert variant="destructive">
