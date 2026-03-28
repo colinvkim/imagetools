@@ -322,7 +322,7 @@ export function FileDropzone({
                       setUrlError(null)
                     }
                   }}
-                  className="h-9 rounded-xl bg-background sm:flex-1"
+                  className="rounded-xl bg-background sm:flex-1"
                 />
                 <Button
                   type="submit"
