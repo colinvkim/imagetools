@@ -156,37 +156,3 @@
     background: rgba(83, 131, 180, 0.22);
   }
 }
-
-@layer components {
-  .tool-surface-card {
-    @apply gap-0 rounded-[1.5rem] border bg-card shadow-sm;
-  }
-
-  .tool-toolbar {
-    @apply mx-4 flex flex-row items-center justify-between gap-4 rounded-[1.25rem] border border-border/50 bg-muted/25 px-4 py-3;
-  }
-
-  .tool-toolbar-badge {
-    @apply h-8 rounded-full border-border/60 bg-background/80 px-3 text-sm font-medium shadow-sm;
-  }
-
-  .tool-toolbar-action {
-    @apply h-8 rounded-full border border-border/50 bg-background/65 px-3 text-sm text-muted-foreground hover:bg-background hover:text-foreground;
-  }
-
-  .tool-workspace-content {
-    @apply grid gap-6 pb-6 pt-3 sm:pb-8 sm:pt-4;
-  }
-
-  .tool-preview-panel {
-    @apply min-w-0 rounded-[1.35rem] border border-border/50 bg-muted/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] sm:p-4 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)];
-  }
-
-  .tool-upload-content {
-    @apply flex flex-col gap-6 pb-6 pt-4 sm:pb-8 sm:pt-5;
-  }
-
-  .tool-panel-card {
-    @apply rounded-[1.25rem] border bg-card shadow-sm;
-  }
-}

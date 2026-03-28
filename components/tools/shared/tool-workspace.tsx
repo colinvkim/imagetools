@@ -34,16 +34,18 @@ export function ToolWorkspace({
   gridClassName,
 }: ToolWorkspaceProps) {
   return (
-    <Card className="tool-surface-card">
-      <CardHeader className="tool-toolbar">
-        <Badge variant="outline" className="tool-toolbar-badge">
+    <Card className="gap-0 rounded-[1.5rem] border bg-card shadow-sm">
+      <CardHeader className="flex flex-row items-center justify-between gap-4">
+        <Badge
+          variant="outline"
+          className="h-8 rounded-full px-3 text-sm font-medium"
+        >
           {badge}
         </Badge>
         {onReset ? (
           <div className="shrink-0">
             <Button
-              variant="ghost"
-              className="tool-toolbar-action"
+              className="rounded-full border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background"
               onClick={onReset}
             >
               {resetIcon}
@@ -55,13 +57,11 @@ export function ToolWorkspace({
 
       <CardContent
         className={cn(
-          "tool-workspace-content lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.95fr)]",
+          "grid gap-6 pb-6 pt-4 sm:pb-8 sm:pt-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.95fr)]",
           gridClassName
         )}
       >
-        <div className="tool-preview-panel">
-          <div className="flex min-w-0 flex-col gap-4">{preview}</div>
-        </div>
+        <div className="flex min-w-0 flex-col gap-4">{preview}</div>
         <div className="min-w-0">{settings}</div>
       </CardContent>
     </Card>
@@ -84,7 +84,7 @@ export function ToolSettingsCard({
   contentClassName,
 }: ToolSettingsCardProps) {
   return (
-    <Card className="tool-panel-card">
+    <Card className="rounded-[1.25rem] border bg-card shadow-sm">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {fileName ? (
