@@ -470,6 +470,7 @@ export function RectCropEditor({
   const [sampledImage, setSampledImage] = React.useState<SampledImageData | null>(
     null
   )
+  const [isDragging, setIsDragging] = React.useState(false)
   const [isGridVisible, setIsGridVisible] = React.useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false)
 
@@ -632,6 +633,7 @@ export function RectCropEditor({
     if (dragStateRef.current) {
       event.currentTarget.releasePointerCapture(event.pointerId)
       dragStateRef.current = null
+      setIsDragging(false)
       hideGridSoon()
     }
   }
@@ -668,6 +670,7 @@ export function RectCropEditor({
         initialCrop: crop,
       }
 
+      setIsDragging(true)
       showGrid()
       parentSvg.setPointerCapture(event.pointerId)
     }
@@ -679,7 +682,7 @@ export function RectCropEditor({
     cornerLength,
     hitSize,
   } = getHandleStrokeMetrics(crop)
-  const gridOpacity = dragStateRef.current || isGridVisible ? 0.72 : 0
+  const gridOpacity = isDragging || isGridVisible ? 0.72 : 0
   const chromePadding = Math.max(handleStroke * 2, 12)
   const virtualWidth = imageWidth + chromePadding * 2
   const virtualHeight = imageHeight + chromePadding * 2

@@ -45,11 +45,6 @@ export function SiteHeader() {
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
-                style={
-                  pathname === "/"
-                    ? { viewTransitionName: "active-nav-pill" }
-                    : undefined
-                }
               >
                 Home
               </a>

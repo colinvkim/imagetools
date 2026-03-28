@@ -16,10 +16,8 @@ const tool = getToolDefinition("/circle-crop")
 export default function CircleCropPage() {
   return (
     <ToolPage
-      badge={tool.title}
       title="Circle-Crop Images"
       description="Position a square crop in the dialog, preview the result, and export a crisp circular image entirely in the browser."
-      icon={tool.icon}
       transitionName={tool.transitionName}
       accent={tool.accent}
     >

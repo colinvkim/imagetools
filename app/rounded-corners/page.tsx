@@ -16,10 +16,8 @@ const tool = getToolDefinition("/rounded-corners")
 export default function RoundedCornersPage() {
   return (
     <ToolPage
-      badge={tool.title}
       title="Add Rounded Corners to Images"
       description="Crop if you want to, keep the original aspect ratio if you don’t, and export a transparent PNG entirely in the browser."
-      icon={tool.icon}
       transitionName={tool.transitionName}
       accent={tool.accent}
     >

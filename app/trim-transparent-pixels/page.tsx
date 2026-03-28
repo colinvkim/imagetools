@@ -16,10 +16,8 @@ const tool = getToolDefinition("/trim-transparent-pixels")
 export default function TrimTransparentPixelsPage() {
   return (
     <ToolPage
-      badge={tool.title}
       title="Trim Transparent Padding from Images"
       description="Upload a transparent PNG or WebP image and imagetools will detect the visible bounds, preview the tighter crop, and export the result locally."
-      icon={tool.icon}
       transitionName={tool.transitionName}
       accent={tool.accent}
     >

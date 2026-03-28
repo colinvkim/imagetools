@@ -16,10 +16,8 @@ const tool = getToolDefinition("/svg-to-png")
 export default function SvgToPngPage() {
   return (
     <ToolPage
-      badge={tool.title}
       title="Export SVGs as PNG or WebP"
       description="Upload vector artwork, choose an export format and width, and rasterize it locally without a server round-trip."
-      icon={tool.icon}
       transitionName={tool.transitionName}
       accent={tool.accent}
     >

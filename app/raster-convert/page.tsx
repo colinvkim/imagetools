@@ -16,10 +16,8 @@ const tool = getToolDefinition("/raster-convert")
 export default function RasterConvertPage() {
   return (
     <ToolPage
-      badge={tool.title}
       title="Convert Raster Images"
       description="Convert PNG, JPG, and WebP images locally with instant preview and direct PNG or WebP downloads."
-      icon={tool.icon}
       transitionName={tool.transitionName}
       accent={tool.accent}
     >

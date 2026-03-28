@@ -16,10 +16,8 @@ const tool = getToolDefinition("/resize-image")
 export default function ResizeImagePage() {
   return (
     <ToolPage
-      badge={tool.title}
       title="Resize Images"
       description="Upload a raster image, keep the aspect ratio locked if you want, and export a resized version locally without uploading anything."
-      icon={tool.icon}
       transitionName={tool.transitionName}
       accent={tool.accent}
     >

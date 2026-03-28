@@ -16,10 +16,8 @@ const tool = getToolDefinition("/aspect-ratio-crop")
 export default function AspectRatioCropPage() {
   return (
     <ToolPage
-      badge={tool.title}
       title="Crop Images"
       description="Upload a raster image, choose a preset aspect ratio or go freeform, and export the cropped result locally without uploading anything."
-      icon={tool.icon}
       transitionName={tool.transitionName}
       accent={tool.accent}
     >
