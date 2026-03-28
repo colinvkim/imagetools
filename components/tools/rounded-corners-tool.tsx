@@ -6,6 +6,7 @@ import { Crop, RefreshCcw, ScanFace, SlidersHorizontal } from "lucide-react"
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
+import { PresetToggleGroup } from "@/components/tools/shared/preset-toggle-group"
 import { RectCropEditor } from "@/components/tools/shared/rect-crop-editor"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { ToolEditorDialog } from "@/components/tools/shared/tool-editor-dialog"
@@ -27,7 +28,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
   centerRectCrop,
@@ -296,28 +296,18 @@ export function RoundedCornersTool() {
             <Separator />
 
             <FieldGroup>
-              <Field>
-                <FieldLabel>Radius presets</FieldLabel>
-                <FieldContent>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={selectedPreset ? [selectedPreset] : []}
-                    onValueChange={(groupValue) =>
-                      handlePresetChange(groupValue[0] ?? "")
-                    }
-                    className="flex w-full flex-wrap gap-2"
-                  >
-                    {RADIUS_PRESETS.map((preset) => (
-                      <ToggleGroupItem
-                        key={preset}
-                        value={preset}
-                        className="min-w-16"
-                      >
-                        {preset}px
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
+            <Field>
+              <FieldLabel>Radius presets</FieldLabel>
+              <FieldContent>
+                <PresetToggleGroup
+                  value={selectedPreset}
+                  onValueChange={handlePresetChange}
+                  options={RADIUS_PRESETS.map((preset) => ({
+                    value: preset,
+                    label: `${preset}px`,
+                  }))}
+                  itemClassName="min-w-16"
+                />
                   <FieldDescription>
                     Presets are measured in output pixels.
                   </FieldDescription>

@@ -6,6 +6,7 @@ import { Crop, Frame, RefreshCcw } from "lucide-react"
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
+import { PresetToggleGroup } from "@/components/tools/shared/preset-toggle-group"
 import { RectCropEditor } from "@/components/tools/shared/rect-crop-editor"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import { ToolEditorDialog } from "@/components/tools/shared/tool-editor-dialog"
@@ -26,7 +27,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Separator } from "@/components/ui/separator"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
   centerRectCrop,
@@ -340,28 +340,18 @@ export function AspectRatioCropTool() {
             <Separator />
 
             <FieldGroup>
-              <Field>
-                <FieldLabel>Aspect ratio presets</FieldLabel>
-                <FieldContent>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={[selectedAspectRatio]}
-                    onValueChange={(groupValue) =>
-                      handleAspectRatioChange(groupValue[0] ?? "")
-                    }
-                    className="flex w-full flex-wrap gap-2"
-                  >
-                    {ASPECT_RATIO_OPTIONS.map((option) => (
-                      <ToggleGroupItem
-                        key={option.value}
-                        value={option.value}
-                        className="min-w-20"
-                      >
-                        {option.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
+            <Field>
+              <FieldLabel>Aspect ratio presets</FieldLabel>
+              <FieldContent>
+                <PresetToggleGroup
+                  value={selectedAspectRatio}
+                  onValueChange={handleAspectRatioChange}
+                  options={ASPECT_RATIO_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  itemClassName="min-w-20"
+                />
                   <FieldDescription>
                     {aspectRatioOption.summary}. The crop dialog updates to
                     match the selected ratio.

@@ -37,7 +37,7 @@ export default function Page() {
         <div className="space-y-5">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="outline">{toolCountLabel}</Badge>
-            <Badge variant="outline">Runs on-device</Badge>
+            <Badge variant="outline">Runs locally</Badge>
           </div>
 
           <div className="space-y-4">

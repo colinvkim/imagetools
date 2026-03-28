@@ -6,6 +6,7 @@ import { Download, Lock, LockOpen, RefreshCcw, Scaling } from "lucide-react"
 import { FileDropzone } from "@/components/shared/file-dropzone"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
+import { PresetToggleGroup } from "@/components/tools/shared/preset-toggle-group"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import {
   ToolPrimaryFooter,
@@ -25,7 +26,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Toggle } from "@/components/ui/toggle"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
   buildDownloadFileName,
@@ -318,25 +318,15 @@ export function ResizeImageTool() {
             <Field>
               <FieldLabel>Scale presets</FieldLabel>
               <FieldContent>
-                <ToggleGroup
-                  multiple={false}
-                  variant="outline"
-                  value={selectedScale ? [selectedScale] : []}
-                  onValueChange={(groupValue) =>
-                    handleScaleChange(groupValue[0] ?? "")
-                  }
-                  className="flex w-full flex-wrap gap-2"
-                >
-                  {SCALE_OPTIONS.map((option) => (
-                    <ToggleGroupItem
-                      key={option.value}
-                      value={option.value}
-                      className="min-w-16"
-                    >
-                      {option.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
+                <PresetToggleGroup
+                  value={selectedScale}
+                  onValueChange={handleScaleChange}
+                  options={SCALE_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  itemClassName="min-w-16"
+                />
                 <FieldDescription>
                   Quick presets scale both dimensions from the original image.
                 </FieldDescription>

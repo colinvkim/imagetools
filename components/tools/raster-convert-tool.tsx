@@ -8,6 +8,7 @@ import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { BatchPreviewControls } from "@/components/tools/shared/batch-preview-controls"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
+import { PresetToggleGroup } from "@/components/tools/shared/preset-toggle-group"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import {
   ToolPrimaryFooter,
@@ -26,7 +27,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Separator } from "@/components/ui/separator"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
 import { getNormalizedFileName } from "@/lib/file-input"
 import {
@@ -372,13 +372,9 @@ export function RasterConvertTool() {
             </FieldDescription>
             <FieldContent>
               <FieldGroup>
-                <ToggleGroup
-                  multiple={false}
-                  variant="outline"
-                  value={[outputFormatValue]}
-                  onValueChange={(groupValue) => {
-                    const value = groupValue[0] ?? ""
-
+                <PresetToggleGroup
+                  value={outputFormatValue}
+                  onValueChange={(value) => {
                     if (!value) {
                       return
                     }
@@ -386,18 +382,12 @@ export function RasterConvertTool() {
                     resetActionState()
                     setOutputFormatValue(value)
                   }}
-                  className="flex w-full flex-wrap justify-start gap-2"
-                >
-                  {OUTPUT_FORMAT_OPTIONS.map((option) => (
-                    <ToggleGroupItem
-                      key={option.value}
-                      value={option.value}
-                      className="min-w-24"
-                    >
-                      {option.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
+                  options={OUTPUT_FORMAT_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  itemClassName="min-w-24"
+                />
               </FieldGroup>
             </FieldContent>
           </Field>

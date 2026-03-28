@@ -193,7 +193,7 @@ export function FileDropzone({
           <div className="flex flex-col gap-3">
             <Badge variant="outline" className="gap-2 self-start">
               <Sparkles aria-hidden="true" />
-              Client-Side Only
+              Runs on your device
             </Badge>
             <div className="flex flex-col gap-2">
               <CardTitle className="text-2xl tracking-tight">{title}</CardTitle>
@@ -208,7 +208,7 @@ export function FileDropzone({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-6 pb-6 pt-4 sm:pb-8 sm:pt-5">
+      <CardContent className="flex flex-col gap-6 pt-4 pb-6 sm:pt-5 sm:pb-8">
         <div
           className={cn(
             "overflow-hidden rounded-[1.25rem] border border-dashed transition-[background-color,border-color,box-shadow] motion-reduce:transition-none",

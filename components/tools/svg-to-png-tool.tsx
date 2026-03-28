@@ -8,6 +8,7 @@ import { BatchFileList } from "@/components/tools/shared/batch-file-list"
 import { BatchPreviewControls } from "@/components/tools/shared/batch-preview-controls"
 import { CheckerboardSurface } from "@/components/tools/shared/checkerboard-surface"
 import { DownloadFileAction } from "@/components/tools/shared/download-file-action"
+import { PresetToggleGroup } from "@/components/tools/shared/preset-toggle-group"
 import { StatusAlert } from "@/components/tools/shared/status-alert"
 import {
   ToolPrimaryFooter,
@@ -27,7 +28,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useObjectUrlBatch } from "@/hooks/use-object-url-batch"
 import { getNormalizedFileName } from "@/lib/file-input"
 import { downloadBlob, replaceFileExtension } from "@/lib/image/export"
@@ -485,25 +485,15 @@ export function SvgToPngTool() {
             <Field>
               <FieldLabel>Output format</FieldLabel>
               <FieldContent>
-                <ToggleGroup
-                  multiple={false}
-                  variant="outline"
-                  value={[outputFormatValue]}
-                  onValueChange={(groupValue) =>
-                    handleFormatChange(groupValue[0] ?? "")
-                  }
-                  className="flex w-full flex-wrap gap-2"
-                >
-                  {OUTPUT_FORMAT_OPTIONS.map((format) => (
-                    <ToggleGroupItem
-                      key={format.value}
-                      value={format.value}
-                      className="min-w-16"
-                    >
-                      {format.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
+                <PresetToggleGroup
+                  value={outputFormatValue}
+                  onValueChange={handleFormatChange}
+                  options={OUTPUT_FORMAT_OPTIONS.map((format) => ({
+                    value: format.value,
+                    label: format.label,
+                  }))}
+                  itemClassName="min-w-16"
+                />
                 <FieldDescription>
                   PNG is best for lossless export. WebP is useful when you want
                   smaller files.
@@ -514,25 +504,15 @@ export function SvgToPngTool() {
             <Field>
               <FieldLabel>Scale presets</FieldLabel>
               <FieldContent>
-                <ToggleGroup
-                  multiple={false}
-                  variant="outline"
-                  value={selectedScale ? [selectedScale] : []}
-                  onValueChange={(groupValue) =>
-                    handleScaleChange(groupValue[0] ?? "")
-                  }
-                  className="flex w-full flex-wrap gap-2"
-                >
-                  {SCALE_OPTIONS.map((option) => (
-                    <ToggleGroupItem
-                      key={option.value}
-                      value={option.value}
-                      className="min-w-14"
-                    >
-                      {option.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
+                <PresetToggleGroup
+                  value={selectedScale}
+                  onValueChange={handleScaleChange}
+                  options={SCALE_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  itemClassName="min-w-14"
+                />
                 <FieldDescription>
                   Presets scale each SVG from its own natural width.
                 </FieldDescription>
