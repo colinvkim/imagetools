@@ -38,7 +38,7 @@ export default function Page() {
         <div className="space-y-5">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="outline">{toolCountLabel}</Badge>
-            <Badge variant="outline">Client-Side</Badge>
+            <Badge variant="outline">Runs on-device</Badge>
           </div>
 
           <div className="space-y-4">
@@ -75,7 +75,7 @@ export default function Page() {
           </ul>
         </div>
 
-        <Card className="rounded-[1.5rem] border bg-card shadow-sm">
+        {/* <Card className="rounded-[1.5rem] border bg-card shadow-sm">
           <CardHeader className="gap-3">
             <div className="flex items-center gap-3">
               <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
@@ -95,7 +95,7 @@ export default function Page() {
               </AlertDescription>
             </Alert>
           </CardContent>
-        </Card>
+        </Card> */}
       </section>
 
       <Separator />
