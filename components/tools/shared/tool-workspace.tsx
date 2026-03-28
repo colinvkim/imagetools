@@ -44,7 +44,10 @@ export function ToolWorkspace({
         </Badge>
         {onReset ? (
           <div className="shrink-0">
-            <Button variant="outline" className="rounded-full" onClick={onReset}>
+            <Button
+              className="rounded-full border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background"
+              onClick={onReset}
+            >
               {resetIcon}
               {resetLabel}
             </Button>
