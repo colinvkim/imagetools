@@ -23,13 +23,25 @@ function NavItem({ href, label, isActive, itemRef }: NavItemProps) {
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "relative z-10 rounded-full px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-        isActive
-          ? "text-background"
-          : "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        "group relative rounded-full px-3 py-1.5 text-sm font-medium focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       )}
     >
-      {label}
+      {!isActive ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 rounded-full bg-muted opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+        />
+      ) : null}
+      <span
+        className={cn(
+          "relative z-20",
+          isActive
+            ? "text-background"
+            : "text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground"
+        )}
+      >
+        {label}
+      </span>
     </Link>
   )
 }
@@ -122,7 +134,7 @@ export function SiteHeader() {
               <div
                 aria-hidden="true"
                 className={cn(
-                  "pointer-events-none absolute top-0 bottom-0 left-0 rounded-full bg-foreground transition-[transform,width,opacity] duration-300 ease-[cubic-bezier(0.2,0.9,0.2,1)]",
+                  "pointer-events-none absolute top-0 bottom-0 left-0 z-10 rounded-full bg-foreground transition-[transform,width,opacity] duration-300 ease-[cubic-bezier(0.2,0.9,0.2,1)]",
                   indicatorStyle.ready ? "opacity-100" : "opacity-0"
                 )}
                 style={{
