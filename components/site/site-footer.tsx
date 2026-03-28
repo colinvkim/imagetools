@@ -38,7 +38,18 @@ export function SiteFooter() {
             <div className="flex flex-col gap-2 text-sm leading-6 text-muted-foreground">
               <p>No uploads for the core tool flows.</p>
               <p>Works on desktop and mobile browsers.</p>
-              <p>Built for quick edits with minimal friction.</p>
+              <p>
+                Open-source and available on{" "}
+                <Link
+                  href="https://github.com/colinvkim/imagetools"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-sm underline underline-offset-4 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  GitHub
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </div>
