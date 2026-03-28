@@ -156,3 +156,52 @@
     background: rgba(83, 131, 180, 0.22);
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+    animation-duration: 520ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-old(root) {
+    animation-name: theme-old-dissolve;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: theme-new-dissolve;
+  }
+}
+
+@keyframes theme-old-dissolve {
+  from {
+    opacity: 1;
+    filter: blur(0) saturate(1);
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    filter: blur(8px) saturate(0.96);
+    transform: scale(1.008);
+  }
+}
+
+@keyframes theme-new-dissolve {
+  from {
+    opacity: 0;
+    filter: blur(8px) saturate(1.04) brightness(1.015);
+    transform: scale(0.992);
+  }
+
+  60% {
+    opacity: 0.88;
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0) saturate(1) brightness(1);
+    transform: scale(1);
+  }
+}
