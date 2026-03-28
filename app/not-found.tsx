@@ -40,8 +40,14 @@ export default function NotFound() {
             </AlertDescription>
           </Alert>
           <div className="flex flex-wrap gap-3">
-            <Button render={<Link href="/" />}>Back to Home</Button>
-            <Button variant="outline" render={<Link href="/circle-crop" />}>
+            <Button nativeButton={false} render={<Link href="/" />}>
+              Back to Home
+            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href="/circle-crop" />}
+            >
               Open Circle Crop
             </Button>
           </div>

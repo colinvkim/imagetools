@@ -1,10 +1,9 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react"
+import { ArrowRight, Sparkles } from "lucide-react"
 
 import { PageShell } from "@/components/site/page-shell"
 import { TOOL_DEFINITIONS } from "@/components/site/tool-data"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -52,13 +51,18 @@ export default function Page() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button size="lg" render={<Link href="/resize-image" />}>
+            <Button
+              size="lg"
+              nativeButton={false}
+              render={<Link href="/resize-image" />}
+            >
               <Sparkles aria-hidden="true" data-icon="inline-start" />
               Open Resize Image
             </Button>
             <Button
               variant="outline"
               size="lg"
+              nativeButton={false}
               render={<Link href="/circle-crop" />}
             >
               <ArrowRight aria-hidden="true" data-icon="inline-start" />
@@ -135,6 +139,7 @@ export default function Page() {
                   <Button
                     variant="outline"
                     className="w-full"
+                    nativeButton={false}
                     render={<Link href={tool.href} />}
                   >
                     Open Tool
