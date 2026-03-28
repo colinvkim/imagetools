@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Toggle } from "@/components/ui/toggle"
 import { useImageUpload } from "@/hooks/use-image-upload"
 import {
   buildDownloadFileName,
@@ -279,23 +278,23 @@ export function ResizeImageTool() {
         <ToolSettingsCard
           title="Resize settings"
           fileName={image.fileName}
-            footer={
-              <ToolPrimaryFooter>
-                <DownloadFileAction
-                  buttonLabel={
-                    isExporting
-                      ? "Exporting image..."
-                      : `Download ${exportConfig.label}`
-                  }
-                  defaultFileName={defaultExportFileName}
-                  outputExtension={exportConfig.extension}
-                  resetKey={image.objectUrl}
-                  disabled={isExporting}
-                  onDownload={handleExport}
-                />
-              </ToolPrimaryFooter>
-            }
-          >
+          footer={
+            <ToolPrimaryFooter>
+              <DownloadFileAction
+                buttonLabel={
+                  isExporting
+                    ? "Exporting image..."
+                    : `Download ${exportConfig.label}`
+                }
+                defaultFileName={defaultExportFileName}
+                outputExtension={exportConfig.extension}
+                resetKey={image.objectUrl}
+                disabled={isExporting}
+                onDownload={handleExport}
+              />
+            </ToolPrimaryFooter>
+          }
+        >
           <ToolStatGrid>
             <ToolStatCard
               label="Original size"
@@ -336,24 +335,33 @@ export function ResizeImageTool() {
             <Field>
               <FieldLabel>Aspect ratio</FieldLabel>
               <FieldContent>
-                <Toggle
-                  variant="outline"
-                  size="lg"
-                  pressed={isAspectLocked}
-                  onPressedChange={handleAspectLockChange}
-                  className="justify-start"
-                >
-                  {isAspectLocked ? (
-                    <Lock data-icon="inline-start" />
-                  ) : (
-                    <LockOpen data-icon="inline-start" />
-                  )}
-                  {isAspectLocked ? "Keep original ratio" : "Free resize"}
-                </Toggle>
-                <FieldDescription>
-                  When locked, changing one dimension updates the other
-                  automatically.
-                </FieldDescription>
+                <PresetToggleGroup
+                  value={isAspectLocked ? "locked" : "free"}
+                  onValueChange={(value) =>
+                    handleAspectLockChange(value !== "free")
+                  }
+                  options={[
+                    {
+                      value: "locked",
+                      label: (
+                        <span className="inline-flex items-center gap-1.5">
+                          <Lock data-icon="inline-start" />
+                          Keep original ratio
+                        </span>
+                      ),
+                    },
+                    {
+                      value: "free",
+                      label: (
+                        <span className="inline-flex items-center gap-1.5">
+                          <LockOpen data-icon="inline-start" />
+                          Free resize
+                        </span>
+                      ),
+                    },
+                  ]}
+                  itemClassName="min-w-[11rem]"
+                />
               </FieldContent>
             </Field>
 
