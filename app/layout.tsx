@@ -89,31 +89,33 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const structuredData = [
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: SITE_NAME,
-      description: SITE_DESCRIPTION,
-      url: siteUrl,
-      inLanguage: "en-US",
-      sameAs: [SITE_REPOSITORY_URL],
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareSourceCode",
-      name: SITE_NAME,
-      codeRepository: SITE_REPOSITORY_URL,
-      license: "https://opensource.org/license/mit",
-      url: siteUrl,
-      programmingLanguage: ["TypeScript"],
-    },
-  ]
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        name: SITE_NAME,
+        description: SITE_DESCRIPTION,
+        url: siteUrl,
+        inLanguage: "en-US",
+        sameAs: [SITE_REPOSITORY_URL],
+      },
+      {
+        "@type": "SoftwareSourceCode",
+        name: SITE_NAME,
+        codeRepository: SITE_REPOSITORY_URL,
+        license: "https://opensource.org/license/mit",
+        url: siteUrl,
+        programmingLanguage: ["TypeScript"],
+      },
+    ],
+  }
 
   return (
     <html lang="en" suppressHydrationWarning className="font-sans antialiased">
       <body className="min-h-svh bg-background text-foreground">
         <script
+          id="structured-data-site"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData),
