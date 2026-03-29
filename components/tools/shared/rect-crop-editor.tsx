@@ -481,6 +481,7 @@ export function RectCropEditor({
   const [isDragging, setIsDragging] = React.useState(false)
   const [isGridVisible, setIsGridVisible] = React.useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false)
+  const [isCoarsePointer, setIsCoarsePointer] = React.useState(false)
 
   React.useEffect(() => {
     let isCancelled = false
@@ -543,6 +544,22 @@ export function RectCropEditor({
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
     const handleChange = () => {
       setPrefersReducedMotion(mediaQuery.matches)
+    }
+
+    handleChange()
+    mediaQuery.addEventListener("change", handleChange)
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(pointer: coarse), (any-pointer: coarse)"
+    )
+    const handleChange = () => {
+      setIsCoarsePointer(mediaQuery.matches)
     }
 
     handleChange()
@@ -701,7 +718,14 @@ export function RectCropEditor({
   const bottomBracketY = cropY + crop.height
   const leftBracketX = cropX - handleStroke
   const rightBracketX = cropX + crop.width
-  const edgeHitThickness = Math.max(hitSize * 0.72, handleStroke * 4)
+  const touchEdgeHitMultiplier = isCoarsePointer ? 1.22 : 1
+  const touchCornerHitMultiplier = isCoarsePointer ? 1.16 : 1
+  const edgeHitThickness =
+    Math.max(hitSize * 0.72, handleStroke * 4) * touchEdgeHitMultiplier
+  const cornerHitSize = hitSize * touchCornerHitMultiplier
+  const sideHandleLength = Math.max(18, cornerLength * 0.95)
+  const topSideHandleX = cropX + crop.width / 2 - sideHandleLength / 2
+  const leftSideHandleY = cropY + crop.height / 2 - sideHandleLength / 2
   const chromeTone = React.useMemo(
     () => getCropChromeTone(sampledImage, crop, imageWidth, imageHeight),
     [crop, imageHeight, imageWidth, sampledImage]
@@ -871,6 +895,38 @@ export function RectCropEditor({
                   height={cornerLength + handleStroke}
                   fill={chromeTone.stroke}
                 />
+                {isCoarsePointer ? (
+                  <>
+                    <rect
+                      x={topSideHandleX}
+                      y={topBracketY}
+                      width={sideHandleLength}
+                      height={handleStroke}
+                      fill={chromeTone.stroke}
+                    />
+                    <rect
+                      x={topSideHandleX}
+                      y={bottomBracketY}
+                      width={sideHandleLength}
+                      height={handleStroke}
+                      fill={chromeTone.stroke}
+                    />
+                    <rect
+                      x={leftBracketX}
+                      y={leftSideHandleY}
+                      width={handleStroke}
+                      height={sideHandleLength}
+                      fill={chromeTone.stroke}
+                    />
+                    <rect
+                      x={rightBracketX}
+                      y={leftSideHandleY}
+                      width={handleStroke}
+                      height={sideHandleLength}
+                      fill={chromeTone.stroke}
+                    />
+                  </>
+                ) : null}
               </g>
             </g>
 
@@ -922,37 +978,37 @@ export function RectCropEditor({
               onPointerDown={startDrag("e")}
             />
             <rect
-              x={cropX - hitSize / 2}
-              y={cropY - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={cropX - cornerHitSize / 2}
+              y={cropY - cornerHitSize / 2}
+              width={cornerHitSize}
+              height={cornerHitSize}
               fill="rgba(255,255,255,0.001)"
               className="cursor-nw-resize"
               onPointerDown={startDrag("nw")}
             />
             <rect
-              x={cropX + crop.width - hitSize / 2}
-              y={cropY - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={cropX + crop.width - cornerHitSize / 2}
+              y={cropY - cornerHitSize / 2}
+              width={cornerHitSize}
+              height={cornerHitSize}
               fill="rgba(255,255,255,0.001)"
               className="cursor-ne-resize"
               onPointerDown={startDrag("ne")}
             />
             <rect
-              x={cropX - hitSize / 2}
-              y={cropY + crop.height - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={cropX - cornerHitSize / 2}
+              y={cropY + crop.height - cornerHitSize / 2}
+              width={cornerHitSize}
+              height={cornerHitSize}
               fill="rgba(255,255,255,0.001)"
               className="cursor-sw-resize"
               onPointerDown={startDrag("sw")}
             />
             <rect
-              x={cropX + crop.width - hitSize / 2}
-              y={cropY + crop.height - hitSize / 2}
-              width={hitSize}
-              height={hitSize}
+              x={cropX + crop.width - cornerHitSize / 2}
+              y={cropY + crop.height - cornerHitSize / 2}
+              width={cornerHitSize}
+              height={cornerHitSize}
               fill="rgba(255,255,255,0.001)"
               className="cursor-se-resize"
               onPointerDown={startDrag("se")}
