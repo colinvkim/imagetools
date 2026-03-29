@@ -35,17 +35,17 @@ export function ToolWorkspace({
 }: ToolWorkspaceProps) {
   return (
     <Card className="gap-0 rounded-[1.5rem] border bg-card shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between gap-4">
+      <CardHeader className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <Badge
           variant="outline"
-          className="h-8 rounded-full px-3 text-sm font-medium"
+          className="h-8 w-full justify-center rounded-full px-3 text-sm font-medium sm:w-fit"
         >
           {badge}
         </Badge>
         {onReset ? (
-          <div className="shrink-0">
+          <div className="w-full sm:w-auto sm:shrink-0">
             <Button
-              className="h-8 rounded-full border-foreground bg-foreground px-3 text-sm font-medium text-background hover:bg-foreground/90 hover:text-background"
+              className="h-8 w-full rounded-full border-foreground bg-foreground px-3 text-sm font-medium text-background hover:bg-foreground/90 hover:text-background sm:w-auto"
               onClick={onReset}
             >
               {resetIcon}
