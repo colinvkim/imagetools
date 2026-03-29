@@ -330,7 +330,7 @@ export function RasterConvertTool() {
             <img
               src={previewImage.objectUrl}
               alt={`Preview of ${previewImage.fileName}`}
-              className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
+              className="max-h-112 w-auto max-w-full rounded-2xl shadow-sm"
             />
           </CheckerboardSurface>
 
@@ -339,8 +339,8 @@ export function RasterConvertTool() {
               <Files />
               <AlertTitle>Batch preview</AlertTitle>
               <AlertDescription>
-                Browse the batch with the preview controls or select a file
-                from the list. Clicking download still starts a{" "}
+                Browse the batch with the preview controls or select a file from
+                the list. Clicking download still starts a{" "}
                 {selectedOutputFormat.label} download for every selected image.
               </AlertDescription>
             </Alert>
@@ -437,7 +437,8 @@ export function RasterConvertTool() {
             onItemSelect={(image) =>
               selectPreviewIndex(
                 images.findIndex(
-                  (candidateImage) => candidateImage.objectUrl === image.objectUrl
+                  (candidateImage) =>
+                    candidateImage.objectUrl === image.objectUrl
                 )
               )
             }

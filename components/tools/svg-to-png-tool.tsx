@@ -476,7 +476,7 @@ export function SvgToPngTool() {
             <img
               src={previewSvg.objectUrl}
               alt={`Preview of ${previewSvg.fileName}`}
-              className="max-h-[28rem] w-auto max-w-full rounded-2xl shadow-sm"
+              className="max-h-112uto max-w-full rounded-2xl shadow-sm"
             />
           </CheckerboardSurface>
 

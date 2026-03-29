@@ -36,7 +36,7 @@ export function ToolEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         initialFocus={(openType) => (openType === "touch" ? false : true)}
-        className="top-auto bottom-2 left-1/2 flex max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] max-w-none -translate-x-1/2 -translate-y-0 flex-col overflow-hidden overscroll-contain rounded-[1.5rem] p-0 sm:top-1/2 sm:bottom-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[min(1120px,calc(100%-2rem))] sm:max-w-[min(1120px,calc(100%-2rem))] sm:-translate-y-1/2"
+        className="top-auto bottom-2 left-1/2 flex max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] max-w-none -translate-x-1/2 translate-y-0 flex-col overflow-hidden overscroll-contain rounded-[1.5rem] p-0 sm:top-1/2 sm:bottom-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[min(1120px,calc(100%-2rem))] sm:max-w-[min(1120px,calc(100%-2rem))] sm:-translate-y-1/2"
       >
         <DialogHeader className="shrink-0 px-4 pt-5 sm:px-6 sm:pt-6">
           <DialogTitle>{title}</DialogTitle>

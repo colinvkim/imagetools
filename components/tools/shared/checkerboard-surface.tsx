@@ -15,7 +15,7 @@ export function CheckerboardSurface({
   return (
     <div
       className={cn(
-        "rounded-[1.5rem] border border-border/70 bg-[linear-gradient(45deg,transparent_25%,rgba(148,163,184,0.08)_25%,rgba(148,163,184,0.08)_50%,transparent_50%,transparent_75%,rgba(148,163,184,0.08)_75%)] bg-[length:24px_24px]",
+        "rounded-[1.5rem] border border-border/70 bg-[linear-gradient(45deg,transparent_25%,rgba(148,163,184,0.08)_25%,rgba(148,163,184,0.08)_50%,transparent_50%,transparent_75%,rgba(148,163,184,0.08)_75%)] bg-size-[24px_24px]",
         className
       )}
       {...props}
